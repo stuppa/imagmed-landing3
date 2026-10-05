@@ -1,0 +1,41 @@
+---
+import { Image } from 'astro:assets';
+import WhatsappFlotante from './WhatsappFlotante.astro';
+import wordmark from '../assets/marca/imagmed-wordmark.png';
+import { logoMindray, pie, sitio } from '../data/sitio';
+import { contacto, whatsappUrl } from '../data/contacto';
+
+// En móvil se deja espacio para el botón flotante de WhatsApp, si existe.
+const conFlotante = Boolean(whatsappUrl());
+---
+
+<footer class:list={['oscuro border-t border-(--linea) pt-10 md:pb-10', conFlotante ? 'pb-28' : 'pb-10']}>
+  <div class="contenedor flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+    <div class="flex items-center gap-6">
+      <Image src={wordmark} alt={sitio.nombre} width={128} densities={[1, 2]} class="h-auto w-32" />
+      <span class="h-8 w-px bg-(--linea)" aria-hidden="true"></span>
+      {
+        logoMindray ? (
+          <Image src={logoMindray} alt={pie.marca} height={24} densities={[1, 2]} class="h-6 w-auto" />
+        ) : (
+          <p class="texto-suave text-sm leading-tight">
+            {pie.distribuidor}
+            <span class="block text-base font-semibold text-roto">{pie.marca}</span>
+          </p>
+        )
+      }
+    </div>
+
+    <div class="texto-suave flex flex-col gap-2 text-sm md:items-end">
+      <p>© {new Date().getFullYear()} {sitio.razonSocial}</p>
+      {
+        contacto.avisoPrivacidadUrl && (
+          <a href={contacto.avisoPrivacidadUrl} class="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-white">
+            {pie.aviso}
+          </a>
+        )
+      }
+    </div>
+  </div>
+  <WhatsappFlotante />
+</footer>

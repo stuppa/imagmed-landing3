@@ -1,0 +1,9 @@
+---
+// Convierte "texto *con énfasis*" en texto <em>con énfasis</em>.
+interface Props {
+  texto: string;
+}
+const partes = Astro.props.texto.split('*');
+---
+
+{partes.map((parte, i) => (i % 2 ? <em>{parte}</em> : parte))}

@@ -1,0 +1,57 @@
+---
+import Icono from './Icono.astro';
+import { formulario, whatsappUrl } from '../data/contacto';
+
+const wa = whatsappUrl();
+---
+
+{
+  wa && (
+    <>
+      <a
+        href={wa}
+        target="_blank"
+        rel="noopener"
+        aria-label={formulario.whatsappFlotante}
+        data-flotante
+        class="flotante fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 grid size-14 place-items-center rounded-full bg-marca text-white shadow-[0_0.75rem_2rem_rgb(0_0_0/0.35)] hover:bg-[color-mix(in_srgb,var(--color-marca)_80%,black)] md:hidden"
+      >
+        <Icono nombre="whatsapp" class="size-7" />
+      </a>
+      <script is:inline>
+        // Se oculta mientras están a la vista los botones del hero o la sección de contacto (ya tienen su propia acción).
+        (() => {
+          const boton = document.querySelector('[data-flotante]');
+          const zonas = [document.querySelector('#inicio .hero-acciones'), document.getElementById('contacto')].filter(Boolean);
+          if (!boton || !('IntersectionObserver' in window)) return;
+          const visibles = new Set();
+          const io = new IntersectionObserver((entradas) => {
+            for (const e of entradas) e.isIntersecting ? visibles.add(e.target) : visibles.delete(e.target);
+            boton.classList.toggle('oculto', visibles.size > 0);
+          });
+          zonas.forEach((z) => io.observe(z));
+        })();
+      </script>
+    </>
+  )
+}
+
+<style>
+  .flotante {
+    transition:
+      background-color 0.2s ease,
+      opacity 0.25s ease,
+      translate 0.25s ease,
+      visibility 0.25s;
+  }
+  .flotante.oculto {
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 1rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flotante {
+      transition: none;
+    }
+  }
+</style>

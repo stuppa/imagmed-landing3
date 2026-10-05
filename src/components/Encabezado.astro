@@ -1,0 +1,18 @@
+---
+import Enfasis from './Enfasis.astro';
+
+interface Props {
+  etiqueta: string;
+  titulo: string;
+  id: string;
+  class?: string;
+}
+
+const { etiqueta, titulo, id, class: clase } = Astro.props;
+---
+
+<div class={clase}>
+  <p class="etiqueta">{etiqueta}</p>
+  <h2 id={id} class="titulo-2 mt-4"><Enfasis texto={titulo} /></h2>
+  <slot />
+</div>

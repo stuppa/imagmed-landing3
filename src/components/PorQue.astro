@@ -1,0 +1,38 @@
+---
+import Encabezado from './Encabezado.astro';
+import Icono from './Icono.astro';
+import { diferenciadores, seccionPorQue as s } from '../data/diferenciadores';
+---
+
+<section id="por-que" class="seccion" aria-labelledby="titulo-por-que">
+  <div class="contenedor grid gap-12 lg:grid-cols-12 lg:gap-6">
+    <div class="lg:col-span-5" data-reveal>
+      <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-por-que">
+        <p class="texto-suave mt-5 max-w-md">{s.texto}</p>
+        <a href="#contacto" data-solicitud="Cotización" class="enlace-flecha mt-6">
+          {s.cta}
+          <Icono nombre="flecha" />
+        </a>
+      </Encabezado>
+    </div>
+
+    <ul
+      class="grid gap-px sm:grid-cols-2 lg:col-span-7"
+      role="list"
+      data-reveal="lista"
+    >
+      {
+        diferenciadores.map((d) => (
+          <li class="group grid grid-cols-[auto_1fr] gap-x-4 bg-roto p-5 outline outline-[color-mix(in_srgb,var(--color-tinta)_10%,var(--color-roto))] transition-colors duration-200 hover:bg-white sm:block sm:p-8">
+            <Icono
+              nombre={d.icono}
+              class="row-span-2 mt-0.5 size-7 text-marca transition-transform duration-200 motion-safe:group-hover:-translate-y-1 sm:size-8"
+            />
+            <h3 class="text-lg font-semibold sm:mt-6">{d.titulo}</h3>
+            <p class="texto-suave mt-1 sm:mt-2">{d.texto}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

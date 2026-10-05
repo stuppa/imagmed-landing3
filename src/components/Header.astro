@@ -1,0 +1,247 @@
+---
+import { Image } from 'astro:assets';
+import Icono from './Icono.astro';
+import wordmark from '../assets/marca/imagmed-wordmark.png';
+import { encabezado, navegacion, sitio } from '../data/sitio';
+import { whatsappUrl } from '../data/contacto';
+
+const wa = whatsappUrl();
+---
+
+<header class="oscuro fixed inset-x-0 top-0 z-50 border-b border-(--linea) bg-negro/85 backdrop-blur-md">
+  <div class="contenedor flex h-16 items-center gap-3 lg:gap-8">
+    <a href="#inicio" class="mr-auto shrink-0 lg:mr-0">
+      <Image
+        src={wordmark}
+        alt={sitio.nombre}
+        width={140}
+        densities={[1, 2]}
+        loading="eager"
+        class="h-auto w-28 sm:w-[140px]"
+      />
+    </a>
+
+    <nav aria-label="Principal" class="hidden lg:mx-auto lg:block">
+      <ul class="flex items-center gap-7 text-[0.9375rem]">
+        {
+          navegacion.map((item) => (
+            <li>
+              <a href={item.href} class="enlace-nav" data-nav>
+                {item.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2 sm:gap-3">
+      {
+        wa && (
+          <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno btn-chico">
+            <Icono nombre="whatsapp" class="size-4.5" />
+            {encabezado.whatsapp}
+          </a>
+        )
+      }
+      <a
+        href="#contacto"
+        data-solicitud="Cotización"
+        class:list={['btn btn-primario btn-chico', wa && 'hidden sm:inline-flex']}
+      >
+        <span class="sm:hidden">{encabezado.ctaCorto}</span>
+        <span class="hidden sm:inline">{encabezado.cta}</span>
+      </a>
+    </div>
+
+    <button
+      type="button"
+      popovertarget="menu"
+      aria-label={encabezado.menu}
+      class="boton-menu -mr-2 grid size-11 place-items-center rounded-full lg:hidden"
+    >
+      <span class="barras" aria-hidden="true"><span></span><span></span><span></span></span>
+    </button>
+  </div>
+
+  <nav id="menu" popover aria-label="Principal móvil" class="oscuro menu-movil">
+    <ul class="contenedor pt-2">
+      {
+        navegacion.map((item) => (
+          <li>
+            <a href={item.href} class="enlace-movil" data-nav>
+              {item.texto}
+              <Icono nombre="flecha" class="size-4" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="contenedor grid gap-3 pt-6 pb-8 sm:grid-cols-2">
+      <a href="#contacto" data-solicitud="Cotización" class="btn btn-primario">{encabezado.cta}</a>
+      {
+        wa && (
+          <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno">
+            <Icono nombre="whatsapp" class="size-5" />
+            {encabezado.whatsapp}
+          </a>
+        )
+      }
+    </div>
+  </nav>
+</header>
+
+<style>
+  .btn-chico {
+    min-height: 2.75rem;
+    padding-inline: 1.125rem;
+    font-size: 0.75rem;
+  }
+
+  .enlace-nav {
+    position: relative;
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    color: var(--suave);
+    transition: color 0.2s ease;
+  }
+  .enlace-nav::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0.5rem;
+    left: 0;
+    height: 1px;
+    background: var(--color-marca-claro);
+    scale: 0 1;
+    transition: scale 0.25s ease;
+  }
+  .enlace-nav:hover,
+  .enlace-nav[aria-current] {
+    color: #fff;
+  }
+  .enlace-nav:hover::after,
+  .enlace-nav[aria-current]::after {
+    scale: 1 1;
+  }
+
+  .barras {
+    display: grid;
+    gap: 5px;
+    width: 1.375rem;
+  }
+  .barras span {
+    height: 1.5px;
+    background: currentColor;
+    transition:
+      translate 0.25s ease,
+      rotate 0.25s ease,
+      opacity 0.2s ease;
+  }
+  header:has(.menu-movil:popover-open) .barras span:nth-child(1) {
+    translate: 0 6.5px;
+    rotate: 45deg;
+  }
+  header:has(.menu-movil:popover-open) .barras span:nth-child(2) {
+    opacity: 0;
+  }
+  header:has(.menu-movil:popover-open) .barras span:nth-child(3) {
+    translate: 0 -6.5px;
+    rotate: -45deg;
+  }
+
+  .menu-movil {
+    inset: 4rem 0 auto;
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 4rem);
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    border: 0;
+    border-bottom: 1px solid var(--linea);
+  }
+  .menu-movil::backdrop {
+    background: rgb(3 6 13 / 0.6);
+  }
+  .enlace-movil {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--linea);
+    font-size: 1.25rem;
+  }
+  .enlace-movil :global(svg) {
+    color: var(--color-marca-claro);
+  }
+  .enlace-movil[aria-current] {
+    color: var(--color-marca-claro);
+  }
+  @media (width >= 64rem) {
+    .menu-movil {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .menu-movil,
+    .menu-movil::backdrop {
+      transition:
+        opacity 0.2s ease,
+        translate 0.2s ease,
+        overlay 0.2s allow-discrete,
+        display 0.2s allow-discrete;
+      opacity: 0;
+    }
+    .menu-movil {
+      translate: 0 -0.5rem;
+    }
+    .menu-movil:popover-open,
+    .menu-movil:popover-open::backdrop {
+      opacity: 1;
+      translate: none;
+    }
+    @starting-style {
+      .menu-movil:popover-open,
+      .menu-movil:popover-open::backdrop {
+        opacity: 0;
+      }
+      .menu-movil:popover-open {
+        translate: 0 -0.5rem;
+      }
+    }
+  }
+</style>
+
+<script>
+  // El popover nativo ya abre, cierra con Esc y con clic fuera. Aquí: cerrar al elegir un enlace o al salir con Tab.
+  const menu = document.getElementById('menu');
+  const boton = document.querySelector('[popovertarget="menu"]');
+  menu?.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) menu.hidePopover();
+  });
+  menu?.addEventListener('focusout', (e) => {
+    const destino = e.relatedTarget as Node | null;
+    if (destino && destino !== boton && !menu.contains(destino)) menu.hidePopover();
+  });
+
+  // Marca en la navegación la sección que está a la vista.
+  const enlaces = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[data-nav]'));
+  const secciones = document.querySelectorAll<HTMLElement>('main > section[id]');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (!e.isIntersecting) continue;
+          for (const a of enlaces) {
+            if (a.hash === `#${e.target.id}`) a.setAttribute('aria-current', 'location');
+            else a.removeAttribute('aria-current');
+          }
+        }
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    secciones.forEach((s) => io.observe(s));
+  }
+</script>

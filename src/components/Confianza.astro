@@ -1,0 +1,83 @@
+---
+import Icono from './Icono.astro';
+import { confianza } from '../data/confianza';
+
+const { frase, lineas, certificaciones, cifras } = confianza;
+const hayDatos = Boolean(frase || lineas || certificaciones.length || cifras.length);
+---
+
+{
+  hayDatos && (
+    <div class="oscuro border-t border-(--linea)">
+      <ul class="contenedor barra py-6 md:py-7" role="list" aria-label="Respaldo">
+        {frase && (
+          <li>
+            <Icono nombre="escudo" class="icono" />
+            {frase}
+          </li>
+        )}
+        {lineas && (
+          <li>
+            <Icono nombre="capas" class="icono" />
+            {lineas}
+          </li>
+        )}
+        {certificaciones.map((c) => (
+          <li>
+            <Icono nombre="sello" class="icono" />
+            {c}
+          </li>
+        ))}
+        {cifras.map((c) => (
+          <li>
+            <span class="cifra">{c.valor}</span>
+            {c.etiqueta}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .barra {
+    display: grid;
+    gap: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+  .barra li {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  .barra :global(.icono) {
+    width: 1.375rem;
+    height: 1.375rem;
+    flex: none;
+    color: var(--color-marca-claro);
+  }
+  .cifra {
+    min-width: 1.375rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #fff;
+  }
+  @media (width >= 48rem) {
+    .barra {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem 0;
+    }
+    .barra li + li {
+      margin-left: 2rem;
+      padding-left: 2rem;
+      border-left: 1px solid var(--linea);
+    }
+  }
+</style>

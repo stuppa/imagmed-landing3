@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+/* Tokens de marca. Un solo color de acento: --color-marca. */
+@theme {
+  --color-negro: #03060D;
+  --color-noche: #071226;
+  /* TODO: confirmar con el cliente el HEX oficial del azul de marca ([HEX] en el brief).
+     #0066DD cumple AA con texto blanco (5.3:1) y sobre blanco roto (5.0:1); si cambia, revisa el contraste. */
+  --color-marca: #0066DD;
+  /* El mismo azul, aclarado, para texto pequeño sobre fondos oscuros (6.5:1 sobre negro). */
+  --color-marca-claro: color-mix(in srgb, var(--color-marca) 70%, white);
+  --color-roto: #F5F7FA;
+  --color-tinta: #0B1220;
+  --color-gris: #5B6676;
+
+  --font-sans: var(--font-source-sans);
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    background-color: var(--color-roto);
+    color: var(--color-tinta);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  :focus-visible {
+    outline: 3px solid var(--foco, var(--color-marca));
+    outline-offset: 3px;
+  }
+  ::selection {
+    background-color: var(--color-marca);
+    color: #fff;
+  }
+}
+
+@utility contenedor {
+  width: min(100% - 2rem, 75rem);
+  margin-inline: auto;
+  @media (width >= 48rem) {
+    width: min(100% - 3rem, 75rem);
+  }
+}
+
+@utility seccion {
+  padding-block: 5rem;
+  @media (width >= 64rem) {
+    padding-block: 7.5rem;
+  }
+}
+
+@layer components {
+  /* Contexto oscuro: hero, calculadora y cierre. */
+  .oscuro {
+    background-color: var(--color-negro);
+    color: var(--color-roto);
+    --acento: var(--color-marca-claro);
+    --suave: color-mix(in srgb, var(--color-roto) 74%, transparent);
+    --linea: color-mix(in srgb, var(--color-roto) 14%, transparent);
+    --foco: var(--color-marca-claro);
+  }
+
+  .etiqueta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--acento, var(--color-marca));
+  }
+
+  .titulo-1,
+  .titulo-2 {
+    font-weight: 400;
+    text-wrap: balance;
+  }
+  .titulo-1 {
+    max-width: 11em; /* siempre en dos líneas equilibradas */
+    font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+  }
+  .titulo-2 {
+    font-size: clamp(1.875rem, 1.35rem + 2.2vw, 2.875rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  :is(.titulo-1, .titulo-2) em {
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--acento, var(--color-marca));
+  }
+
+  .texto-suave {
+    color: var(--suave, var(--color-gris));
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.75rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-align: center;
+    text-transform: uppercase;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .btn-primario {
+    background-color: var(--color-marca);
+    color: #fff;
+  }
+  .btn-primario:hover {
+    background-color: color-mix(in srgb, var(--color-marca) 80%, black);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-marca) 22%, transparent);
+  }
+  .btn-contorno {
+    border-color: color-mix(in srgb, #fff 80%, transparent);
+    color: #fff;
+  }
+  .btn-contorno:hover {
+    background-color: #fff;
+    color: var(--color-negro);
+  }
+
+  /* Enlace de texto con flecha: acciones secundarias dentro de las secciones. */
+  .enlace-flecha {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--acento, var(--color-marca));
+  }
+  .enlace-flecha svg {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+    transition: translate 0.2s ease;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .enlace-flecha:hover svg {
+      translate: 0.25rem 0;
+    }
+  }
+
+  /* Marcas de esquina en escuadra, como el encuadre de un monitor de ultrasonido. */
+  .escuadra {
+    --c: var(--acento, var(--color-marca));
+    --l: 1.25rem;
+    background:
+      linear-gradient(var(--c) 0 0) top left / var(--l) 1px,
+      linear-gradient(var(--c) 0 0) top left / 1px var(--l),
+      linear-gradient(var(--c) 0 0) top right / var(--l) 1px,
+      linear-gradient(var(--c) 0 0) top right / 1px var(--l),
+      linear-gradient(var(--c) 0 0) bottom left / var(--l) 1px,
+      linear-gradient(var(--c) 0 0) bottom left / 1px var(--l),
+      linear-gradient(var(--c) 0 0) bottom right / var(--l) 1px,
+      linear-gradient(var(--c) 0 0) bottom right / 1px var(--l);
+    background-repeat: no-repeat;
+  }
+}
+
+/* Entrada suave de secciones (IntersectionObserver en Layout). Sin JS, con movimiento reducido o al imprimir, todo visible. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .js [data-reveal]:not([data-reveal='lista']) {
+    opacity: 0;
+    translate: 0 1rem;
+    transition:
+      opacity 0.4s ease-out,
+      translate 0.4s ease-out;
+  }
+  .js [data-reveal].is-visible:not([data-reveal='lista']) {
+    opacity: 1;
+    translate: none;
+  }
+
+  /* data-reveal="lista": los hijos entran uno tras otro. Animación (no transición) para no fijar
+     translate ni retrasar los hover de cada elemento una vez que terminó. */
+  .js [data-reveal='lista']:not(.is-visible) > * {
+    opacity: 0;
+  }
+  .js [data-reveal='lista'].is-visible > * {
+    animation: entrar 0.45s calc(var(--i, 0) * 90ms) ease-out backwards;
+  }
+  /* ponytail: escalonado hasta 6 hijos; el resto entra con el sexto. sibling-index() cuando Safari/Firefox lo soporten. */
+  [data-reveal='lista'] > :nth-child(2) { --i: 1; }
+  [data-reveal='lista'] > :nth-child(3) { --i: 2; }
+  [data-reveal='lista'] > :nth-child(4) { --i: 3; }
+  [data-reveal='lista'] > :nth-child(5) { --i: 4; }
+  [data-reveal='lista'] > :nth-child(n + 6) { --i: 5; }
+}
+@keyframes entrar {
+  from {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+}

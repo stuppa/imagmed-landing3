@@ -1,0 +1,440 @@
+---
+import Encabezado from './Encabezado.astro';
+import Icono from './Icono.astro';
+import { contacto, formulario as f, seccionContacto as s, telefonoUrl, whatsappUrl } from '../data/contacto';
+import { pasos } from '../data/pasos';
+import { encabezado } from '../data/sitio';
+
+interface Props {
+  equipoInicial?: string;
+  idSeccion?: string;
+  tituloPersonalizado?: string;
+  subtituloPersonalizado?: string;
+}
+
+const { equipoInicial, idSeccion = 'contacto', tituloPersonalizado, subtituloPersonalizado } = Astro.props;
+
+const wa = whatsappUrl();
+const textos = JSON.stringify({
+  errores: f.errores,
+  enviar: f.enviar,
+  enviarDemo: f.enviarDemo,
+  enviando: f.enviando,
+  error: f.error,
+});
+---
+
+<section id={idSeccion} class="oscuro seccion" aria-labelledby="titulo-contacto">
+  <div class="contenedor grid gap-12 lg:grid-cols-12 lg:gap-x-6 lg:gap-y-10">
+    <div class="lg:col-span-5" data-reveal>
+      <Encabezado etiqueta={s.etiqueta} titulo={tituloPersonalizado || s.titulo} id="titulo-contacto">
+        <p class="texto-suave mt-5 max-w-md">{subtituloPersonalizado || s.texto}</p>
+      </Encabezado>
+    </div>
+
+    <div class="lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1" data-reveal>
+      <form
+        id="formulario"
+        action={contacto.endpoint || undefined}
+        method="post"
+        class="border border-(--linea) bg-noche p-6 sm:p-8 lg:p-10"
+        data-endpoint={contacto.endpoint}
+        data-textos={textos}
+      >
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label for="f-nombre" class="rotulo">{f.campos.nombre}</label>
+            <input
+              id="f-nombre"
+              name="nombre"
+              type="text"
+              autocomplete="name"
+              required
+              minlength="3"
+              aria-describedby="e-nombre"
+              class="campo"
+            />
+            <p id="e-nombre" class="error"></p>
+          </div>
+          <div>
+            <label for="f-telefono" class="rotulo">{f.campos.telefono}</label>
+            <input
+              id="f-telefono"
+              name="telefono"
+              type="tel"
+              autocomplete="tel"
+              inputmode="tel"
+              required
+              pattern="[\d\s\(\)\+\-]{10,20}"
+              placeholder={f.ejemplos.telefono}
+              aria-describedby="e-telefono"
+              class="campo"
+            />
+            <p id="e-telefono" class="error"></p>
+          </div>
+          <div>
+            <label for="f-correo" class="rotulo">{f.campos.correo}</label>
+            <input
+              id="f-correo"
+              name="correo"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder={f.ejemplos.correo}
+              aria-describedby="e-correo"
+              class="campo"
+            />
+            <p id="e-correo" class="error"></p>
+          </div>
+          <div>
+            <label for="f-equipo" class="rotulo">{f.campos.equipo}</label>
+            <div class="selector">
+              <select id="f-equipo" name="equipo" required aria-describedby="e-equipo" class:list={['campo', equipoInicial && 'prellenado']}>
+                <option value="">{f.elige}</option>
+                {f.equipos.map((e) => <option value={e} selected={equipoInicial === e}>{e}</option>)}
+              </select>
+              <Icono nombre="chevron" class="size-4" />
+            </div>
+            <p id="e-equipo" class="error"></p>
+          </div>
+          <div>
+            <label for="f-cuando" class="rotulo">{f.campos.cuando}</label>
+            <div class="selector">
+              <select id="f-cuando" name="cuando" required aria-describedby="e-cuando" class="campo">
+                <option value="">{f.elige}</option>
+                {f.cuando.map((c) => <option>{c}</option>)}
+              </select>
+              <Icono nombre="chevron" class="size-4" />
+            </div>
+            <p id="e-cuando" class="error"></p>
+          </div>
+        </div>
+
+        <input type="hidden" name="solicitud" value="Cotización" />
+        <input type="hidden" name="proyeccion" value="" />
+        <!-- Trampa para bots: las personas no ven ni llenan este campo. -->
+        <div class="trampa" aria-hidden="true">
+          <label>No llenar <input type="text" name="sitio_web" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <div class="notas text-sm">
+          <p hidden data-nota="demo"><Icono nombre="check" class="size-4 flex-none" />{f.notaDemo}</p>
+          <p hidden data-nota="proyeccion"><Icono nombre="check" class="size-4 flex-none" />{f.notaProyeccion}</p>
+        </div>
+
+        <button type="submit" class="btn btn-primario mt-6 w-full">{f.enviar}</button>
+
+        <div class="error-envio" role="alert">
+          <p data-error-envio></p>
+          {
+            wa && (
+              <a href={wa} target="_blank" rel="noopener" class="enlace-flecha" hidden data-error-whatsapp>
+                <Icono nombre="whatsapp" />
+                {f.exitoWhatsapp}
+              </a>
+            )
+          }
+        </div>
+
+        {
+          contacto.avisoPrivacidadUrl && (
+            <p class="texto-suave mt-4 text-sm">
+              {f.privacidad}{' '}
+              <a href={contacto.avisoPrivacidadUrl} class="underline underline-offset-4 hover:text-white">
+                {f.privacidadEnlace}
+              </a>
+              .
+            </p>
+          )
+        }
+      </form>
+
+      <div
+        id="formulario-exito"
+        class="escuadra border border-(--linea) bg-noche p-8 sm:p-10 lg:p-12"
+        tabindex="-1"
+        hidden
+      >
+        <Icono nombre="check" class="size-10 text-marca-claro" />
+        <p class="mt-6 text-3xl">{f.exitoTitulo}</p>
+        <p class="texto-suave mt-3 max-w-md">{f.exitoTexto}</p>
+        {
+          wa && (
+            <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno mt-8">
+              <Icono nombre="whatsapp" class="size-5" />
+              {f.exitoWhatsapp}
+            </a>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 lg:row-start-2">
+      <p class="font-semibold" data-reveal>{s.queSigue}</p>
+      <ol class="sigue mt-5 grid gap-4" role="list" data-reveal="lista">
+        {
+          pasos.slice(1).map((p, i) => (
+            <li>
+              <span class="numero" aria-hidden="true">
+                {i + 1}
+              </span>
+              {p.titulo}
+            </li>
+          ))
+        }
+      </ol>
+
+      {
+        (wa || telefonoUrl) && (
+          <div class="mt-10 border-t border-(--linea) pt-8" data-reveal>
+            <p class="font-semibold">{s.alternativa}</p>
+            <div class="mt-4 flex flex-wrap gap-3">
+              {wa && (
+                <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno">
+                  <Icono nombre="whatsapp" class="size-5" />
+                  {encabezado.whatsapp}
+                </a>
+              )}
+              {telefonoUrl && (
+                <a href={telefonoUrl} class="btn btn-contorno">
+                  <Icono nombre="telefono" class="size-5" />
+                  {contacto.telefono}
+                </a>
+              )}
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .rotulo {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .campo {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-roto) 22%, transparent);
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--color-roto) 4%, transparent);
+    color: #fff;
+    font-size: 1rem;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .campo::placeholder {
+    color: color-mix(in srgb, var(--color-roto) 45%, transparent);
+  }
+  .campo:hover {
+    border-color: color-mix(in srgb, var(--color-roto) 40%, transparent);
+  }
+  .campo[aria-invalid='true'] {
+    border-color: #ff9d9d;
+  }
+  /* Campo que se llenó desde otra sección (equipo elegido en el catálogo). */
+  .campo.prellenado {
+    border-color: var(--color-marca-claro);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-marca) 35%, transparent);
+  }
+  .selector {
+    position: relative;
+    color: var(--suave);
+  }
+  .selector select {
+    padding-right: 2.75rem;
+    appearance: none;
+    cursor: pointer;
+  }
+  .selector :global(svg) {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+  option {
+    background: #fff;
+    color: var(--color-tinta);
+  }
+  .error,
+  .error-envio {
+    color: #ff9d9d;
+    font-size: 0.875rem;
+  }
+  .error:not(:empty) {
+    margin-top: 0.5rem;
+  }
+  .error-envio:has(p:not(:empty)) {
+    margin-top: 1rem;
+  }
+  .error-envio .enlace-flecha {
+    margin-top: 0.25rem;
+  }
+  .error-envio .enlace-flecha[hidden] {
+    display: none;
+  }
+  .trampa {
+    position: absolute;
+    left: -100vw;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .notas:has(p:not([hidden])) {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+  .notas p:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-marca-claro);
+  }
+  button[aria-busy='true'] {
+    cursor: progress;
+    opacity: 0.75;
+  }
+
+  .sigue li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .numero {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2rem;
+    aspect-ratio: 1;
+    border: 1px solid var(--color-marca-claro);
+    border-radius: 50%;
+    color: var(--color-marca-claro);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  type Textos = {
+    errores: Record<string, string>;
+    enviar: string;
+    enviarDemo: string;
+    enviando: string;
+    error: string;
+  };
+
+  const form = document.querySelector<HTMLFormElement>('#formulario');
+  const exito = document.querySelector<HTMLElement>('#formulario-exito');
+
+  if (form && exito) {
+    const t = JSON.parse(form.dataset.textos!) as Textos;
+    const boton = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const errorEnvio = form.querySelector<HTMLElement>('[data-error-envio]')!;
+    const errorWhatsapp = form.querySelector<HTMLElement>('[data-error-whatsapp]');
+    const campos = Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[required]'));
+    const oculto = (nombre: string) => form.elements.namedItem(nombre) as HTMLInputElement;
+    const nota = (nombre: string) => form.querySelector<HTMLElement>(`[data-nota="${nombre}"]`)!;
+    let etiquetaBoton = t.enviar;
+
+    form.noValidate = true; // mensajes propios en español; sin JS queda la validación nativa
+
+    const esValido = (c: HTMLInputElement | HTMLSelectElement) => {
+      if (c.name === 'telefono') {
+        const digitos = c.value.replace(/\D/g, '').length;
+        return digitos >= 10 && digitos <= 13;
+      }
+      if (c.name === 'nombre') return c.value.trim().length >= 3;
+      return c.checkValidity();
+    };
+
+    const marcar = (c: HTMLInputElement | HTMLSelectElement) => {
+      const ok = esValido(c);
+      c.setAttribute('aria-invalid', String(!ok));
+      document.getElementById(`e-${c.name}`)!.textContent = ok ? '' : (t.errores[c.name] ?? '');
+      return ok;
+    };
+
+    let intentado = false;
+    const revalidar = (e: Event) => {
+      const c = e.target as HTMLInputElement;
+      c.classList.remove('prellenado');
+      if (intentado && c.required) marcar(c);
+    };
+    form.addEventListener('input', revalidar);
+    form.addEventListener('change', revalidar);
+
+    // Botones de otras secciones que llevan al formulario con datos prellenados.
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest<HTMLElement>('[data-equipo], [data-solicitud], [data-proyeccion]');
+      if (!a) return;
+      const { equipo, solicitud, proyeccion } = a.dataset;
+      if (equipo) {
+        const select = form.elements.namedItem('equipo') as HTMLSelectElement;
+        select.value = equipo;
+        select.classList.add('prellenado');
+        if (intentado) marcar(select);
+      }
+      if (solicitud) {
+        oculto('solicitud').value = solicitud;
+        nota('demo').hidden = solicitud !== 'Demo';
+        etiquetaBoton = solicitud === 'Demo' ? t.enviarDemo : t.enviar;
+        if (!boton.disabled) boton.textContent = etiquetaBoton;
+      }
+      if (proyeccion) {
+        oculto('proyeccion').value = proyeccion;
+        nota('proyeccion').hidden = false;
+      }
+    });
+
+    const mostrarExito = () => {
+      form.hidden = true;
+      exito.hidden = false;
+      exito.focus();
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (boton.disabled) return;
+      intentado = true;
+      errorEnvio.textContent = '';
+      if (errorWhatsapp) errorWhatsapp.hidden = true;
+      const invalidos = campos.filter((c) => !marcar(c));
+      if (invalidos.length) {
+        invalidos[0]!.focus();
+        return;
+      }
+      if (oculto('sitio_web').value) return mostrarExito(); // bot: no se envía
+
+      boton.disabled = true;
+      boton.setAttribute('aria-busy', 'true');
+      boton.textContent = t.enviando;
+      try {
+        const endpoint = form.dataset.endpoint;
+        if (!endpoint) throw new Error('Falta el endpoint del formulario en src/data/contacto.ts');
+        const r = await fetch(endpoint, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        mostrarExito();
+      } catch (err) {
+        console.error(err);
+        errorEnvio.textContent = t.error;
+        if (errorWhatsapp) errorWhatsapp.hidden = false;
+      } finally {
+        boton.disabled = false;
+        boton.removeAttribute('aria-busy');
+        boton.textContent = etiquetaBoton;
+      }
+    });
+  }
+</script>

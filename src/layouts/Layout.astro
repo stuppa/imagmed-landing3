@@ -1,0 +1,101 @@
+---
+import { Font, getImage } from 'astro:assets';
+import { sitio } from '../data/sitio';
+import { equipos } from '../data/equipos';
+import { contacto } from '../data/contacto';
+import '../styles/global.css';
+
+const url = (ruta: string) => new URL(ruta, Astro.site).href;
+
+// JSON-LD: Organization + un Product por equipo (sin precio ni ofertas).
+const imagenes = await Promise.all(
+  equipos.map((e) => getImage({ src: e.imagen, width: 1200, format: 'webp' })),
+);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': url('/#organizacion'),
+      name: sitio.nombre,
+      legalName: sitio.razonSocial,
+      url: url('/'),
+      logo: url('/logo-imagmed.png'),
+      ...(contacto.telefono && {
+        contactPoint: {
+          '@type': 'ContactPoint',
+          telephone: `+52 ${contacto.telefono}`,
+          contactType: 'sales',
+          areaServed: 'MX',
+          availableLanguage: 'es',
+        },
+      }),
+    },
+    ...equipos.map((e, i) => ({
+      '@type': 'Product',
+      name: `Mindray ${e.nombre}`,
+      brand: { '@type': 'Brand', name: 'Mindray' },
+      category: 'Equipo de ultrasonido',
+      image: url(imagenes[i]!.src),
+      ...(e.especificaciones.length > 0 && { description: e.especificaciones.join('. ') }),
+    })),
+  ],
+};
+---
+
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{sitio.titulo}</title>
+    <meta name="description" content={sitio.descripcion} />
+    <link rel="canonical" href={url('/')} />
+    <meta name="theme-color" content="#03060D" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:site_name" content={sitio.nombre} />
+    <meta property="og:title" content={sitio.titulo} />
+    <meta property="og:description" content={sitio.descripcion} />
+    <meta property="og:url" content={url('/')} />
+    <meta property="og:image" content={url(sitio.ogImagen)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={sitio.ogImagenAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--font-source-sans" preload />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
+  </head>
+  <body>
+    <a
+      href="#contenido"
+      class="sr-only z-[60] rounded-full bg-marca px-5 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >{sitio.saltarContenido}</a
+    >
+    <slot />
+    <script is:inline>
+      // Entrada suave de secciones. Inline para que el contenido nunca quede oculto si falla otro script.
+      (() => {
+        const els = document.querySelectorAll('[data-reveal]');
+        if (!('IntersectionObserver' in window)) return els.forEach((el) => el.classList.add('is-visible'));
+        const io = new IntersectionObserver(
+          (entradas) => {
+            for (const e of entradas) {
+              if (!e.isIntersecting) continue;
+              e.target.classList.add('is-visible');
+              io.unobserve(e.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px' },
+        );
+        els.forEach((el) => io.observe(el));
+      })();
+    </script>
+  </body>
+</html>

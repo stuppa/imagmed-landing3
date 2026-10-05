@@ -1,0 +1,113 @@
+---
+import Encabezado from './Encabezado.astro';
+import { pasos, seccionProceso as s } from '../data/pasos';
+---
+
+<section id="proceso" class="pb-20 lg:pb-30" aria-labelledby="titulo-proceso">
+  <div class="contenedor border-t border-tinta/10 pt-20 lg:pt-30">
+    <div data-reveal>
+      <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-proceso" class="max-w-2xl" />
+    </div>
+
+    <ol class="pasos mt-12 grid gap-10 lg:mt-16 lg:grid-cols-4 lg:gap-8" role="list" data-reveal="lista">
+      {
+        pasos.map((p, i) => (
+          <li>
+            <span class="numero" aria-hidden="true">{i + 1}</span>
+            <h3 class="text-lg font-semibold">
+              <span class="sr-only">
+                {s.paso} {i + 1}:{' '}
+              </span>
+              {p.titulo}
+            </h3>
+            <p class="texto-suave mt-2">{p.texto}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="mt-12 lg:mt-16" data-reveal>
+      <a href="#contacto" data-solicitud="Cotización" class="btn btn-primario w-full sm:w-auto">{s.cta}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pasos li {
+    position: relative;
+    padding-left: 4rem;
+  }
+  .numero {
+    position: absolute;
+    top: -0.25rem;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-marca);
+    color: #fff;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Línea en escuadra que une los pasos: vertical en móvil, horizontal en desktop */
+  .pasos li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 3rem;
+    bottom: -2.25rem;
+    left: 1.375rem;
+    border-left: 1px solid color-mix(in srgb, var(--color-tinta) 16%, transparent);
+  }
+  @media (width >= 64rem) {
+    .pasos li {
+      padding-top: 4.25rem;
+      padding-left: 0;
+    }
+    .numero {
+      top: 0;
+    }
+    .pasos li:not(:last-child)::after {
+      top: 1.375rem;
+      right: -1.5rem;
+      bottom: auto;
+      left: 3.5rem;
+      border-top: 1px solid color-mix(in srgb, var(--color-tinta) 16%, transparent);
+      border-left: 0;
+    }
+  }
+
+  /* Al entrar: cada número aparece y la línea en escuadra se traza hacia el siguiente paso (--i viene de global.css). */
+  @media (prefers-reduced-motion: no-preference) {
+    .pasos.is-visible .numero {
+      animation: paso-aparecer 0.35s calc(var(--i, 0) * 90ms + 0.1s) ease-out backwards;
+    }
+    .pasos.is-visible li::after {
+      transform-origin: top;
+      animation: paso-trazo-y 0.35s calc(var(--i, 0) * 90ms + 0.3s) ease-out backwards;
+    }
+    @media (width >= 64rem) {
+      .pasos.is-visible li::after {
+        transform-origin: left;
+        animation-name: paso-trazo-x;
+      }
+    }
+  }
+  @keyframes paso-aparecer {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+  }
+  @keyframes paso-trazo-x {
+    from {
+      scale: 0 1;
+    }
+  }
+  @keyframes paso-trazo-y {
+    from {
+      scale: 1 0;
+    }
+  }
+</style>

@@ -1,0 +1,498 @@
+---
+import Encabezado from './Encabezado.astro';
+import { controles, inversion, resultados as r, seccionCalculadora as s, type Control } from '../data/calculadora';
+
+const pesos = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+const plural = (n: number, [uno, varios]: [string, string]) => (n === 1 ? uno : varios);
+const textoControl = (c: Control, n: number) =>
+  c.prefijo ? pesos.format(n) : c.unidad ? `${n} ${plural(n, c.unidad)}` : String(n);
+const pct = (c: Control) => `${((c.inicial - c.min) / (c.max - c.min)) * 100}%`;
+
+const { estudios, precio, dias } = controles;
+const ingresoInicial = estudios.inicial * precio.inicial * dias.inicial;
+const formulaInicial = [estudios, precio, dias].map((c) => textoControl(c, c.inicial)).join(' × ');
+
+// Textos que necesita el script del navegador (sin importar datos con imágenes al bundle).
+const textos = JSON.stringify({
+  controles: Object.fromEntries(
+    Object.entries(controles).map(([k, c]) => [k, { etiqueta: c.etiqueta, prefijo: c.prefijo ?? '', unidad: c.unidad ?? null }]),
+  ),
+  inversion: inversion.etiqueta,
+  r,
+});
+---
+
+<section id="retorno" class="oscuro seccion bg-noche" aria-labelledby="titulo-retorno">
+  <div class="contenedor">
+    <div data-reveal>
+      <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-retorno" class="max-w-2xl">
+        <p class="texto-suave mt-5 max-w-xl">{s.texto}</p>
+      </Encabezado>
+    </div>
+
+    <div class="mt-12 grid border border-(--linea) lg:mt-16 lg:grid-cols-12" data-reveal>
+      <form id="calculadora" class="controles lg:col-span-7" aria-label={s.formulario} data-textos={textos}>
+        <div class="resumen-movil" aria-hidden="true">
+          <p><span>{r.resumenIngreso}</span><strong data-resumen-ingreso>{pesos.format(ingresoInicial)}</strong></p>
+          <p><span>{r.resumenMeses}</span><strong data-resumen-meses>—</strong></p>
+        </div>
+
+        {
+          Object.entries(controles).map(([clave, c]) => (
+            <div>
+              <label id={`etq-${clave}`} for={`calc-${clave}`} class="font-semibold">
+                {c.etiqueta}
+              </label>
+              <div class="mt-2 flex items-center gap-4 sm:gap-6">
+                <input
+                  type="range"
+                  aria-labelledby={`etq-${clave}`}
+                  aria-valuetext={textoControl(c, c.inicial)}
+                  data-para={`calc-${clave}`}
+                  min={c.min}
+                  max={c.max}
+                  step={c.paso}
+                  value={c.inicial}
+                  style={`--p: ${pct(c)}`}
+                  class="deslizador"
+                />
+                <div class="caja">
+                  {c.prefijo && (
+                    <span class="prefijo" aria-hidden="true">
+                      {c.prefijo}
+                    </span>
+                  )}
+                  <input
+                    id={`calc-${clave}`}
+                    name={clave}
+                    type="number"
+                    inputmode="numeric"
+                    min={c.min}
+                    max={c.max}
+                    step="1"
+                    value={c.inicial}
+                    class:list={['campo-num', c.prefijo && 'con-prefijo']}
+                  />
+                </div>
+              </div>
+            </div>
+          ))
+        }
+
+        <div>
+          <label for="calc-inversion" class="font-semibold">{inversion.etiqueta}</label>
+          <div class="caja ancha mt-3">
+            <span class="prefijo" aria-hidden="true">{precio.prefijo}</span>
+            <input
+              id="calc-inversion"
+              name="inversion"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max={inversion.max}
+              step="1"
+              placeholder={inversion.placeholder}
+              aria-describedby="ayuda-inversion"
+              class="campo-num con-prefijo"
+            />
+          </div>
+          <p id="ayuda-inversion" class="texto-suave mt-2 text-sm">{inversion.ayuda}</p>
+        </div>
+      </form>
+
+      <div class="resultado lg:col-span-5">
+        <div class="escuadra flex h-full flex-col p-6 sm:p-8 lg:p-10">
+          <dl class="grid gap-8">
+            <div>
+              <dt class="etiqueta">{r.ingreso}</dt>
+              <dd class="cifra mt-3" data-ingreso>{pesos.format(ingresoInicial)}</dd>
+              <dd class="texto-suave mt-2 text-sm" data-formula>{formulaInicial}</dd>
+            </div>
+            <div class="border-t border-(--linea) pt-8">
+              <dt class="etiqueta">{r.meses}</dt>
+              <dd class="cifra vacio mt-3" data-meses>—</dd>
+              <dd class="texto-suave mt-2 text-sm" data-meses-ayuda>{r.mesesVacio}</dd>
+            </div>
+          </dl>
+
+          <p class="sr-only" aria-live="polite" data-anuncio></p>
+
+          <a href="#contacto" class="btn btn-primario mt-10 w-full" data-proyeccion="">{s.cta}</a>
+          <p class="texto-suave mt-5 text-sm">{s.nota}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .controles {
+    display: grid;
+    gap: 2rem;
+    padding: 1.5rem;
+  }
+
+  /* Móvil y tableta: el resultado queda a la vista mientras se mueven los controles. */
+  .resumen-movil {
+    position: sticky;
+    top: 4rem;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: -1.5rem -1.5rem 0;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--linea);
+    background: color-mix(in srgb, var(--color-noche) 94%, transparent);
+    backdrop-filter: blur(8px);
+    font-size: 0.75rem;
+  }
+  .resumen-movil p {
+    display: grid;
+  }
+  .resumen-movil p + p {
+    text-align: right;
+  }
+  .resumen-movil span {
+    color: var(--suave);
+  }
+  .resumen-movil strong {
+    font-size: 1.125rem;
+    font-style: italic;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-marca-claro);
+  }
+  @media (width >= 40rem) {
+    .controles {
+      padding: 2rem;
+    }
+    .resumen-movil {
+      margin: -2rem -2rem 0;
+      padding-inline: 2rem;
+    }
+  }
+  @media (width >= 64rem) {
+    .controles {
+      padding: 2.5rem;
+    }
+    .resumen-movil {
+      display: none;
+    }
+  }
+
+  .resultado {
+    background: var(--color-negro);
+    border-top: 1px solid var(--linea);
+  }
+  @media (width >= 64rem) {
+    .resultado {
+      border-top: 0;
+      border-left: 1px solid var(--linea);
+    }
+  }
+  .escuadra {
+    --l: 1.5rem;
+    background-origin: border-box;
+  }
+  .cifra {
+    font-size: clamp(2.75rem, 2rem + 3vw, 4rem);
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    color: var(--color-marca-claro);
+  }
+  .cifra.vacio {
+    color: color-mix(in srgb, var(--color-roto) 35%, transparent);
+  }
+
+  .caja {
+    position: relative;
+    flex: none;
+    width: 5.5rem;
+  }
+  .caja.ancha {
+    width: 100%;
+  }
+  @media (width >= 40rem) {
+    .caja:not(.ancha) {
+      width: 7rem;
+    }
+  }
+  .prefijo {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    translate: 0 -50%;
+    color: var(--suave);
+    pointer-events: none;
+  }
+  .campo-num {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--linea);
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--color-roto) 5%, transparent);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    transition: border-color 0.2s ease;
+  }
+  .campo-num::-webkit-inner-spin-button,
+  .campo-num::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+  .campo-num.con-prefijo {
+    padding-left: 1.75rem;
+  }
+  .caja.ancha .campo-num {
+    text-align: left;
+  }
+  .campo-num::placeholder {
+    color: color-mix(in srgb, var(--color-roto) 50%, transparent);
+    font-weight: 400;
+  }
+  .campo-num:hover {
+    border-color: color-mix(in srgb, var(--color-roto) 35%, transparent);
+  }
+
+  .deslizador {
+    flex: 1;
+    min-width: 0;
+    height: 2.75rem;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+  .deslizador::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--color-marca-claro) var(--p),
+      color-mix(in srgb, var(--color-roto) 18%, transparent) var(--p)
+    );
+  }
+  .deslizador::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--color-marca-claro) var(--p),
+      color-mix(in srgb, var(--color-roto) 18%, transparent) var(--p)
+    );
+  }
+  .deslizador::-webkit-slider-thumb {
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: calc(2px - 0.6875rem);
+    border: 4px solid var(--color-marca);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-marca) 30%, transparent);
+    appearance: none;
+  }
+  .deslizador::-moz-range-thumb {
+    width: 0.875rem;
+    height: 0.875rem;
+    border: 4px solid var(--color-marca);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-marca) 30%, transparent);
+  }
+</style>
+
+<script>
+  type Clave = 'estudios' | 'precio' | 'dias';
+  type Textos = {
+    controles: Record<Clave, { etiqueta: string; prefijo: string; unidad: [string, string] | null }>;
+    inversion: string;
+    r: {
+      ingreso: string;
+      meses: string;
+      mesesVacio: string;
+      sinIngreso: string;
+      conInversion: string;
+      sinDato: string;
+      unidadMes: [string, string];
+    };
+  };
+
+  const form = document.querySelector<HTMLFormElement>('#calculadora');
+  const panel = document.querySelector<HTMLElement>('#retorno .resultado');
+
+  if (form && panel) {
+    const t = JSON.parse(form.dataset.textos!) as Textos;
+    const claves: Clave[] = ['estudios', 'precio', 'dias'];
+    const pesos = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+    const decimal = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 });
+    const reducir = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const plural = (n: number, [uno, varios]: [string, string]) => (n === 1 ? uno : varios);
+
+    const nodo = (sel: string, raiz: ParentNode = panel) => raiz.querySelector<HTMLElement>(sel)!;
+    const ingresoEl = nodo('[data-ingreso]');
+    const mesesEl = nodo('[data-meses]');
+    const formulaEl = nodo('[data-formula]');
+    const ayudaEl = nodo('[data-meses-ayuda]');
+    const anuncioEl = nodo('[data-anuncio]');
+    const cta = nodo('[data-proyeccion]');
+    const resumenIngreso = nodo('[data-resumen-ingreso]', form);
+    const resumenMeses = nodo('[data-resumen-meses]', form);
+
+    const campo = (nombre: string) => form.elements.namedItem(nombre) as HTMLInputElement;
+    const deslizador = (clave: Clave) => form.querySelector<HTMLInputElement>(`[data-para="calc-${clave}"]`)!;
+
+    // Entero entre 0 y el máximo del campo; el mínimo se aplica al salir del campo.
+    const leer = (nombre: Clave | 'inversion') => {
+      const input = campo(nombre);
+      const n = Math.round(Number(input.value));
+      return Number.isFinite(n) ? Math.min(Math.max(n, 0), Number(input.max)) : 0;
+    };
+    const textoControl = (clave: Clave, n: number) => {
+      const c = t.controles[clave];
+      return c.prefijo ? pesos.format(n) : c.unidad ? `${n} ${plural(n, c.unidad)}` : String(n);
+    };
+    const pintar = (clave: Clave, n: number) => {
+      const r = deslizador(clave);
+      const min = Number(r.min);
+      const max = Number(r.max);
+      r.style.setProperty('--p', `${((Math.min(Math.max(n, min), max) - min) / (max - min)) * 100}%`);
+      r.setAttribute('aria-valuetext', textoControl(clave, n));
+    };
+
+    // Conteo animado: cada cifra guarda el valor que muestra y el valor al que va.
+    type Estado = { mostrado: number; objetivo: number; raf: number };
+    const estados = new Map<HTMLElement, Estado>();
+    const animar = (el: HTMLElement, hasta: number, formato: (n: number) => string, animado: boolean) => {
+      const e = estados.get(el) ?? { mostrado: 0, objetivo: Number.NaN, raf: 0 };
+      estados.set(el, e);
+      if (e.objetivo === hasta) return;
+      e.objetivo = hasta;
+      cancelAnimationFrame(e.raf);
+      if (!animado || reducir) {
+        e.mostrado = hasta;
+        el.textContent = formato(hasta);
+        return;
+      }
+      const desde = e.mostrado;
+      const inicio = performance.now();
+      const paso = (ahora: number) => {
+        const k = Math.min(1, (ahora - inicio) / 400);
+        e.mostrado = k < 1 ? desde + (hasta - desde) * (1 - (1 - k) ** 3) : hasta;
+        el.textContent = formato(e.mostrado);
+        if (k < 1) e.raf = requestAnimationFrame(paso);
+      };
+      e.raf = requestAnimationFrame(paso);
+    };
+    const reiniciar = (el: HTMLElement) => {
+      const e = estados.get(el);
+      if (!e) return;
+      cancelAnimationFrame(e.raf);
+      e.mostrado = 0;
+      e.objetivo = Number.NaN;
+    };
+
+    const fmtPesos = (n: number) => pesos.format(Math.round(n));
+    const fmtMeses = (n: number) => decimal.format(Math.round(n * 10) / 10);
+
+    let interactuado = false;
+    let anuncio = 0;
+    const calcular = (animado = true) => {
+      const v = { estudios: leer('estudios'), precio: leer('precio'), dias: leer('dias') };
+      const inversion = leer('inversion');
+      const ingreso = v.estudios * v.precio * v.dias;
+      const meses = inversion > 0 && ingreso > 0 ? inversion / ingreso : 0;
+
+      animar(ingresoEl, ingreso, fmtPesos, animado);
+      formulaEl.textContent = claves.map((c) => textoControl(c, v[c])).join(' × ');
+      resumenIngreso.textContent = fmtPesos(ingreso);
+
+      mesesEl.classList.toggle('vacio', !meses);
+      if (meses) {
+        animar(mesesEl, meses, fmtMeses, animado);
+        ayudaEl.textContent = t.r.conInversion.replace('{monto}', pesos.format(inversion));
+        resumenMeses.textContent = `${fmtMeses(meses)} ${plural(Math.round(meses * 10) / 10, t.r.unidadMes)}`;
+      } else {
+        reiniciar(mesesEl);
+        mesesEl.textContent = '—';
+        ayudaEl.textContent = ingreso ? t.r.mesesVacio : t.r.sinIngreso;
+        resumenMeses.textContent = '—';
+      }
+
+      // Valores que viajan al formulario de contacto en el campo oculto "proyeccion".
+      cta.dataset.proyeccion = [
+        ...claves.map((c) => `${t.controles[c].etiqueta}: ${t.controles[c].prefijo ? pesos.format(v[c]) : v[c]}`),
+        `${t.inversion}: ${inversion ? pesos.format(inversion) : t.r.sinDato}`,
+        `${t.r.ingreso}: ${pesos.format(ingreso)}`,
+        `${t.r.meses}: ${meses ? fmtMeses(meses) : t.r.sinDato}`,
+      ].join('; ');
+
+      // Solo se anuncia cuando la persona cambia algo.
+      if (!interactuado) return;
+      clearTimeout(anuncio);
+      anuncio = window.setTimeout(() => {
+        anuncioEl.textContent =
+          `${t.r.ingreso}: ${pesos.format(ingreso)}.` + (meses ? ` ${t.r.meses}: ${fmtMeses(meses)}.` : '');
+      }, 700);
+    };
+
+    form.addEventListener('input', (ev) => {
+      const input = ev.target as HTMLInputElement;
+      interactuado = true;
+      if (input.type === 'range') {
+        const clave = input.dataset.para!.replace('calc-', '') as Clave;
+        campo(clave).value = input.value;
+        pintar(clave, Number(input.value));
+      } else if (input.name !== 'inversion') {
+        const clave = input.name as Clave;
+        const n = leer(clave);
+        deslizador(clave).value = String(n);
+        pintar(clave, n);
+      }
+      calcular();
+    });
+
+    // Al salir de un campo numérico: entero dentro del rango permitido.
+    form.addEventListener('change', (ev) => {
+      const input = ev.target as HTMLInputElement;
+      if (input.type !== 'number') return;
+      if (input.name === 'inversion') {
+        if (input.value !== '') input.value = String(leer('inversion'));
+      } else {
+        const clave = input.name as Clave;
+        const n = Math.min(Number(input.max), Math.max(Number(input.min), leer(clave) || Number(input.min)));
+        input.value = String(n);
+        deslizador(clave).value = String(n);
+        pintar(clave, n);
+      }
+      calcular();
+    });
+
+    form.addEventListener('submit', (ev) => ev.preventDefault());
+
+    // El ingreso cuenta desde cero la primera vez que el resultado entra en pantalla.
+    calcular(false);
+    if (!reducir && 'IntersectionObserver' in window) {
+      estados.set(ingresoEl, { mostrado: 0, objetivo: Number.NaN, raf: 0 });
+      ingresoEl.textContent = fmtPesos(0);
+      const io = new IntersectionObserver(
+        ([entrada]) => {
+          if (!entrada?.isIntersecting) return;
+          io.disconnect();
+          calcular();
+        },
+        { threshold: 0.6 },
+      );
+      io.observe(ingresoEl);
+    }
+  }
+</script>
