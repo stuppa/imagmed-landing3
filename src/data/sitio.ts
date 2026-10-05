@@ -18,6 +18,7 @@ export const navegacion = [
   { texto: 'Equipos', href: '#equipos' },
   { texto: 'Retorno', href: '#retorno' },
   { texto: 'Por qué Imagmed', href: '#por-que' },
+  { texto: 'Ubicación', href: '#mapa' },
   { texto: 'Proceso', href: '#proceso' },
   { texto: 'FAQ', href: '#faq' },
 ];

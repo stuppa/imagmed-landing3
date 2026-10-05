@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import Enfasis from './Enfasis.astro';
+import Volumen from './Volumen.astro';
 import { hero } from '../data/sitio';
 import { equipos, transductoresHero } from '../data/equipos';
 
@@ -53,6 +54,7 @@ const equipo = equipos.find((e) => e.slug === hero.equipo) ?? equipos[0]!;
           </ul>
         )
       }
+      <Volumen />
     </div>
 
     <div class="hero-acciones">

@@ -1,0 +1,216 @@
+---
+// Volumen de ultrasonido en 3D: el abanico convexo de la pantalla del MX3 extruido en elevación.
+// Con WebGL, un volumen de partículas (Three.js, scripts/escenas/volumen.ts) que se monta después de la carga;
+// sin JS o sin WebGL queda la versión solo CSS: el abanico repetido en cortes que giran sobre el transductor.
+// Decorativo: sin imágenes ni texto, detrás del equipo, así nunca compite con la foto (LCP).
+const planos = [-27, -18, -9, 9, 18, 27]; // sin 0°: ahí descansa el corte activo (evita planos coplanares)
+---
+
+<div class="volumen-3d" aria-hidden="true" data-volumen-3d></div>
+<div class="volumen" aria-hidden="true">
+  <div class="escena">
+    {
+      planos.map((a, i) => (
+        <svg
+          class:list={['plano', Math.abs(a) === 27 && 'borde', Math.abs(a) === 18 && 'intermedio']}
+          viewBox="0 0 200 162"
+          style={`--a: ${a}deg; --i: ${i}`}
+        >
+          <use href="#volumen-abanico" />
+        </svg>
+      ))
+    }
+    <svg class="plano corte" viewBox="0 0 200 162"><use href="#volumen-abanico" /></svg>
+  </div>
+  <!-- Nunca display:none: Chrome y Firefox no pintan degradados de un SVG oculto así. -->
+  <svg class="defs" width="0" height="0">
+    <defs>
+      <radialGradient id="volumen-relleno" cx="0.5" cy="0" r="1">
+        <stop offset="0.1" style="stop-color: var(--color-marca); stop-opacity: 0.35"></stop>
+        <stop offset="1" style="stop-color: var(--color-marca); stop-opacity: 0.03"></stop>
+      </radialGradient>
+      <g id="volumen-abanico">
+        <!-- Sector convexo de 70°: centro (100,0), radio interior 18 (cara del transductor), exterior 160 -->
+        <path
+          vector-effect="non-scaling-stroke"
+          d="M89.68 14.74A18 18 0 0 0 110.32 14.74L191.77 131.06A160 160 0 0 1 8.23 131.06Z"></path>
+        <!-- Marcas de profundidad (r = 60, 100, 140), como la regla del monitor -->
+        <path
+          vector-effect="non-scaling-stroke"
+          fill="none"
+          stroke-linecap="round"
+          stroke-dasharray="0 4"
+          d="M65.59 49.15A60 60 0 0 0 134.41 49.15M42.64 81.92A100 100 0 0 0 157.36 81.92M19.7 114.68A140 140 0 0 0 180.3 114.68"
+        ></path>
+        <!-- Líneas de barrido (±12°, ±24°): solo visibles en el corte activo vía --lineas -->
+        <path
+          vector-effect="non-scaling-stroke"
+          fill="none"
+          style="stroke-opacity: var(--lineas, 0)"
+          d="M96.26 17.61 66.73 156.5M103.74 17.61 133.27 156.5M92.68 16.44 34.92 146.17M107.32 16.44 165.08 146.17"
+        ></path>
+      </g>
+    </defs>
+  </svg>
+</div>
+
+<script>
+  import { montar3d } from '../scripts/escena3d';
+  const el = document.querySelector<HTMLElement>('[data-volumen-3d]');
+  if (el) montar3d(el, () => import('../scripts/escenas/volumen'));
+</script>
+
+<style>
+  /* Por defecto oculto: si falta 3D o color-mix(), queda el hero tal cual. */
+  .volumen {
+    display: none;
+    position: absolute;
+    grid-area: 1 / 1; /* caja contenedora: de la esquina de la foto al borde de .hero-visual (líneas finales auto) */
+    /* En el hueco superior izquierdo del PNG, detrás de la tapa: ahí la cuña se ve completa. */
+    top: -6%;
+    left: 5%;
+    width: 46%;
+    aspect-ratio: 200 / 162;
+    z-index: -1; /* sobre el glow y la marca de agua, debajo del equipo */
+    perspective: 60rem;
+    perspective-origin: 50% 0;
+    pointer-events: none;
+  }
+  /* Con el texto al lado, nunca invade su columna (.hero-visual está posicionado y se pintaría encima):
+     el recorte cae en el hueco entre columnas. */
+  @media (width >= 64rem) {
+    .volumen {
+      clip-path: inset(-50% -50% -50% -2.5rem);
+    }
+  }
+  @supports (transform-style: preserve-3d) and (color: color-mix(in srgb, red, red)) {
+    .volumen {
+      display: block;
+    }
+  }
+  @media print, (forced-colors: active) {
+    .volumen,
+    .volumen-3d {
+      display: none;
+    }
+  }
+
+  /* Volumen de partículas: más grande que el respaldo CSS y en la misma zona (arriba a la izquierda, detrás del
+     equipo). La caja del canvas es el recorte: a la izquierda sale 1rem de la celda (desde 64rem cae en el hueco
+     entre columnas); arriba sale 2rem en móvil y tableta (el hueco sobre la foto es de 2.5rem) y desde 64rem
+     sube al padding del hero. */
+  .volumen-3d {
+    position: absolute;
+    grid-area: 1 / 1 / 2 / 2; /* con las cuatro líneas, la caja contenedora es la celda de la foto */
+    top: -2rem;
+    left: -1rem;
+    width: 82%;
+    aspect-ratio: 1;
+    z-index: -1;
+    pointer-events: none;
+  }
+  @media (width >= 64rem) {
+    .volumen-3d {
+      top: -20%;
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem);
+      mask-image: linear-gradient(to right, transparent, #000 2rem); /* si el giro lo acerca al texto, se desvanece */
+    }
+  }
+  /* Cuando el canvas pinta, el respaldo CSS se desvanece y deja de animarse. */
+  .volumen-3d.con-3d ~ .volumen {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.5s,
+      visibility 0s 0.5s;
+  }
+  /* Contexto 3D: overflow, opacity, filter, clip-path o mask en .escena o .plano lo aplanarían. */
+  .escena {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform-origin: 50% 0;
+    transform: rotateX(-14deg) rotateY(-38deg);
+  }
+  .plano {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    transform-origin: 50% 0; /* bisagra en el transductor (vértice del abanico) */
+    transform: rotateX(var(--a));
+    color: color-mix(in srgb, var(--color-marca-claro) 22%, transparent);
+    fill: none;
+    stroke: currentColor; /* color, fill, stroke y --lineas se heredan al árbol de <use> */
+  }
+  .borde {
+    color: color-mix(in srgb, var(--color-marca-claro) 55%, transparent);
+  }
+  .corte {
+    --a: 0deg;
+    --lineas: 0.35;
+    color: var(--color-marca-claro);
+    fill: url(#volumen-relleno); /* el haz se atenúa con la profundidad */
+  }
+  .defs {
+    position: absolute;
+  }
+  @media (width < 48rem) {
+    .volumen {
+      perspective: 45rem;
+    }
+    .intermedio {
+      display: none; /* 4 cortes + el activo = 5 capas */
+    }
+  }
+
+  /* Junto con el resto del hero: el volumen se despliega y el corte barre una vez.
+     Todo el movimiento automático termina a los ~4.6 s (WCAG 2.2.2); después solo gira con el scroll. */
+  @media (prefers-reduced-motion: no-preference) {
+    .volumen {
+      /* opacity aquí y no en .escena, que se aplanaría. backwards y no both: así el relevo al 3D puede desvanecerla. */
+      animation: volumen-entrar 0.6s 0.5s ease-out backwards;
+    }
+    .volumen-3d.con-3d :global(canvas) {
+      animation: volumen-entrar 0.8s ease-out backwards;
+    }
+    .plano:not(.corte) {
+      animation: volumen-abrir 0.8s calc(0.5s + var(--i) * 50ms) cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+    }
+    .corte {
+      animation: volumen-adquirir 3.2s 1.4s ease-in-out both;
+    }
+    @supports (animation-timeline: scroll()) {
+      .escena {
+        animation: volumen-girar linear both; /* el shorthand va antes: reinicia animation-timeline */
+        animation-timeline: scroll(root);
+        animation-range: 0 80vh;
+      }
+    }
+  }
+  @keyframes volumen-entrar {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes volumen-abrir {
+    from {
+      transform: rotateX(0deg);
+    }
+  }
+  /* ±25° y no ±27°: en los extremos el corte no se detiene sobre un borde (z-fighting). */
+  @keyframes volumen-adquirir {
+    22% {
+      transform: rotateX(-25deg);
+    }
+    78% {
+      transform: rotateX(25deg);
+    }
+  }
+  @keyframes volumen-girar {
+    to {
+      transform: rotateX(-26deg) rotateY(24deg);
+    }
+  }
+</style>

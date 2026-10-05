@@ -24,20 +24,22 @@ const textos = JSON.stringify({
 });
 ---
 
-<section id={idSeccion} class="oscuro seccion" aria-labelledby="titulo-contacto">
+<section id={idSeccion} class="oscuro seccion relative isolate overflow-clip" aria-labelledby="titulo-contacto">
+  <!-- Campo de ondas en 3D (Three.js), decorativo: sin JS o sin WebGL queda el fondo liso de siempre. -->
+  <div class="ondas" data-ondas-3d aria-hidden="true"></div>
   <div class="contenedor grid gap-12 lg:grid-cols-12 lg:gap-x-6 lg:gap-y-10">
-    <div class="lg:col-span-5" data-reveal>
+    <div class="lg:col-span-5" data-reveal data-ondas-mascara="0.7">
       <Encabezado etiqueta={s.etiqueta} titulo={tituloPersonalizado || s.titulo} id="titulo-contacto">
         <p class="texto-suave mt-5 max-w-md">{subtituloPersonalizado || s.texto}</p>
       </Encabezado>
     </div>
 
-    <div class="lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1" data-reveal>
+    <div class="profundidad lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1" data-reveal data-ondas-mascara="0.85">
       <form
         id="formulario"
         action={contacto.endpoint || undefined}
         method="post"
-        class="border border-(--linea) bg-noche p-6 sm:p-8 lg:p-10"
+        class="panel border border-(--linea) bg-noche p-6 sm:p-8 lg:p-10"
         data-endpoint={contacto.endpoint}
         data-textos={textos}
       >
@@ -151,7 +153,7 @@ const textos = JSON.stringify({
 
       <div
         id="formulario-exito"
-        class="escuadra border border-(--linea) bg-noche p-8 sm:p-10 lg:p-12"
+        class="panel escuadra border border-(--linea) bg-noche p-8 sm:p-10 lg:p-12"
         tabindex="-1"
         hidden
       >
@@ -169,7 +171,7 @@ const textos = JSON.stringify({
       </div>
     </div>
 
-    <div class="lg:col-span-5 lg:row-start-2">
+    <div class="lg:col-span-5 lg:row-start-2" data-ondas-mascara="0.7">
       <p class="font-semibold" data-reveal>{s.queSigue}</p>
       <ol class="sigue mt-5 grid gap-4" role="list" data-reveal="lista">
         {
@@ -320,6 +322,64 @@ const textos = JSON.stringify({
     font-size: 0.875rem;
     font-weight: 600;
   }
+
+  /* Campo de ondas: detrás de todo el contenido, nunca recibe clics. Aparece cuando la escena ya pintó. */
+  .ondas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .ondas :global(canvas) {
+    opacity: 0;
+  }
+  .ondas.con-3d :global(canvas) {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ondas :global(canvas) {
+      transition: opacity 1.2s ease-out;
+    }
+  }
+  @media print, (forced-colors: active) {
+    .ondas {
+      display: none;
+    }
+  }
+
+  /* El panel flota sobre el campo: sombra en capas y un reflejo azul debajo (solo si el campo está). */
+  .oscuro:has(> .ondas.con-3d) .panel {
+    box-shadow:
+      0 2px 4px rgb(0 0 0 / 0.4),
+      0 12px 24px -6px rgb(0 0 0 / 0.5),
+      0 32px 64px -16px rgb(0 0 0 / 0.6),
+      0 56px 120px -40px color-mix(in srgb, var(--color-marca) 45%, transparent);
+  }
+  /* Entrada en profundidad ligada al scroll: llega inclinado y queda plano cuando su borde superior pasa la mitad
+     de la pantalla, o en cuanto se enfoca un campo. Relleno solo hacia atrás: al terminar, la animación deja de
+     aplicarse y queda transform: none (texto nítido al escribir). */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .profundidad {
+        perspective: 75rem;
+      }
+      .panel {
+        transform-origin: 50% 100%;
+        animation: panel-entrar linear backwards; /* el shorthand va antes: reinicia animation-timeline */
+        animation-timeline: view();
+        animation-range: cover 0% cover 50vh;
+      }
+      .panel:focus-within {
+        animation: none;
+      }
+    }
+  }
+  @keyframes panel-entrar {
+    from {
+      transform: translateZ(-6rem) rotateX(14deg);
+    }
+  }
 </style>
 
 <script>
@@ -436,5 +496,13 @@ const textos = JSON.stringify({
         boton.textContent = etiquetaBoton;
       }
     });
+  }
+</script>
+
+<script>
+  import { montar3d } from '../scripts/escena3d';
+
+  for (const el of document.querySelectorAll<HTMLElement>('[data-ondas-3d]')) {
+    montar3d(el, () => import('../scripts/escenas/ondas'));
   }
 </script>

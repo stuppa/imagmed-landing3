@@ -1,0 +1,446 @@
+---
+import Encabezado from './Encabezado.astro';
+import Icono from './Icono.astro';
+
+const googleMapsUrl = 'https://maps.app.goo.gl/DVZiHd1BbWLBJw4N6';
+const latitud = 18.8983518;
+const longitud = -96.9561195;
+---
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<section id="mapa" class="oscuro seccion relative overflow-hidden" aria-labelledby="titulo-mapa">
+  <!-- Fondo decorativo con resplandor radial -->
+  <div class="pointer-events-none absolute -top-40 left-1/2 -z-10 h-96 w-[50rem] -translate-x-1/2 rounded-full bg-(--color-marca) opacity-10 blur-3xl" aria-hidden="true"></div>
+
+  <div class="contenedor grid gap-10 lg:grid-cols-12 lg:items-start">
+    <!-- Encabezado y resumen de información -->
+    <div class="lg:col-span-12" data-reveal>
+      <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        <Encabezado
+          etiqueta="Ubicación & Cobertura"
+          titulo="Nuestras *oficinas* y centro de atención."
+          id="titulo-mapa"
+        >
+          <p class="texto-suave mt-4 max-w-2xl">
+            Visítanos en nuestra sede principal o agenda una demostración en vivo de nuestros equipos de ultrasonido Mindray. Contamos con cobertura de entrega y soporte técnico en todo México.
+          </p>
+        </Encabezado>
+
+        <a
+          href={googleMapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-contorno shrink-0 self-start md:self-end"
+        >
+          <Icono nombre="externo" class="size-4" />
+          <span>Abrir en Google Maps</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Contenedor principal del Mapa Animado -->
+    <div class="mesa relative lg:col-span-8" data-reveal>
+      <!-- Barra de herramientas superior del mapa -->
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-t-lg border border-b-0 border-(--linea) bg-noche/90 px-4 py-3 backdrop-blur-md">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-marca-claro">
+          <span class="relative flex size-2.5">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex size-2.5 rounded-full bg-emerald-500"></span>
+          </span>
+          <span>Sede Matriz • En Vivo</span>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs">
+          <button
+            id="btn-reorientar"
+            type="button"
+            class="flex items-center gap-1.5 rounded-full border border-(--linea) bg-black/40 px-3 py-1 text-white transition hover:border-marca-claro hover:bg-marca/20"
+            title="Centrar mapa en la oficina"
+          >
+            <Icono nombre="brujula" class="size-3.5" />
+            <span>Centrar</span>
+          </button>
+
+          <button
+            id="btn-toggle-vista"
+            type="button"
+            class="flex items-center gap-1.5 rounded-full border border-(--linea) bg-black/40 px-3 py-1 text-white transition hover:border-marca-claro hover:bg-marca/20"
+            data-modo="leaflet"
+          >
+            <Icono nombre="mapa" class="size-3.5" />
+            <span id="texto-toggle-vista">Vista Satélite</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Lienzo del mapa Leaflet & Iframe fallback -->
+      <div class="relative min-h-[420px] w-full overflow-hidden rounded-b-lg border border-(--linea) bg-negro shadow-2xl sm:min-h-[480px]">
+        <!-- Animación de barrido de radar overlay -->
+        <div class="pointer-events-none absolute inset-0 z-10 opacity-30 mix-blend-screen radar-sweep" aria-hidden="true"></div>
+
+        <!-- Contenedor del Mapa Interactivo Leaflet -->
+        <div id="leaflet-mapa-canvas" class="h-[420px] w-full sm:h-[480px] z-0"></div>
+
+        <!-- Vista alternativa Iframe de Google Maps -->
+        <div id="google-iframe-container" class="absolute inset-0 hidden z-0">
+          <iframe
+            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.378!2d${longitud}!3d${latitud}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85c4e5768ebf0871%3A0x512ecb6a4368219e!2sIMAGMED%20NACIONAL!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx`}
+            width="100%"
+            height="100%"
+            style="border:0; filter: invert(90%) hue-rotate(180deg) contrast(120%);"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Ubicación Google Maps de Imagmed Nacional"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta lateral interactiva con información de contacto y presencia nacional -->
+    <div class="mesa mesa-lateral lg:col-span-4" data-reveal>
+      <div class="escuadra border border-(--linea) bg-noche/95 p-6 sm:p-8 backdrop-blur-xl">
+        <div class="flex items-center gap-3">
+          <div class="flex size-10 items-center justify-center rounded-lg bg-marca/20 text-marca-claro">
+            <Icono nombre="ubicacionPin" class="size-6" />
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-lg leading-tight">IMAGMED NACIONAL</h3>
+            <p class="text-xs text-marca-claro font-medium">S.A. DE C.V.</p>
+          </div>
+        </div>
+
+        <hr class="my-5 border-(--linea)" />
+
+        <div class="space-y-4 text-sm">
+          <div>
+            <span class="block text-xs uppercase tracking-wider text-suave">Dirección Principal</span>
+            <p class="mt-1 font-medium text-white">
+              Córdoba - Orizaba, Veracruz, México.
+            </p>
+          </div>
+
+          <div>
+            <span class="block text-xs uppercase tracking-wider text-suave">Atención y Demostraciones</span>
+            <p class="mt-1 text-roto">
+              Lunes a Viernes: 9:00 - 18:00 hrs
+            </p>
+          </div>
+
+          <div>
+            <span class="block text-xs uppercase tracking-wider text-suave">Servicios en Sitio</span>
+            <ul class="mt-2 space-y-2 text-roto">
+              <li class="flex items-center gap-2">
+                <Icono nombre="check" class="size-4 text-marca-claro shrink-0" />
+                <span>Exposición y prueba de ultrasonidos</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <Icono nombre="check" class="size-4 text-marca-claro shrink-0" />
+                <span>Capacitación a personal médico</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <Icono nombre="check" class="size-4 text-marca-claro shrink-0" />
+                <span>Envíos e instalación nacional</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-(--linea) space-y-3">
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primario w-full text-center flex justify-center"
+          >
+            <Icono nombre="externo" class="size-4" />
+            <span>Trazar ruta en Google Maps</span>
+          </a>
+
+          <a
+            href="#contacto"
+            class="btn btn-contorno w-full text-center flex justify-center text-xs"
+          >
+            <span>Agenda una cita presencial</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Animación del barrido de radar sobre el mapa */
+  @keyframes radar-scan {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .radar-sweep {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(0, 102, 221, 0) 0deg,
+      rgba(0, 102, 221, 0.15) 300deg,
+      rgba(0, 220, 255, 0.4) 360deg
+    );
+    border-radius: 50%;
+    transform-origin: center center;
+    animation: radar-scan 8s linear infinite;
+  }
+
+  /* Ajustes CSS personalizados para los controles y el pin de Leaflet */
+  :global(.leaflet-container) {
+    background: #03060d !important;
+    font-family: inherit;
+  }
+
+  :global(.leaflet-control-zoom) {
+    border: 1px solid rgba(245, 247, 250, 0.15) !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  :global(.leaflet-control-zoom a) {
+    background-color: #071226 !important;
+    color: #ffffff !important;
+    border-bottom-color: rgba(245, 247, 250, 0.15) !important;
+  }
+
+  :global(.leaflet-control-zoom a:hover) {
+    background-color: #0066dd !important;
+    color: #ffffff !important;
+  }
+
+  :global(.leaflet-control-attribution) {
+    background: rgba(3, 6, 13, 0.8) !important;
+    color: rgba(245, 247, 250, 0.6) !important;
+    font-size: 10px !important;
+    backdrop-filter: blur(4px);
+  }
+
+  :global(.leaflet-control-attribution a) {
+    color: #70b0ff !important;
+  }
+
+  /* Estilos del pin animado personalizado */
+  :global(.marker-custom-pin) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+  }
+
+  :global(.marker-pulse-ring) {
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 102, 221, 0.8);
+    background: rgba(0, 102, 221, 0.25);
+    animation: marker-pulse 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  :global(.marker-pulse-ring-outer) {
+    position: absolute;
+    inset: -24px;
+    border-radius: 50%;
+    border: 1px dashed rgba(0, 200, 255, 0.5);
+    animation: marker-pulse 3.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite 0.6s;
+  }
+
+  :global(.marker-core-icon) {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0066dd 0%, #071226 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 20px rgba(0, 102, 221, 0.9), 0 0 40px rgba(0, 200, 255, 0.5);
+    color: #ffffff;
+    transition: transform 0.3s ease;
+  }
+
+  :global(.marker-custom-pin:hover .marker-core-icon) {
+    transform: scale(1.15);
+  }
+
+  @keyframes marker-pulse {
+    0% {
+      transform: scale(0.4);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+
+  /* Popup personalizado */
+  :global(.leaflet-popup-content-wrapper) {
+    background: #071226 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(245, 247, 250, 0.2) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 20px 30px rgba(0,0,0,0.7) !important;
+    padding: 4px !important;
+  }
+
+  :global(.leaflet-popup-tip) {
+    background: #071226 !important;
+    border: 1px solid rgba(245, 247, 250, 0.2) !important;
+  }
+
+  /* Entrada en profundidad: el mapa llega inclinado, como apoyado sobre una mesa, y se endereza con el scroll.
+     Relleno solo hacia atrás: al terminar queda transform: none y Leaflet calcula puntero, arrastre y popups normal. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      /* overflow: hidden vuelve a la sección un contenedor de scroll y view() mediría contra ella (no avanza);
+         clip recorta el resplandor igual sin serlo. */
+      section {
+        overflow: clip;
+      }
+      .mesa {
+        transform-origin: 50% 100%;
+        animation: mesa-enderezar linear backwards; /* el shorthand va antes: reinicia animation-timeline */
+        animation-timeline: view();
+        animation-range: cover 0% cover 55vh;
+      }
+      .mesa-lateral {
+        animation-name: mesa-lateral;
+      }
+    }
+  }
+  @keyframes mesa-enderezar {
+    from {
+      transform: perspective(60rem) rotateX(28deg);
+    }
+  }
+  @keyframes mesa-lateral {
+    from {
+      transform: perspective(60rem) rotateX(18deg);
+    }
+  }
+</style>
+
+<script>
+  import type MapType from 'leaflet';
+
+  const LATITUD = 18.8983518;
+  const LONGITUD = -96.9561195;
+  let mapaInstancia: MapType.Map | null = null;
+
+  async function inicializarMapa() {
+    const contenedor = document.getElementById('leaflet-mapa-canvas');
+    if (!contenedor) return;
+
+    try {
+      const L = await import('leaflet');
+
+      // Crear mapa Leaflet
+      mapaInstancia = L.map(contenedor, {
+        center: [LATITUD, LONGITUD],
+        zoom: 16,
+        zoomControl: true,
+        scrollWheelZoom: false, // Evita zoom involuntario al scrollear la página
+      });
+
+      // Añadir capa de tiles en modo oscuro de CartoDB
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19,
+      }).addTo(mapaInstancia);
+
+      // Icono personalizado con animaciones SVG
+      const iconoPersonalizado = L.divIcon({
+        className: 'marker-custom-pin-wrapper',
+        html: `
+          <div class="marker-custom-pin">
+            <div class="marker-pulse-ring-outer"></div>
+            <div class="marker-pulse-ring"></div>
+            <div class="marker-core-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+          </div>
+        `,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22],
+        popupAnchor: [0, -20],
+      });
+
+      // Añadir marcador y popup informativo
+      const marcador = L.marker([LATITUD, LONGITUD], { icon: iconoPersonalizado }).addTo(mapaInstancia);
+
+      const contenidoPopup = `
+        <div style="padding: 10px; max-width: 220px; font-family: system-ui, -apple-system, sans-serif;">
+          <strong style="font-size: 14px; color: #ffffff; display: block; margin-bottom: 2px;">IMAGMED NACIONAL</strong>
+          <span style="font-size: 11px; color: #70b0ff; display: block; margin-bottom: 8px; text-transform: uppercase; font-weight: 600;">Oficinas y Centro de Servicio</span>
+          <p style="font-size: 12px; color: #d0d7e2; margin: 0 0 10px 0; line-height: 1.4;">Córdoba - Orizaba, Veracruz, México.</p>
+          <a href="https://maps.app.goo.gl/DVZiHd1BbWLBJw4N6" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #0066dd; color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+            Abrir en Maps &rarr;
+          </a>
+        </div>
+      `;
+
+      marcador.bindPopup(contenidoPopup);
+
+      // Botón para reorientar/centrar el mapa
+      const btnCentrar = document.getElementById('btn-reorientar');
+      if (btnCentrar) {
+        btnCentrar.addEventListener('click', () => {
+          mapaInstancia?.flyTo([LATITUD, LONGITUD], 16, {
+            duration: 1.5,
+          });
+          marcador.openPopup();
+        });
+      }
+
+      // Alternar entre mapa interactivo y mapa Google Maps (Iframe Satélite)
+      const btnToggle = document.getElementById('btn-toggle-vista');
+      const textoToggle = document.getElementById('texto-toggle-vista');
+      const containerLeaflet = document.getElementById('leaflet-mapa-canvas');
+      const containerIframe = document.getElementById('google-iframe-container');
+
+      if (btnToggle && textoToggle && containerLeaflet && containerIframe) {
+        btnToggle.addEventListener('click', () => {
+          const modoActual = btnToggle.getAttribute('data-modo');
+          if (modoActual === 'leaflet') {
+            btnToggle.setAttribute('data-modo', 'iframe');
+            containerLeaflet.classList.add('hidden');
+            containerIframe.classList.remove('hidden');
+            textoToggle.textContent = 'Vista Interactiva';
+          } else {
+            btnToggle.setAttribute('data-modo', 'leaflet');
+            containerIframe.classList.add('hidden');
+            containerLeaflet.classList.remove('hidden');
+            textoToggle.textContent = 'Vista Satélite';
+            mapaInstancia?.invalidateSize();
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error al cargar Leaflet:', err);
+    }
+  }
+
+  // Inicializar al cargar el DOM o al navegar con View Transitions si existen
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', inicializarMapa);
+  } else {
+    inicializarMapa();
+  }
+</script>

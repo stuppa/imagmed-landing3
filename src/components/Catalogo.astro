@@ -5,7 +5,9 @@ import Icono from './Icono.astro';
 import { equipos, seccionEquipos as s } from '../data/equipos';
 ---
 
-<section id="equipos" class="seccion" aria-labelledby="titulo-equipos">
+<section id="equipos" class="seccion relative" aria-labelledby="titulo-equipos">
+  <!-- Transductor 3D (Three.js) en el hueco del encabezado. Sin JS o sin WebGL queda vacío. -->
+  <div class="transductor-3d" aria-hidden="true" data-transductor-3d></div>
   <div class="contenedor">
     <div class="grid gap-6 lg:grid-cols-12 lg:items-end" data-reveal>
       <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-equipos" class="lg:col-span-7" />
@@ -17,43 +19,45 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
         {
           equipos.map((e) => (
             <li class="tarjeta">
-              <div class="foto">
-                <span class="escuadra marco" aria-hidden="true" />
-                <Picture
-                  src={e.imagen}
-                  alt={e.imagenAlt}
-                  formats={['avif']}
-                  fallbackFormat="webp"
-                  widths={[320, 480, 640, 800]}
-                  sizes="(min-width: 1280px) 340px, (min-width: 1024px) 27vw, (min-width: 768px) 42vw, 64vw"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-              <div class="flex flex-1 flex-col p-6">
-                <span class="text-xs font-semibold uppercase tracking-wider text-marca-claro mb-1">{e.categoria}</span>
-                <h3 class="text-2xl font-semibold tracking-tight">
-                  <a href={`/equipos/${e.slug}`} class="hover:text-marca transition-colors">
-                    Mindray {e.nombre}
-                  </a>
-                </h3>
-                {e.especificaciones.length > 0 && (
-                  <ul class="texto-suave mt-3 space-y-1.5 text-[0.9375rem]" role="list">
-                    {e.especificaciones.slice(0, 3).map((esp) => (
-                      <li class="flex gap-2.5 before:mt-[0.6em] before:size-1 before:flex-none before:rounded-full before:bg-marca">
-                        {esp}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <div class="mt-auto pt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-                  <a href={`/equipos/${e.slug}`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-marca transition-colors">
-                    <span>Ver detalle</span>
-                    <Icono nombre="flecha" class="size-3.5" />
-                  </a>
-                  <a href="#contacto" data-equipo={e.nombre} class="btn btn-primario btn-chico">
-                    {s.cta}
-                  </a>
+              <div class="cara">
+                <div class="foto">
+                  <span class="escuadra marco" aria-hidden="true" />
+                  <Picture
+                    src={e.imagen}
+                    alt={e.imagenAlt}
+                    formats={['avif']}
+                    fallbackFormat="webp"
+                    widths={[320, 480, 640, 800]}
+                    sizes="(min-width: 1280px) 340px, (min-width: 1024px) 27vw, (min-width: 768px) 42vw, 64vw"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-6">
+                  <span class="text-xs font-semibold uppercase tracking-wider text-marca-claro mb-1">{e.categoria}</span>
+                  <h3 class="text-2xl font-semibold tracking-tight">
+                    <a href={`/equipos/${e.slug}`} class="hover:text-marca transition-colors">
+                      Mindray {e.nombre}
+                    </a>
+                  </h3>
+                  {e.especificaciones.length > 0 && (
+                    <ul class="texto-suave mt-3 space-y-1.5 text-[0.9375rem]" role="list">
+                      {e.especificaciones.slice(0, 3).map((esp) => (
+                        <li class="flex gap-2.5 before:mt-[0.6em] before:size-1 before:flex-none before:rounded-full before:bg-marca">
+                          {esp}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <div class="mt-auto pt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+                    <a href={`/equipos/${e.slug}`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-marca transition-colors">
+                      <span>Ver detalle</span>
+                      <Icono nombre="flecha" class="size-3.5" />
+                    </a>
+                    <a href="#contacto" data-equipo={e.nombre} class="btn btn-primario btn-chico">
+                      {s.cta}
+                    </a>
+                  </div>
                 </div>
               </div>
             </li>
@@ -85,12 +89,18 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
   .carrusel::-webkit-scrollbar {
     display: none;
   }
+  /* El <li> queda plano (recibe el puntero y el snap); la .cara es la que se inclina en 3D. */
   .tarjeta {
-    position: relative;
     display: flex;
     flex: 0 0 78%;
-    flex-direction: column;
     scroll-snap-align: start;
+    perspective: 60rem;
+  }
+  .cara {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     border: 1px solid color-mix(in srgb, var(--color-tinta) 10%, transparent);
     background: #fff;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -132,8 +142,7 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
     transition: translate 0.3s ease;
   }
 
-  .tarjeta:hover,
-  .tarjeta:focus-within {
+  .tarjeta:is(:hover, :focus-within) .cara {
     border-color: var(--color-marca);
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   }
@@ -146,6 +155,119 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
     }
     .tarjeta:is(:hover, :focus-within) .enlace :global(svg) {
       translate: 0.25rem 0;
+    }
+
+    /* Profundidad: la foto y la escuadra flotan en planos propios al pasar el cursor o con el foco
+       (el teclado recibe el mismo despegue, sin inclinar el texto). En reposo no hay transformaciones. */
+    .cara,
+    .foto {
+      transform-style: preserve-3d;
+    }
+    .foto :global(picture) {
+      display: contents; /* sin caja propia: la imagen hereda el contexto 3D de .foto */
+    }
+    .foto :global(img) {
+      transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .marco {
+      transition:
+        opacity 0.2s ease,
+        translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .tarjeta:is(:hover, :focus-within) .foto :global(img) {
+      translate: 0 -0.375rem 3rem;
+    }
+    .tarjeta:is(:hover, :focus-within) .marco {
+      translate: 0 0 1.25rem;
+    }
+  }
+
+  /* Con mouse: la cara voltea hacia el cursor (--px/--py de -1 a 1, los escribe el script) y un foco azul
+     tenue sigue al puntero detrás del equipo. */
+  @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .cara {
+      transition:
+        transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+        border-color 0.2s ease,
+        box-shadow 0.3s ease;
+    }
+    .tarjeta:hover .cara {
+      transform: rotateX(calc(var(--py, 0) * -4deg)) rotateY(calc(var(--px, 0) * 6deg));
+      box-shadow: 0 1.75rem 3rem -1.75rem color-mix(in srgb, var(--color-tinta) 35%, transparent);
+    }
+    .foto::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at calc(50% + var(--px, 0) * 35%) calc(45% + var(--py, 0) * 35%),
+        color-mix(in srgb, var(--color-marca) 13%, transparent),
+        transparent 62%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .tarjeta:hover .foto::before {
+      opacity: 1;
+    }
+  }
+
+  /* Móvil: el carrusel horizontal gira como coverflow según la posición de cada tarjeta.
+     Meseta en 40–62 %: la tarjeta asentada por el snap (≈56 %, o ≈44 % la última) queda plana y nítida. */
+  @supports (animation-timeline: view(inline)) {
+    @media (width < 48rem) and (prefers-reduced-motion: no-preference) {
+      .cara {
+        animation: girar linear both;
+        animation-timeline: view(inline);
+      }
+    }
+  }
+  @keyframes girar {
+    from {
+      rotate: y -26deg;
+      scale: 0.9;
+    }
+    40%,
+    62% {
+      rotate: none;
+      scale: none;
+    }
+    to {
+      rotate: y 26deg;
+      scale: 0.9;
+    }
+  }
+
+  /* Hueco del encabezado donde flota el transductor: arriba a la derecha, nunca sobre el texto.
+     Móvil: a la derecha de la etiqueta, encima del título. md: a la derecha del título (12.6em es su
+     primera línea). lg: sobre el párrafo; la altura deja libre su primera línea con 3 renglones. */
+  .transductor-3d {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 11.5rem;
+    height: 6.75rem;
+    pointer-events: none;
+    /* El cable se desvanece hacia el borde derecho y la sombra hacia abajo. */
+    mask-image: linear-gradient(to left, transparent, #000 3rem), linear-gradient(to top, transparent, #000 1.25rem);
+    mask-composite: intersect;
+  }
+  @media (width >= 48rem) {
+    .transductor-3d {
+      left: calc(3rem + 12.6 * (1.35rem + 2.2vw));
+      height: 17rem;
+    }
+  }
+  @media (width >= 64rem) {
+    .transductor-3d {
+      left: 58%;
+      right: 0; /* hasta el borde de la ventana: el cable sale de la pantalla en vez de cortarse en el aire */
+      height: 10.25rem;
+    }
+  }
+  @media (width >= 80rem) {
+    .transductor-3d {
+      height: 12rem;
     }
   }
 
@@ -192,3 +314,38 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
     }
   }
 </style>
+
+<script>
+  import { montar3d } from '../scripts/escena3d';
+
+  const transductor = document.querySelector<HTMLElement>('[data-transductor-3d]');
+  if (transductor) montar3d(transductor, () => import('../scripts/escenas/transductor'));
+
+  // Inclinación de las tarjetas hacia el cursor: un solo listener delegado y una escritura por cuadro.
+  const carrusel = document.querySelector<HTMLElement>('#equipos .carrusel');
+  if (carrusel && matchMedia('(pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
+    let activa: HTMLElement | null = null;
+    let cursor = { x: 0, y: 0 };
+    let cuadro = 0;
+    const soltar = () => {
+      activa?.style.removeProperty('--px');
+      activa?.style.removeProperty('--py');
+      activa = null;
+    };
+    carrusel.addEventListener('pointermove', (ev) => {
+      if (ev.pointerType === 'touch') return;
+      const tarjeta = (ev.target as Element).closest<HTMLElement>('.tarjeta');
+      if (tarjeta !== activa) soltar();
+      activa = tarjeta;
+      cursor = { x: ev.clientX, y: ev.clientY };
+      cuadro ||= requestAnimationFrame(() => {
+        cuadro = 0;
+        if (!activa) return;
+        const r = activa.getBoundingClientRect(); // el <li> no se transforma: medida estable
+        activa.style.setProperty('--px', (((cursor.x - r.left) / r.width) * 2 - 1).toFixed(3));
+        activa.style.setProperty('--py', (((cursor.y - r.top) / r.height) * 2 - 1).toFixed(3));
+      });
+    });
+    carrusel.addEventListener('pointerleave', soltar);
+  }
+</script>
