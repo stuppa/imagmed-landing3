@@ -34,7 +34,7 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
                   />
                 </div>
                 <div class="flex flex-1 flex-col p-6">
-                  <span class="text-xs font-semibold uppercase tracking-wider text-marca-claro mb-1">{e.categoria}</span>
+                  <span class="text-xs font-semibold uppercase tracking-wider text-marca mb-1">{e.categoria}</span>
                   <h3 class="text-2xl font-semibold tracking-tight">
                     <a href={`/equipos/${e.slug}`} class="hover:text-marca transition-colors">
                       Mindray {e.nombre}
@@ -248,6 +248,8 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
     left: 11.5rem;
     height: 6.75rem;
     pointer-events: none;
+    contain: layout style paint;
+    will-change: transform;
     /* El cable se desvanece hacia el borde derecho y la sombra hacia abajo. */
     mask-image: linear-gradient(to left, transparent, #000 3rem), linear-gradient(to top, transparent, #000 1.25rem);
     mask-composite: intersect;
@@ -325,25 +327,32 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
   const carrusel = document.querySelector<HTMLElement>('#equipos .carrusel');
   if (carrusel && matchMedia('(pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
     let activa: HTMLElement | null = null;
+    let rect: DOMRect | null = null;
     let cursor = { x: 0, y: 0 };
     let cuadro = 0;
     const soltar = () => {
       activa?.style.removeProperty('--px');
       activa?.style.removeProperty('--py');
       activa = null;
+      rect = null;
     };
     carrusel.addEventListener('pointermove', (ev) => {
       if (ev.pointerType === 'touch') return;
       const tarjeta = (ev.target as Element).closest<HTMLElement>('.tarjeta');
-      if (tarjeta !== activa) soltar();
-      activa = tarjeta;
+      if (tarjeta !== activa) {
+        soltar();
+        if (tarjeta) {
+          activa = tarjeta;
+          rect = activa.getBoundingClientRect();
+        }
+      }
+      if (!activa || !rect) return;
       cursor = { x: ev.clientX, y: ev.clientY };
       cuadro ||= requestAnimationFrame(() => {
         cuadro = 0;
-        if (!activa) return;
-        const r = activa.getBoundingClientRect(); // el <li> no se transforma: medida estable
-        activa.style.setProperty('--px', (((cursor.x - r.left) / r.width) * 2 - 1).toFixed(3));
-        activa.style.setProperty('--py', (((cursor.y - r.top) / r.height) * 2 - 1).toFixed(3));
+        if (!activa || !rect) return;
+        activa.style.setProperty('--px', (((cursor.x - rect.left) / rect.width) * 2 - 1).toFixed(3));
+        activa.style.setProperty('--py', (((cursor.y - rect.top) / rect.height) * 2 - 1).toFixed(3));
       });
     });
     carrusel.addEventListener('pointerleave', soltar);

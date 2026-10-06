@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import Icono from './Icono.astro';
 import wordmark from '../assets/marca/imagmed-wordmark.png';
-import { encabezado, navegacion, sitio } from '../data/sitio';
+import { encabezado, navegacion, productos, sitio } from '../data/sitio';
 import { whatsappUrl } from '../data/contacto';
 
 const wa = whatsappUrl();
@@ -10,7 +10,7 @@ const wa = whatsappUrl();
 
 <header class="oscuro fixed inset-x-0 top-0 z-50 border-b border-(--linea) bg-negro/85 backdrop-blur-md">
   <div class="contenedor flex h-16 items-center gap-3 lg:gap-8">
-    <a href="#inicio" class="mr-auto shrink-0 lg:mr-0">
+    <a href="/#inicio" class="mr-auto shrink-0 lg:mr-0">
       <Image
         src={wordmark}
         alt={sitio.nombre}
@@ -22,7 +22,24 @@ const wa = whatsappUrl();
     </a>
 
     <nav aria-label="Principal" class="hidden lg:mx-auto lg:block">
-      <ul class="flex items-center gap-7 text-[0.9375rem]">
+      <ul class="flex items-center gap-5 text-[0.9375rem] xl:gap-7">
+        <li class="desplegable">
+          <button type="button" class="enlace-nav gap-1">
+            {productos.texto}
+            <Icono nombre="chevron" class="size-4" />
+          </button>
+          <div class="submenu">
+            <ul class="reticula">
+              {
+                productos.categorias.map((c) => (
+                  <li>
+                    <a href={c.href ?? `/productos/${c.slug}`}>{c.texto}</a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </li>
         {
           navegacion.map((item) => (
             <li>
@@ -35,7 +52,7 @@ const wa = whatsappUrl();
       </ul>
     </nav>
 
-    <div class="flex items-center gap-2 sm:gap-3">
+    <div class="flex items-center gap-3 sm:gap-4">
       {
         wa && (
           <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno btn-chico">
@@ -58,7 +75,7 @@ const wa = whatsappUrl();
       type="button"
       popovertarget="menu"
       aria-label={encabezado.menu}
-      class="boton-menu -mr-2 grid size-11 place-items-center rounded-full lg:hidden"
+      class="boton-menu -mr-2 grid size-11 place-items-center lg:hidden"
     >
       <span class="barras" aria-hidden="true"><span></span><span></span><span></span></span>
     </button>
@@ -66,6 +83,28 @@ const wa = whatsappUrl();
 
   <nav id="menu" popover aria-label="Principal móvil" class="oscuro menu-movil">
     <ul class="contenedor pt-2">
+      <li>
+        <details class="productos-movil">
+          <summary class="enlace-movil">
+            {productos.texto}
+            <Icono nombre="chevron" class="size-4" />
+          </summary>
+          <ul class="border-b border-(--linea) py-2">
+            {
+              productos.categorias.map((c) => (
+                <li>
+                  <a
+                    href={c.href ?? `/productos/${c.slug}`}
+                    class="texto-suave flex min-h-11 items-center pl-4 hover:text-white"
+                  >
+                    {c.texto}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </details>
+      </li>
       {
         navegacion.map((item) => (
           <li>
@@ -126,6 +165,63 @@ const wa = whatsappUrl();
     scale: 1 1;
   }
 
+  /* Submenú "Productos": abre con hover o con foco (teclado), sin JS. */
+  .desplegable {
+    position: relative;
+  }
+  .desplegable:is(:hover, :focus-within) > .enlace-nav {
+    color: #fff;
+  }
+  .desplegable:is(:hover, :focus-within) > .enlace-nav::after {
+    scale: 1 1;
+  }
+  .desplegable:is(:hover, :focus-within) > .enlace-nav :global(svg) {
+    rotate: 180deg;
+  }
+  .submenu {
+    position: absolute;
+    top: 100%;
+    left: -1.25rem;
+    padding-top: 0.75rem; /* puente para que el hover no se pierda entre botón y panel */
+    visibility: hidden;
+    opacity: 0;
+    --foco: #fff;
+  }
+  .desplegable:is(:hover, :focus-within) .submenu {
+    visibility: visible;
+    opacity: 1;
+  }
+  .submenu ul {
+    min-width: 15rem;
+    padding: 0.75rem;
+    background: var(--color-marca);
+    box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.6);
+  }
+  .submenu a {
+    display: block;
+    padding: 0.5rem 0.875rem;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .submenu ul::before {
+    --l: 1rem;
+    inset: -6px;
+  }
+  .submenu a:hover {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .productos-movil summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  .productos-movil summary::-webkit-details-marker {
+    display: none;
+  }
+  .productos-movil[open] summary :global(svg) {
+    rotate: 180deg;
+  }
+
   .barras {
     display: grid;
     gap: 5px;
@@ -159,6 +255,7 @@ const wa = whatsappUrl();
     margin: 0;
     padding: 0;
     overflow-y: auto;
+    overscroll-behavior: contain; /* al llegar al final de la lista no arrastra la página de fondo */
     border: 0;
     border-bottom: 1px solid var(--linea);
   }
@@ -185,6 +282,19 @@ const wa = whatsappUrl();
     }
   }
   @media (prefers-reduced-motion: no-preference) {
+    .submenu {
+      translate: 0 -0.25rem;
+      transition:
+        opacity 0.2s ease,
+        translate 0.2s ease,
+        visibility 0.2s;
+    }
+    .desplegable:is(:hover, :focus-within) .submenu {
+      translate: none;
+    }
+    .enlace-nav :global(svg) {
+      transition: rotate 0.2s ease;
+    }
     .menu-movil,
     .menu-movil::backdrop {
       transition:
@@ -225,6 +335,9 @@ const wa = whatsappUrl();
     const destino = e.relatedTarget as Node | null;
     if (destino && destino !== boton && !menu.contains(destino)) menu.hidePopover();
   });
+
+  // Al elegir una categoría, suelta el foco para que el submenú se cierre.
+  document.querySelector('.submenu')?.addEventListener('click', () => (document.activeElement as HTMLElement | null)?.blur());
 
   // Marca en la navegación la sección que está a la vista.
   const enlaces = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[data-nav]'));

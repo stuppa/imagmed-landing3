@@ -108,6 +108,8 @@ const planos = [-27, -18, -9, 9, 18, 27]; // sin 0°: ahí descansa el corte act
     aspect-ratio: 1;
     z-index: -1;
     pointer-events: none;
+    contain: layout style paint;
+    will-change: transform;
   }
   @media (width >= 64rem) {
     .volumen-3d {

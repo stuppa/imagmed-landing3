@@ -24,10 +24,10 @@ const waMensaje = `Hola Imagmed Nacional, requiero información y cotización fo
 const waUrl = whatsappUrl(waMensaje);
 ---
 
-<Layout>
+<Layout titulo={`Ultrasonido Mindray ${equipo.nombre} | ${sitio.nombre}`} descripcion={equipo.subtitulo}>
   <Header />
 
-  <main id="contenido" class="pt-20">
+  <main id="contenido" class="pt-16">
     <!-- Migas de pan / Navegación -->
     <div class="oscuro border-b border-(--linea) py-4">
       <div class="contenedor flex flex-wrap items-center justify-between gap-4 text-sm">
@@ -317,7 +317,6 @@ const waUrl = whatsappUrl(waMensaje);
     <div id="cotizar">
       <Contacto
         equipoInicial={equipo.nombre}
-        idSeccion="formulario-cotizar"
         tituloPersonalizado={`Solicita tu cotización formal para *Mindray ${equipo.nombre}*.`}
         subtituloPersonalizado={`Completa tus datos para enviarte la propuesta económica en PDF con la configuración de transductores que necesitas. Sin compromiso ni precios ocultos.`}
       />
@@ -356,7 +355,7 @@ const waUrl = whatsappUrl(waMensaje);
                   />
                 </div>
                 <div class="p-6 flex flex-1 flex-col">
-                  <span class="text-xs font-semibold text-marca-claro uppercase tracking-wider">{e.categoria}</span>
+                  <span class="text-xs font-semibold text-marca uppercase tracking-wider">{e.categoria}</span>
                   <h3 class="text-xl font-bold text-tinta mt-1">Mindray {e.nombre}</h3>
                   <p class="texto-suave mt-2 text-xs line-clamp-2">{e.subtitulo}</p>
 

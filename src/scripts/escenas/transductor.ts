@@ -12,6 +12,7 @@ import {
   Mesh,
   MeshPhysicalMaterial,
   NeutralToneMapping,
+  PCFShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
   PMREMGenerator,
@@ -22,7 +23,6 @@ import {
   TubeGeometry,
   Vector2,
   Vector3,
-  VSMShadowMap,
   type BufferGeometry,
 } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -64,7 +64,7 @@ function moldear(geo: BufferGeometry) {
 export const crear: CrearEscena = (renderer, contenedor) => {
   renderer.toneMapping = NeutralToneMapping;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = VSMShadowMap;
+  renderer.shadowMap.type = PCFShadowMap; // three r186 quitó PCFSoftShadowMap (avisaba en consola); PCF ya suaviza con shadow.radius
   const lienzo = renderer.domElement;
   lienzo.style.opacity = '0';
 

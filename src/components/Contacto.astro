@@ -7,12 +7,11 @@ import { encabezado } from '../data/sitio';
 
 interface Props {
   equipoInicial?: string;
-  idSeccion?: string;
   tituloPersonalizado?: string;
   subtituloPersonalizado?: string;
 }
 
-const { equipoInicial, idSeccion = 'contacto', tituloPersonalizado, subtituloPersonalizado } = Astro.props;
+const { equipoInicial, tituloPersonalizado, subtituloPersonalizado } = Astro.props;
 
 const wa = whatsappUrl();
 const textos = JSON.stringify({
@@ -24,7 +23,7 @@ const textos = JSON.stringify({
 });
 ---
 
-<section id={idSeccion} class="oscuro seccion relative isolate overflow-clip" aria-labelledby="titulo-contacto">
+<section id="contacto" class="oscuro seccion relative isolate overflow-clip" aria-labelledby="titulo-contacto">
   <!-- Campo de ondas en 3D (Three.js), decorativo: sin JS o sin WebGL queda el fondo liso de siempre. -->
   <div class="ondas" data-ondas-3d aria-hidden="true"></div>
   <div class="contenedor grid gap-12 lg:grid-cols-12 lg:gap-x-6 lg:gap-y-10">
@@ -330,6 +329,8 @@ const textos = JSON.stringify({
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
+    contain: strict;
+    will-change: transform;
   }
   .ondas :global(canvas) {
     opacity: 0;

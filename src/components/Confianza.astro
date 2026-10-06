@@ -72,11 +72,16 @@ const hayDatos = Boolean(frase || lineas || certificaciones.length || cifras.len
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 1rem 0;
+      gap: 1rem 4rem;
+      overflow: hidden; /* recorta el divisor del primer elemento de cada renglón cuando la barra se parte */
     }
-    .barra li + li {
-      margin-left: 2rem;
-      padding-left: 2rem;
+    .barra li {
+      position: relative;
+    }
+    .barra li::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 -2rem;
       border-left: 1px solid var(--linea);
     }
   }

@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets';
+import Enfasis from './Enfasis.astro';
+import { marcas } from '../data/sitio';
+---
+
+<section id="marcas" class="seccion bg-white text-center" aria-labelledby="titulo-marcas">
+  <div class="contenedor">
+    <h2 id="titulo-marcas" class="titulo-2 mx-auto max-w-[16em]" data-reveal>
+      <Enfasis texto={marcas.titulo} />
+    </h2>
+
+    <ul class="logos mt-12 lg:mt-16" role="list" data-reveal="lista">
+      {
+        marcas.lista.map((m) => (
+          <li>
+            {m.logo ? (
+              <Image src={m.logo} alt={m.nombre} height={48} densities={[1, 2]} class="h-10 w-auto lg:h-12" />
+            ) : (
+              <span class="nombre">{m.nombre}</span>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+
+    <a href={marcas.href} class="btn btn-claro mt-12 lg:mt-16">{marcas.cta}</a>
+  </div>
+</section>
+
+<style>
+  .logos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem 3rem;
+  }
+  @media (width >= 64rem) {
+    .logos {
+      justify-content: space-between;
+    }
+  }
+  .nombre {
+    font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-tinta);
+  }
+  .btn-claro {
+    border-color: color-mix(in srgb, var(--color-marca) 40%, transparent);
+    color: var(--color-marca);
+  }
+  .btn-claro:hover {
+    background-color: var(--color-marca);
+    color: #fff;
+  }
+</style>

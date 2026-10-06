@@ -282,11 +282,11 @@ export const crear: CrearEscena = (renderer, contenedor) => {
       void main() {
         vec2 q = gl_PointCoord - 0.5;
         float d = dot(q, q) * 4.0;
-        if (d > 1.0) discard;
+        float disco = clamp(1.0 - d, 0.0, 1.0);
         // El corte aclara el color y suma poca opacidad: así no se satura al apilarse.
         float b = clamp(vBrillo + 0.5 * vCorte, 0.0, 1.0);
         vec3 color = b < 0.5 ? mix(MARCA, CLARO, b * 2.0) : mix(CLARO, BLANCO, b * 2.0 - 1.0);
-        float a = (1.0 - d) * (1.0 - d) * min(1.0, vBrillo * (1.0 + 0.5 * vCorte) + 0.18 * vCorte);
+        float a = disco * disco * min(1.0, vBrillo * (1.0 + 0.5 * vCorte) + 0.18 * vCorte);
         gl_FragColor = vec4(color * a, a);
       }
     `,

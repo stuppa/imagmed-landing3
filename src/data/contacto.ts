@@ -1,4 +1,5 @@
 import { equipos } from './equipos';
+import { productos } from './sitio';
 
 // Datos de contacto. Los elementos con dato vacío no se renderizan (botones de WhatsApp, teléfono, aviso).
 export const contacto = {
@@ -36,7 +37,11 @@ export const formulario = {
   },
   ejemplos: { telefono: '10 dígitos', correo: 'nombre@clinica.com' },
   elige: 'Elige una opción',
-  equipos: [...equipos.map((e) => e.nombre), 'Aún no lo sé, quiero asesoría'],
+  equipos: [
+    ...equipos.map((e) => e.nombre),
+    ...productos.categorias.filter((c) => c.slug).map((c) => c.texto),
+    'Aún no lo sé, quiero asesoría',
+  ],
   cuando: ['Lo antes posible', 'En 1 a 3 meses', 'En 3 a 6 meses', 'Solo estoy comparando opciones'],
   enviar: 'Enviar solicitud',
   enviarDemo: 'Solicitar demo',
