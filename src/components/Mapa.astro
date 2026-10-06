@@ -52,9 +52,6 @@ const longitud = -96.9561195;
 
       <!-- Mapa de Google Maps -->
       <div class="relative h-[420px] w-full overflow-hidden rounded-b-lg border border-(--linea) bg-negro shadow-2xl sm:h-[480px]">
-        <!-- Animación de barrido de radar overlay -->
-        <div class="pointer-events-none absolute inset-0 z-10 opacity-30 mix-blend-screen radar-sweep" aria-hidden="true"></div>
-
         <div class="absolute inset-0">
           <iframe
             src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.378!2d${longitud}!3d${latitud}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85c4e5768ebf0871%3A0x512ecb6a4368219e!2sIMAGMED%20NACIONAL!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx`}
@@ -143,28 +140,6 @@ const longitud = -96.9561195;
 </section>
 
 <style>
-  /* Animación del barrido de radar sobre el mapa */
-  @keyframes radar-scan {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .radar-sweep {
-    background: conic-gradient(
-      from 0deg at 50% 50%,
-      rgba(0, 102, 221, 0) 0deg,
-      rgba(0, 102, 221, 0.15) 300deg,
-      rgba(0, 220, 255, 0.4) 360deg
-    );
-    border-radius: 50%;
-    transform-origin: center center;
-    animation: radar-scan 8s linear infinite;
-  }
-
   /* Entrada en profundidad: el mapa llega inclinado, como apoyado sobre una mesa, y se endereza con el scroll.
      Relleno solo hacia atrás: al terminar queda transform: none y el iframe recibe clics y arrastre normal. */
   @media (prefers-reduced-motion: no-preference) {
