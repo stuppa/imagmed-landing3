@@ -5,7 +5,8 @@ import wordmark from '../assets/marca/imagmed-wordmark.png';
 import { encabezado, navegacion, productos, sitio } from '../data/sitio';
 import { whatsappUrl } from '../data/contacto';
 
-const wa = whatsappUrl();
+const { categorias, contacto } = Astro.locals.sitio;
+const wa = whatsappUrl(contacto);
 ---
 
 <header class="oscuro fixed inset-x-0 top-0 z-50 border-b border-(--linea) bg-negro/85 backdrop-blur-md">
@@ -31,9 +32,9 @@ const wa = whatsappUrl();
           <div class="submenu">
             <ul class="reticula">
               {
-                productos.categorias.map((c) => (
+                categorias.map((c) => (
                   <li>
-                    <a href={c.href ?? `/productos/${c.slug}`}>{c.texto}</a>
+                    <a href={`/productos/${c.slug}`}>{c.nombre}</a>
                   </li>
                 ))
               }
@@ -91,13 +92,13 @@ const wa = whatsappUrl();
           </summary>
           <ul class="border-b border-(--linea) py-2">
             {
-              productos.categorias.map((c) => (
+              categorias.map((c) => (
                 <li>
                   <a
-                    href={c.href ?? `/productos/${c.slug}`}
+                    href={`/productos/${c.slug}`}
                     class="texto-suave flex min-h-11 items-center pl-4 hover:text-white"
                   >
-                    {c.texto}
+                    {c.nombre}
                   </a>
                 </li>
               ))

@@ -1,0 +1,90 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { revisar } from '../../lib/admin';
+import { aFechaLocal, campanaActiva, formatoFecha, vigente } from '../../lib/contenido';
+import type { FilaAjustes, FilaCampana, FilaProducto } from '../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+const ahora = new Date();
+const [productos, campanas, ajustes] = await Promise.all([
+  supabase.from('productos').select('id, nombre, estado, descuento_texto, descuento_inicio, descuento_fin').then(revisar),
+  supabase.from('campanas').select('id, nombre, inicio, fin').order('inicio').then(revisar),
+  supabase.from('ajustes').select('hero_producto_id').single().then(revisar),
+]) as [FilaProducto[], FilaCampana[], Pick<FilaAjustes, 'hero_producto_id'>];
+
+const fechas = (c: FilaCampana) => ({ ...c, inicio: new Date(c.inicio), fin: new Date(c.fin) });
+const activa = campanaActiva(campanas.map(fechas), ahora);
+const proxima = campanas.map(fechas).find((c) => c.inicio > ahora);
+const heroProducto = productos.find((p) => p.id === ajustes.hero_producto_id);
+
+const cuenta = (estado: FilaProducto['estado']) => productos.filter((p) => p.estado === estado).length;
+const conDescuento = productos.filter(
+  (p) =>
+    p.estado !== 'oculto' &&
+    p.descuento_texto &&
+    vigente(
+      { inicio: p.descuento_inicio ? new Date(p.descuento_inicio) : null, fin: p.descuento_fin ? new Date(p.descuento_fin) : null },
+      ahora,
+    ),
+).length;
+---
+
+<Admin titulo="Panel">
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="panel">
+      <h2>Ahora en el hero</h2>
+      {
+        activa ? (
+          <p>
+            Campaña <strong>{activa.nombre}</strong> hasta el {formatoFecha(activa.fin)}.
+          </p>
+        ) : (
+          <p>
+            Diseño por defecto con <strong>{heroProducto?.nombre ?? 'el primer producto destacado'}</strong>
+            {heroProducto && heroProducto.estado === 'oculto' && (
+              <span class="chip chip-rojo ml-1">oculto: se muestra el primer destacado</span>
+            )}
+            .
+          </p>
+        )
+      }
+      {
+        proxima && (
+          <p class="ayuda mt-2">
+            Próxima campaña: {proxima.nombre}, desde el {formatoFecha(proxima.inicio)}.
+          </p>
+        )
+      }
+      <div class="acciones">
+        <a href="/admin/hero" class="btn btn-secundario">Hero y campañas</a>
+        <a href="/admin/hero/nueva" class="btn btn-primario">Nueva campaña</a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Productos</h2>
+      <div class="flex flex-wrap gap-2">
+        <span class="chip chip-verde">{cuenta('publicado')} publicados</span>
+        <span class="chip">{cuenta('agotado')} agotados</span>
+        <span class="chip chip-rojo">{cuenta('oculto')} ocultos</span>
+        <span class="chip chip-azul">{conDescuento} con descuento vigente</span>
+      </div>
+      <div class="acciones">
+        <a href="/admin/productos" class="btn btn-secundario">Ver productos</a>
+        <a href="/admin/productos/nuevo" class="btn btn-primario">Nuevo producto</a>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Vista previa del sitio en una fecha</h2>
+    <p class="ayuda">Así se verá la landing ese día, con sus campañas y descuentos programados (hora del centro de México).</p>
+    <form method="get" action="/admin/vista-previa" class="mt-3 flex flex-wrap items-end gap-3">
+      <label>
+        Fecha y hora
+        <input type="datetime-local" name="en" value={aFechaLocal(ahora)} required />
+      </label>
+      <button class="btn btn-secundario">Ver</button>
+    </form>
+  </section>
+</Admin>

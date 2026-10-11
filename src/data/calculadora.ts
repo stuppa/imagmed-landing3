@@ -22,8 +22,7 @@ export interface Control {
   unidad?: [string, string];
 }
 
-// Valores iniciales solo para que los controles arranquen en una posición; el usuario los ajusta.
-// TODO: confirmar con el cliente los rangos y valores iniciales.
+// Valores iniciales confirmados por el cliente como realistas; el usuario los ajusta.
 export const controles: Record<'estudios' | 'precio' | 'dias', Control> = {
   estudios: { etiqueta: 'Estudios por día', min: 1, max: 60, paso: 1, inicial: 8, unidad: ['estudio', 'estudios'] },
   precio: { etiqueta: 'Precio por estudio (MXN)', min: 100, max: 5000, paso: 50, inicial: 800, prefijo: '$' },

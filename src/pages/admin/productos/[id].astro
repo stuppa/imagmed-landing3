@@ -1,0 +1,429 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import {
+  borrarImagenes,
+  casilla,
+  ErrorAdmin,
+  procesarFormulario,
+  revisar,
+  sobrantes,
+  subirImagen,
+  texto,
+} from '../../../lib/admin';
+import { aFechaLocal, deFechaLocal, grupos, gruposATexto, lineas, pares, paresATexto, slugificar } from '../../../lib/contenido';
+import { urlImagen } from '../../../lib/supabase';
+import { incluyeDefecto } from '../../../data/sitio';
+import type { Accesorio, Estado, FilaCategoria, FilaMarca, FilaProducto, Imagen } from '../../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+const id = Astro.params.id ?? '';
+const nuevo = id === 'nuevo';
+if (!nuevo && !/^[0-9a-f-]{36}$/.test(id)) return Astro.redirect('/admin/productos');
+
+const ESTADOS: { valor: Estado; texto: string; ayuda: string }[] = [
+  { valor: 'publicado', texto: 'Publicado', ayuda: 'Se ve en el sitio.' },
+  { valor: 'agotado', texto: 'Agotado', ayuda: 'Se ve con la etiqueta «Agotado» y el botón «Consultar disponibilidad».' },
+  { valor: 'oculto', texto: 'Oculto', ayuda: 'No aparece en ningún lado y su página da 404.' },
+];
+
+const existente = nuevo
+  ? null
+  : (revisar(await supabase.from('productos').select('*').eq('id', id).maybeSingle()) as FilaProducto | null);
+if (!nuevo && !existente) return Astro.redirect('/admin/productos');
+
+const rutasDe = (p: { imagen: Imagen | null | undefined; accesorios: Accesorio[] }) => [
+  p.imagen?.ruta,
+  ...p.accesorios.map((a) => a.imagen?.ruta),
+];
+
+// Copia del formulario para volver a mostrar lo escrito si algo falla (el original lo consume procesarFormulario).
+const enviado = Astro.request.method === 'POST' ? await Astro.request.clone().formData() : null;
+
+const resultado = await procesarFormulario(Astro, async (f, subidas) => {
+  if (texto(f, 'accion') === 'borrar') {
+    if (!existente) return '/admin/productos';
+    revisar(await supabase.from('productos').delete().eq('id', id));
+    await borrarImagenes(supabase, rutasDe(existente));
+    return '/admin/productos?guardado';
+  }
+
+  const nombre = texto(f, 'nombre');
+  if (!nombre) throw new ErrorAdmin('Escribe el nombre del producto.');
+  const categoria_id = texto(f, 'categoria_id');
+  if (!categoria_id) throw new ErrorAdmin('Elige una categoría.');
+  const inicio = deFechaLocal(texto(f, 'descuento_inicio'));
+  const fin = deFechaLocal(texto(f, 'descuento_fin'));
+  if (inicio && fin && fin <= inicio) throw new ErrorAdmin('El fin del descuento debe ser después del inicio.');
+
+  const imagen = (await subirImagen(supabase, f.get('imagen'), 'productos', subidas)) ?? existente?.imagen;
+  if (!imagen) throw new ErrorAdmin('Sube la imagen principal del producto.');
+
+  // Las filas de accesorios se guardan en orden; la imagen anterior se toma por posición de la fila.
+  const accesorios: Accesorio[] = [];
+  const filas = Math.min(Number(texto(f, 'acc_total')) || 0, 50);
+  for (let i = 0; i < filas; i++) {
+    const tipo = texto(f, `acc_tipo_${i}`);
+    if (!tipo) continue;
+    const anterior = casilla(f, `acc_quitar_${i}`) ? null : (existente?.accesorios[i]?.imagen ?? null);
+    accesorios.push({
+      tipo,
+      modelo: texto(f, `acc_modelo_${i}`),
+      descripcion: texto(f, `acc_descripcion_${i}`),
+      imagen: (await subirImagen(supabase, f.get(`acc_imagen_${i}`), 'accesorios', subidas)) ?? anterior,
+    });
+  }
+
+  const estado = texto(f, 'estado') as Estado;
+  const fila = {
+    slug: slugificar(texto(f, 'slug') || nombre),
+    nombre,
+    tipo: texto(f, 'tipo'),
+    categoria_id,
+    marca_id: texto(f, 'marca_id') || null,
+    subtitulo: texto(f, 'subtitulo'),
+    descripcion: texto(f, 'descripcion'),
+    imagen,
+    imagen_alt: texto(f, 'imagen_alt') || nombre,
+    especificaciones: lineas(texto(f, 'especificaciones')),
+    especialidades: lineas(texto(f, 'especialidades')),
+    incluye: lineas(texto(f, 'incluye')),
+    tecnologias: pares(texto(f, 'tecnologias')),
+    especificaciones_detalladas: grupos(texto(f, 'especificaciones_detalladas')),
+    accesorios_titulo: texto(f, 'accesorios_titulo') || 'Transductores compatibles',
+    accesorios,
+    estado: ESTADOS.some((e) => e.valor === estado) ? estado : 'oculto',
+    destacado: casilla(f, 'destacado'),
+    descuento_texto: texto(f, 'descuento_texto') || null,
+    descuento_inicio: inicio?.toISOString() ?? null,
+    descuento_fin: fin?.toISOString() ?? null,
+  };
+
+  if (existente) {
+    revisar(await supabase.from('productos').update(fila).eq('id', id));
+    await borrarImagenes(supabase, sobrantes(rutasDe(existente), rutasDe(fila)));
+    return `/admin/productos/${id}?guardado`;
+  }
+  const ultimo = revisar(
+    await supabase.from('productos').select('orden').order('orden', { ascending: false }).limit(1),
+  ) as { orden: number }[];
+  const creado = revisar(
+    await supabase
+      .from('productos')
+      .insert({ ...fila, orden: (ultimo[0]?.orden ?? -1) + 1 })
+      .select('id')
+      .single(),
+  ) as { id: string };
+  return `/admin/productos/${creado.id}?guardado`;
+});
+if (resultado instanceof Response) return resultado;
+
+const [categorias, marcas] = (await Promise.all([
+  supabase.from('categorias').select('id, nombre').order('orden').then(revisar),
+  supabase.from('marcas').select('id, nombre').order('nombre').then(revisar),
+])) as [FilaCategoria[], FilaMarca[]];
+
+// Lo que se muestra en el formulario: lo enviado (si falló) o lo guardado.
+const v = enviado
+  ? {
+      nombre: texto(enviado, 'nombre'),
+      slug: texto(enviado, 'slug'),
+      tipo: texto(enviado, 'tipo'),
+      categoria_id: texto(enviado, 'categoria_id'),
+      marca_id: texto(enviado, 'marca_id'),
+      subtitulo: texto(enviado, 'subtitulo'),
+      descripcion: texto(enviado, 'descripcion'),
+      imagen_alt: texto(enviado, 'imagen_alt'),
+      especificaciones: texto(enviado, 'especificaciones'),
+      especialidades: texto(enviado, 'especialidades'),
+      incluye: texto(enviado, 'incluye'),
+      tecnologias: texto(enviado, 'tecnologias'),
+      especificaciones_detalladas: texto(enviado, 'especificaciones_detalladas'),
+      accesorios_titulo: texto(enviado, 'accesorios_titulo'),
+      estado: texto(enviado, 'estado'),
+      destacado: casilla(enviado, 'destacado'),
+      descuento_texto: texto(enviado, 'descuento_texto'),
+      descuento_inicio: texto(enviado, 'descuento_inicio'),
+      descuento_fin: texto(enviado, 'descuento_fin'),
+      accesorios: Array.from({ length: Math.min(Number(texto(enviado, 'acc_total')) || 0, 50) }, (_, i) => ({
+        tipo: texto(enviado, `acc_tipo_${i}`),
+        modelo: texto(enviado, `acc_modelo_${i}`),
+        descripcion: texto(enviado, `acc_descripcion_${i}`),
+      })),
+    }
+  : {
+      nombre: existente?.nombre ?? '',
+      slug: existente?.slug ?? '',
+      tipo: existente?.tipo ?? '',
+      categoria_id: existente?.categoria_id ?? '',
+      marca_id: existente?.marca_id ?? '',
+      subtitulo: existente?.subtitulo ?? '',
+      descripcion: existente?.descripcion ?? '',
+      imagen_alt: existente?.imagen_alt ?? '',
+      especificaciones: (existente?.especificaciones ?? []).join('\n'),
+      especialidades: (existente?.especialidades ?? []).join('\n'),
+      incluye: (existente?.incluye ?? incluyeDefecto).join('\n'),
+      tecnologias: paresATexto(existente?.tecnologias ?? []),
+      especificaciones_detalladas: gruposATexto(existente?.especificaciones_detalladas ?? []),
+      accesorios_titulo: existente?.accesorios_titulo ?? 'Transductores compatibles',
+      estado: existente?.estado ?? 'oculto',
+      destacado: existente?.destacado ?? false,
+      descuento_texto: existente?.descuento_texto ?? '',
+      descuento_inicio: aFechaLocal(existente?.descuento_inicio),
+      descuento_fin: aFechaLocal(existente?.descuento_fin),
+      accesorios: (existente?.accesorios ?? []).map(({ tipo, modelo, descripcion }) => ({ tipo, modelo, descripcion })),
+    };
+// Filas vacías extra para agregar accesorios (guarda y vuelve a abrir si necesitas más).
+const filasAccesorios = [...v.accesorios, ...Array.from({ length: 2 }, () => ({ tipo: '', modelo: '', descripcion: '' }))];
+const avisoImagenes = enviado ? 'Si habías elegido imágenes nuevas, vuelve a seleccionarlas.' : '';
+---
+
+<Admin titulo={nuevo ? 'Nuevo producto' : (existente?.nombre ?? 'Producto')} error={[resultado, resultado && avisoImagenes].filter(Boolean).join(' ')}>
+  <p class="mt-2">
+    <a href="/admin/productos" class="enlace">← Todos los productos</a>
+    {
+      existente && (
+        <>
+          <span class="mx-2 opacity-30">|</span>
+          <a href={`/admin/vista-previa/${existente.slug}`} target="_blank" class="enlace">
+            Vista previa de la ficha ↗
+          </a>
+        </>
+      )
+    }
+  </p>
+
+  <form method="post" enctype="multipart/form-data">
+    <section class="panel">
+      <h2>Datos básicos</h2>
+      <div class="rejilla">
+        <label>
+          Nombre
+          <input name="nombre" value={v.nombre} required placeholder="MX3" />
+          <p class="ayuda">Sin la marca: se antepone sola (p. ej. «Mindray MX3»).</p>
+        </label>
+        <label>
+          Slug (dirección de la ficha)
+          <input name="slug" value={v.slug} placeholder="se genera del nombre" pattern="[a-z0-9\-]*" />
+          <p class="ayuda">/equipos/<strong>{v.slug || 'slug'}</strong>. Cambiarlo rompe los enlaces que ya existan.</p>
+        </label>
+        <label>
+          Categoría
+          <select name="categoria_id" required>
+            <option value="">Elige una categoría</option>
+            {
+              categorias.map((c) => (
+                <option value={c.id} selected={v.categoria_id === c.id}>
+                  {c.nombre}
+                </option>
+              ))
+            }
+          </select>
+        </label>
+        <label>
+          Marca
+          <select name="marca_id">
+            <option value="">Sin marca</option>
+            {
+              marcas.map((m) => (
+                <option value={m.id} selected={v.marca_id === m.id}>
+                  {m.nombre}
+                </option>
+              ))
+            }
+          </select>
+        </label>
+        <label class="ancho">
+          Tipo (etiqueta corta)
+          <input name="tipo" value={v.tipo} placeholder="Ultrasonido Portátil" />
+          <p class="ayuda">Aparece arriba del nombre en la tarjeta y en la ficha.</p>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Publicación</h2>
+      <fieldset class="grid gap-2">
+        <legend class="rotulo mb-2">Estado</legend>
+        {
+          ESTADOS.map((e) => (
+            <label class="opcion">
+              <input type="radio" name="estado" value={e.valor} checked={v.estado === e.valor} />
+              <span>
+                <strong>{e.texto}</strong> <span class="texto-suave">· {e.ayuda}</span>
+              </span>
+            </label>
+          ))
+        }
+      </fieldset>
+      <label class="opcion mt-4">
+        <input type="checkbox" name="destacado" checked={v.destacado} />
+        Destacado: mostrar en el catálogo de la landing
+      </label>
+    </section>
+
+    <section class="panel">
+      <h2>Etiqueta de descuento</h2>
+      <div class="rejilla">
+        <label class="ancho">
+          Texto
+          <input name="descuento_texto" value={v.descuento_texto} maxlength="40" placeholder="-15% Buen Fin" />
+          <p class="ayuda">Vacío = sin etiqueta. Sin fechas, se muestra hasta que borres el texto.</p>
+        </label>
+        <label>
+          Desde
+          <input type="datetime-local" name="descuento_inicio" value={v.descuento_inicio} />
+        </label>
+        <label>
+          Hasta
+          <input type="datetime-local" name="descuento_fin" value={v.descuento_fin} />
+        </label>
+      </div>
+      <p class="ayuda">Horas del centro de México.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Imagen</h2>
+      <div class="flex flex-wrap items-start gap-6">
+        {
+          existente && (
+            <img src={urlImagen(existente.imagen.ruta)} alt="" class="miniatura size-32!" />
+          )
+        }
+        <div class="grid flex-1 gap-4">
+          <label>
+            {existente ? 'Reemplazar imagen' : 'Imagen principal'}
+            <input type="file" name="imagen" accept="image/png,image/jpeg,image/webp,image/avif" required={!existente} />
+            <p class="ayuda">PNG con fondo transparente, cuadrada o 4:3, de 1200 px o más. Máximo 4 MB.</p>
+          </label>
+          <label>
+            Texto alternativo
+            <input name="imagen_alt" value={v.imagen_alt} placeholder="Ultrasonido portátil Mindray MX3 tipo laptop" />
+            <p class="ayuda">Describe la imagen para buscadores y lectores de pantalla.</p>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Textos</h2>
+      <div class="grid gap-4">
+        <label>
+          Subtítulo
+          <textarea name="subtitulo" rows="2">{v.subtitulo}</textarea>
+        </label>
+        <label>
+          Descripción
+          <textarea name="descripcion" rows="5">{v.descripcion}</textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Listas</h2>
+      <p class="ayuda mb-4">Una por renglón.</p>
+      <div class="rejilla">
+        <label>
+          Puntos destacados
+          <textarea name="especificaciones">{v.especificaciones}</textarea>
+          <p class="ayuda">Los 3 primeros salen en la tarjeta del catálogo.</p>
+        </label>
+        <label>
+          Especialidades
+          <textarea name="especialidades">{v.especialidades}</textarea>
+        </label>
+        <label class="ancho">
+          Incluye (servicio Imagmed)
+          <textarea name="incluye">{v.incluye}</textarea>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Tecnologías y ficha técnica</h2>
+      <div class="grid gap-4">
+        <label>
+          Tecnologías destacadas
+          <textarea name="tecnologias" placeholder="Plataforma ZST+: Adquisición de imágenes por zonas…">{v.tecnologias}</textarea>
+          <p class="ayuda">Un renglón por tecnología: <code>Título: descripción</code>.</p>
+        </label>
+        <label>
+          Especificaciones detalladas
+          <textarea
+            name="especificaciones_detalladas"
+            rows="8"
+            placeholder={'# Pantalla y Ergonomía\nMonitor: LCD Full HD 15.6"\nPeso: 4.5 kg'}>{v.especificaciones_detalladas}</textarea
+          >
+          <p class="ayuda">
+            <code># Grupo</code> abre un grupo; debajo, un renglón por dato: <code>Etiqueta: valor</code>.
+          </p>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Accesorios compatibles</h2>
+      <label>
+        Título de la sección
+        <input name="accesorios_titulo" value={v.accesorios_titulo} />
+        <p class="ayuda">En la ficha se lee «{v.accesorios_titulo || 'Transductores compatibles'} con Marca Nombre».</p>
+      </label>
+      <input type="hidden" name="acc_total" value={filasAccesorios.length} />
+      <div class="mt-4 grid gap-4">
+        {
+          filasAccesorios.map((a, i) => {
+            const imagen = existente?.accesorios[i]?.imagen;
+            return (
+              <fieldset class="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-[1fr_1fr_2fr]">
+                <legend class="rotulo px-1">{a.tipo || `Accesorio nuevo`}</legend>
+                <label>
+                  Tipo
+                  <input name={`acc_tipo_${i}`} value={a.tipo} placeholder="Convexo" />
+                </label>
+                <label>
+                  Modelo
+                  <input name={`acc_modelo_${i}`} value={a.modelo} placeholder="C5-2s" />
+                </label>
+                <label>
+                  Descripción
+                  <input name={`acc_descripcion_${i}`} value={a.descripcion} />
+                </label>
+                <div class="flex flex-wrap items-center gap-4 md:col-span-3">
+                  {imagen && <img src={urlImagen(imagen.ruta)} alt="" class="miniatura" />}
+                  <label>
+                    {imagen ? 'Reemplazar imagen' : 'Imagen (opcional)'}
+                    <input type="file" name={`acc_imagen_${i}`} accept="image/png,image/jpeg,image/webp,image/avif" />
+                  </label>
+                  {imagen && (
+                    <label class="opcion">
+                      <input type="checkbox" name={`acc_quitar_${i}`} />
+                      Quitar imagen
+                    </label>
+                  )}
+                </div>
+              </fieldset>
+            );
+          })
+        }
+      </div>
+      <p class="ayuda mt-3">
+        Deja «Tipo» vacío para quitar un accesorio. Los que tienen imagen aparecen en los círculos del hero (los 2 primeros).
+        ¿Necesitas más filas? Guarda y aparecerán otras dos.
+      </p>
+    </section>
+
+    <div class="acciones">
+      <button name="accion" value="guardar" class="btn btn-primario">Guardar</button>
+      <a href="/admin/productos" class="btn btn-secundario">Cancelar</a>
+    </div>
+  </form>
+
+  {
+    existente && (
+      <form method="post" class="mt-10 border-t border-slate-200 pt-6" onsubmit="return confirm('¿Borrar este producto? No se puede deshacer.')">
+        <input type="hidden" name="accion" value="borrar" />
+        <button class="btn btn-peligro">Borrar producto</button>
+        <p class="ayuda">Si solo está agotado o quieres quitarlo un tiempo, mejor cámbialo a «Agotado» u «Oculto».</p>
+      </form>
+    )
+  }
+</Admin>

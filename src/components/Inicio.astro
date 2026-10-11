@@ -1,0 +1,47 @@
+---
+// La landing completa. La usan / y la vista previa del admin (con otro Astro.locals.sitio).
+import Layout from '../layouts/Layout.astro';
+import Header from './Header.astro';
+import Hero from './Hero.astro';
+import Confianza from './Confianza.astro';
+import Marcas from './Marcas.astro';
+import Catalogo from './Catalogo.astro';
+import Calculadora from './Calculadora.astro';
+import PorQue from './PorQue.astro';
+import Casos from './Casos.astro';
+import Proceso from './Proceso.astro';
+import Faq from './Faq.astro';
+import Mapa from './Mapa.astro';
+import Contacto from './Contacto.astro';
+import Footer from './Footer.astro';
+import { formulario } from '../data/contacto';
+import { seccionServicio, servicios } from '../data/diferenciadores';
+---
+
+<Layout>
+  <Header />
+  <main id="contenido">
+    <Hero />
+    <Confianza />
+    <Marcas />
+    <Catalogo />
+    <PorQue
+      id="servicio"
+      s={seccionServicio}
+      bloques={servicios}
+      solicitud="Servicio"
+      equipo={formulario.servicio}
+      invertido
+    />
+    <Calculadora />
+    <PorQue />
+    <Casos />
+    <Proceso />
+    <Faq />
+    <Mapa />
+    <Contacto />
+  </main>
+  <Footer />
+  {/* La vista previa del admin agrega aquí su barra. */}
+  <slot />
+</Layout>

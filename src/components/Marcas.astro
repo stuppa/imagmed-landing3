@@ -2,6 +2,8 @@
 import { Image } from 'astro:assets';
 import Enfasis from './Enfasis.astro';
 import { marcas } from '../data/sitio';
+
+const lista = Astro.locals.sitio.marcas;
 ---
 
 <section id="marcas" class="seccion bg-white text-center" aria-labelledby="titulo-marcas">
@@ -12,10 +14,17 @@ import { marcas } from '../data/sitio';
 
     <ul class="logos mt-12 lg:mt-16" role="list" data-reveal="lista">
       {
-        marcas.lista.map((m) => (
+        lista.map((m) => (
           <li>
             {m.logo ? (
-              <Image src={m.logo} alt={m.nombre} height={48} densities={[1, 2]} class="h-10 w-auto lg:h-12" />
+              <Image
+                src={m.logo.src}
+                width={Math.round((48 * m.logo.width) / m.logo.height)}
+                height={48}
+                densities={[1, 2]}
+                alt={m.nombre}
+                class="h-10 w-auto lg:h-12"
+              />
             ) : (
               <span class="nombre">{m.nombre}</span>
             )}

@@ -2,7 +2,7 @@
 import Icono from './Icono.astro';
 import { formulario, whatsappUrl } from '../data/contacto';
 
-const wa = whatsappUrl();
+const wa = whatsappUrl(Astro.locals.sitio.contacto);
 ---
 
 {

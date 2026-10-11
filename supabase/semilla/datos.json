@@ -1,0 +1,843 @@
+{
+  "categorias": [
+    {
+      "slug": "rayos-x-portatiles",
+      "nombre": "Rayos X Portátiles",
+      "descripcion": "Equipos de rayos X móviles para estudios en cama, urgencias, terapia intensiva y quirófano.",
+      "orden": 0,
+      "visible": true
+    },
+    {
+      "slug": "detectores-de-rx",
+      "nombre": "Detectores de RX",
+      "descripcion": "Detectores digitales de panel plano (DR) para pasar tu sala de rayos X a radiografía digital directa.",
+      "orden": 1,
+      "visible": true
+    },
+    {
+      "slug": "ultrasonidos",
+      "nombre": "Ultrasonidos",
+      "descripcion": "Equipos de ultrasonido Mindray para cada especialidad: portátiles, de carro y de alta gama.",
+      "orden": 2,
+      "visible": true
+    },
+    {
+      "slug": "tomografos",
+      "nombre": "Tomógrafos",
+      "descripcion": "Tomografía computarizada (TC) para hospitales y centros de diagnóstico por imagen.",
+      "orden": 3,
+      "visible": true
+    },
+    {
+      "slug": "salas-de-rayos-x",
+      "nombre": "Salas de Rayos X",
+      "descripcion": "Salas de radiografía fijas para hospitales, clínicas y centros de diagnóstico.",
+      "orden": 4,
+      "visible": true
+    },
+    {
+      "slug": "arcos-en-c",
+      "nombre": "Arcos en C",
+      "descripcion": "Fluoroscopía móvil con imagen en tiempo real para quirófano, ortopedia y procedimientos intervencionistas.",
+      "orden": 5,
+      "visible": true
+    },
+    {
+      "slug": "densitometros",
+      "nombre": "Densitómetros",
+      "descripcion": "Equipos de densitometría ósea para medir la densidad mineral y apoyar el diagnóstico y seguimiento de la osteoporosis.",
+      "orden": 6,
+      "visible": true
+    },
+    {
+      "slug": "mastografos",
+      "nombre": "Mastógrafos",
+      "descripcion": "Equipos de mastografía para la detección oportuna y el diagnóstico de cáncer de mama.",
+      "orden": 7,
+      "visible": true
+    },
+    {
+      "slug": "ortopantomografos",
+      "nombre": "Ortopantomógrafos",
+      "descripcion": "Radiografía panorámica dental para odontología general, ortodoncia y cirugía maxilofacial.",
+      "orden": 8,
+      "visible": true
+    },
+    {
+      "slug": "impresoras-dicom",
+      "nombre": "Impresoras DICOM",
+      "descripcion": "Impresoras compatibles con DICOM para entregar en físico los estudios de tus equipos de imagen.",
+      "orden": 9,
+      "visible": true
+    },
+    {
+      "slug": "consumibles",
+      "nombre": "Consumibles",
+      "descripcion": "Insumos para la operación diaria de tus equipos de imagen. Dinos qué equipo usas y te cotizamos los consumibles compatibles.",
+      "orden": 10,
+      "visible": true
+    },
+    {
+      "slug": "digitalizadores-cr",
+      "nombre": "Digitalizadores CR",
+      "descripcion": "Radiografía computarizada (CR) para digitalizar los estudios de tu sala de rayos X convencional sin reemplazar el equipo.",
+      "orden": 11,
+      "visible": false
+    }
+  ],
+  "marcas": [
+    {
+      "nombre": "Mindray",
+      "orden": 0
+    },
+    {
+      "nombre": "DRGEM",
+      "orden": 1
+    },
+    {
+      "nombre": "OsteoSys",
+      "orden": 2
+    },
+    {
+      "nombre": "Fujifilm",
+      "orden": 3
+    },
+    {
+      "nombre": "Agfa",
+      "orden": 4
+    },
+    {
+      "nombre": "CareRay",
+      "orden": 5
+    },
+    {
+      "nombre": "Vatech",
+      "orden": 6
+    },
+    {
+      "nombre": "ANKE",
+      "orden": 7
+    },
+    {
+      "nombre": "LG",
+      "orden": 8
+    },
+    {
+      "nombre": "GE HealthCare",
+      "orden": 9
+    },
+    {
+      "nombre": "RayScan",
+      "orden": 10
+    },
+    {
+      "nombre": "Vieworks",
+      "orden": 11
+    }
+  ],
+  "productos": [
+    {
+      "slug": "mx3",
+      "nombre": "MX3",
+      "tipo": "Ultrasonido Portátil",
+      "categoria": "ultrasonidos",
+      "marca": "Mindray",
+      "subtitulo": "Ultrasonido portátil ultracompacto con plataforma ZST+ para diagnóstico veloz y preciso en cualquier punto de atención.",
+      "descripcion": "El Mindray MX3 es la combinación perfecta entre portabilidad, resistencia y rendimiento diagnóstico avanzado. Diseñado para médicos que requieren imágenes de alta resolución en áreas críticas, urgencias y consulta externa, el MX3 integra la galardonada tecnología ZST+ que procesa imágenes por zonas en lugar de líneas tradicionales, garantizando claridad superior y un flujo de trabajo ágil con encendido ultrarrápido.",
+      "imagen": "mx3.png",
+      "imagen_alt": "Ultrasonido portátil Mindray MX3 en diseño ultracompacto tipo laptop",
+      "especificaciones": [
+        "Plataforma ZST+ de adquisición por zonas",
+        "Pantalla Full HD de 15.6\" antirreflejante",
+        "Batería integrada de alta duración (hasta 1.5 h)"
+      ],
+      "especialidades": [
+        "Medicina de Urgencias",
+        "Cuidados Intensivos (UTI)",
+        "Anestesiología & Bloqueos",
+        "Medicina General",
+        "Musculoesquelético (MSK)"
+      ],
+      "incluye": [
+        "Asesoría clínica especializada para configurar el equipo a la medida de tu práctica",
+        "Instalación y puesta en marcha por ingenieros biomédicos certificados",
+        "Capacitación clínica para tu equipo de trabajo",
+        "Garantía formal respaldada por Imagmed Nacional",
+        "Soporte técnico continuo y cobertura de servicio en todo México"
+      ],
+      "tecnologias": [
+        {
+          "titulo": "Plataforma ZST+",
+          "descripcion": "Adquisición de imágenes por zonas que ofrece una resolución temporal y espacial de nivel avanzado."
+        },
+        {
+          "titulo": "HD Scope",
+          "descripcion": "Mejora la definición de bordes anatómicos y la diferenciación tisular en planos profundos."
+        },
+        {
+          "titulo": "iNeedle+",
+          "descripcion": "Visualización clara de la aguja con ajuste de ángulo para punciones y bloqueos precisos."
+        },
+        {
+          "titulo": "iTouch+",
+          "descripcion": "Optimización automática de la imagen en tiempo real con un solo toque."
+        }
+      ],
+      "especificaciones_detalladas": [
+        {
+          "categoria": "Pantalla y Ergonomía",
+          "items": [
+            {
+              "etiqueta": "Monitor",
+              "valor": "LCD Full HD 15.6\" antirreflejo"
+            },
+            {
+              "etiqueta": "Peso",
+              "valor": "4.5 kg en aleación de magnesio"
+            },
+            {
+              "etiqueta": "Batería",
+              "valor": "Litio integrada con autonomía de 1.5 horas"
+            }
+          ]
+        },
+        {
+          "categoria": "Procesamiento e Imagen",
+          "items": [
+            {
+              "etiqueta": "Arquitectura",
+              "valor": "ZST+ (Zone Sonography Technology)"
+            },
+            {
+              "etiqueta": "Modos de Imagen",
+              "valor": "B, M, Color, Power Doppler, PW, CW"
+            },
+            {
+              "etiqueta": "Almacenamiento",
+              "valor": "SSD de 128 GB integrado"
+            }
+          ]
+        },
+        {
+          "categoria": "Conectividad",
+          "items": [
+            {
+              "etiqueta": "Puertos Activos",
+              "valor": "1 puerto (ampliable a 3 con carro opcional)"
+            },
+            {
+              "etiqueta": "DICOM",
+              "valor": "DICOM 3.0 completo integrado"
+            },
+            {
+              "etiqueta": "Salidas",
+              "valor": "HDMI, USB 3.0, Wi-Fi"
+            }
+          ]
+        }
+      ],
+      "accesorios_titulo": "Transductores compatibles",
+      "accesorios": [
+        {
+          "tipo": "Convexo",
+          "modelo": "C5-2s",
+          "descripcion": "Estudios abdominales, obstétricos y renales.",
+          "imagen": "transductor-convexo.png"
+        },
+        {
+          "tipo": "Lineal",
+          "modelo": "L13-3s",
+          "descripcion": "Tejidos superficiales, vasculares, MSK y accesos venosos.",
+          "imagen": "transductor-lineal.png"
+        },
+        {
+          "tipo": "Endocavitario",
+          "modelo": "V11-3Ws",
+          "descripcion": "Ginecología, obstetricia temprana y urología.",
+          "imagen": null
+        },
+        {
+          "tipo": "Phased Array",
+          "modelo": "P4-2s",
+          "descripcion": "Evaluaciones cardíacas rápidas (POCUS) y hemodinámica.",
+          "imagen": null
+        }
+      ],
+      "estado": "publicado",
+      "destacado": true,
+      "orden": 0
+    },
+    {
+      "slug": "resona-i9",
+      "nombre": "Resona I9",
+      "tipo": "Ultrasonido de Carro Premium",
+      "categoria": "ultrasonidos",
+      "marca": "Mindray",
+      "subtitulo": "Sistema de clase premium impulsado por arquitectura ZST+ de 2ª generación e inteligencia artificial médica iConsole.",
+      "descripcion": "El Mindray Resona I9 redefine la experiencia clínica en radiología e imagenología médica avanzada. Impulsado por la arquitectura ZST+ de segunda generación e integración de herramientas de inteligencia artificial, el Resona I9 ofrece diagnósticos con una nitidez incomparable en pacientes difíciles, elastografía cuantitativa Sound Touch (STE) de alta resolución y flujos de trabajo automatizados que reducen drásticamente el tiempo de exploración.",
+      "imagen": "resona-i9.png",
+      "imagen_alt": "Ultrasonido de carro de alta gama Mindray Resona I9 con monitor articulado",
+      "especificaciones": [
+        "Plataforma ZST+ de 2ª Generación con IA médica",
+        "Monitor LED 4K / Full HD de 23.8\" articulado",
+        "Panel táctil iConsole de 15.6\" por gestos"
+      ],
+      "especialidades": [
+        "Radiología General",
+        "Ginecología y Obstetricia",
+        "Cardiología",
+        "Hepatología & Cuantificación",
+        "Salud Mamaria y Tiroidea"
+      ],
+      "incluye": [
+        "Asesoría clínica especializada para configurar el equipo a la medida de tu práctica",
+        "Instalación y puesta en marcha por ingenieros biomédicos certificados",
+        "Capacitación clínica para tu equipo de trabajo",
+        "Garantía formal respaldada por Imagmed Nacional",
+        "Soporte técnico continuo y cobertura de servicio en todo México"
+      ],
+      "tecnologias": [
+        {
+          "titulo": "Sound Touch Elastography (STE)",
+          "descripcion": "Elastografía por onda de choque cuantitativa 2D para evaluación de rigidez tisular y fibrosis."
+        },
+        {
+          "titulo": "iConsole",
+          "descripcion": "Panel táctil interactivo personalizable por gestos que agiliza los protocolos de examen."
+        },
+        {
+          "titulo": "Smart Scene 3D/4D",
+          "descripcion": "Reconocimiento anatómico automatizado con inteligencia artificial para adquisiciones volumétricas instantáneas."
+        },
+        {
+          "titulo": "Silencio iGala",
+          "descripcion": "Operación ultra silenciosa con tecnología de disipación de calor eficiente y sin ruido."
+        }
+      ],
+      "especificaciones_detalladas": [
+        {
+          "categoria": "Pantalla y Consola",
+          "items": [
+            {
+              "etiqueta": "Monitor Principal",
+              "valor": "23.8\" LED sobre brazo flotante articulado"
+            },
+            {
+              "etiqueta": "Panel Táctil",
+              "valor": "iConsole 15.6\" con elevación eléctrica"
+            },
+            {
+              "etiqueta": "Puertos Activos",
+              "valor": "5 puertos con indicador LED de estado"
+            }
+          ]
+        },
+        {
+          "categoria": "Rendimiento y Software",
+          "items": [
+            {
+              "etiqueta": "Procesador",
+              "valor": "ZST+ de 2ª Generación"
+            },
+            {
+              "etiqueta": "Almacenamiento",
+              "valor": "SSD NVMe de 1 TB"
+            },
+            {
+              "etiqueta": "Herramientas IA",
+              "valor": "Smart Planes, Smart ICV, STE Cuantitativo"
+            }
+          ]
+        },
+        {
+          "categoria": "Conectividad",
+          "items": [
+            {
+              "etiqueta": "Salidas de Vídeo",
+              "valor": "HDMI 4K, DisplayPort, USB 3.0"
+            },
+            {
+              "etiqueta": "Integración",
+              "valor": "DICOM 3.0, Wi-Fi institucional"
+            }
+          ]
+        }
+      ],
+      "accesorios_titulo": "Transductores compatibles",
+      "accesorios": [
+        {
+          "tipo": "Convexo Monocristal",
+          "modelo": "SC5-1U",
+          "descripcion": "Penetración profunda e imagen abdominal cristalina.",
+          "imagen": "transductor-convexo.png"
+        },
+        {
+          "tipo": "Lineal Alta Frecuencia",
+          "modelo": "L14-3WU",
+          "descripcion": "Máxima resolución en mama, tiroides y MSK.",
+          "imagen": "transductor-lineal.png"
+        },
+        {
+          "tipo": "Volumétrico 4D",
+          "modelo": "SD8-1E",
+          "descripcion": "Reconstrucción facial y anatómica 3D/4D fetal HD.",
+          "imagen": null
+        },
+        {
+          "tipo": "Endocavitario Volumétrico",
+          "modelo": "DE10-3WU",
+          "descripcion": "Diagnóstico ginecológico y obstétrico de alta resolución.",
+          "imagen": null
+        }
+      ],
+      "estado": "publicado",
+      "destacado": true,
+      "orden": 1
+    },
+    {
+      "slug": "nuewa",
+      "nombre": "Nuewa",
+      "tipo": "Ginecología & Salud de la Mujer",
+      "categoria": "ultrasonidos",
+      "marca": "Mindray",
+      "subtitulo": "Plataforma especializada en ginecología, obstetricia y medicina maternal con herramientas inteligentes Smart3D/4D.",
+      "descripcion": "Diseñado exclusivamente para las exigencias de la Salud de la Mujer, el Mindray Nuewa ofrece un rendimiento excepcional en cada etapa de la atención obstétrica y ginecológica. Integra herramientas avanzadas de biometría fetal asistida por inteligencia artificial, renderizado iLive Prime fotorrealista para la experiencia materno-fetal, y evaluación especializada del suelo pélvico.",
+      "imagen": "nuewa.png",
+      "imagen_alt": "Ultrasonido Mindray Nuewa especializado en ginecología y obstetricia",
+      "especificaciones": [
+        "Smart Scene 3D/4D con iLive Prime fotorrealista",
+        "Biometría fetal automática asistida por IA",
+        "Monitor LED de 21.5\" y pantalla táctil HD"
+      ],
+      "especialidades": [
+        "Ginecología",
+        "Obstetricia de Alto Riesgo",
+        "Medicina Fetal",
+        "Reproducción Asistida",
+        "Suelo Pélvico",
+        "Mastología"
+      ],
+      "incluye": [
+        "Asesoría clínica especializada para configurar el equipo a la medida de tu práctica",
+        "Instalación y puesta en marcha por ingenieros biomédicos certificados",
+        "Capacitación clínica para tu equipo de trabajo",
+        "Garantía formal respaldada por Imagmed Nacional",
+        "Soporte técnico continuo y cobertura de servicio en todo México"
+      ],
+      "tecnologias": [
+        {
+          "titulo": "iLive Prime",
+          "descripcion": "Renderizado 4D fotorrealista con fuentes de luz virtuales ajustables y tono de piel hiperrealista."
+        },
+        {
+          "titulo": "Smart Planes FH",
+          "descripcion": "Detección automática de los planos estándar del corazón fetal impulsada por IA."
+        },
+        {
+          "titulo": "Smart Pelvic",
+          "descripcion": "Evaluación cuantitativa y visual del suelo pélvico femenino pre y posparto."
+        },
+        {
+          "titulo": "Smart FHR",
+          "descripcion": "Medición automática de la frecuencia cardíaca fetal directa sobre la imagen B."
+        }
+      ],
+      "especificaciones_detalladas": [
+        {
+          "categoria": "Sistema y Pantallas",
+          "items": [
+            {
+              "etiqueta": "Monitor Principal",
+              "valor": "LED de 21.5\" antirreflejo articulado"
+            },
+            {
+              "etiqueta": "Pantalla Táctil",
+              "valor": "13.3\" HD con inclinación regulable"
+            },
+            {
+              "etiqueta": "Puertos Activos",
+              "valor": "4 puertos de conexión rápida"
+            }
+          ]
+        },
+        {
+          "categoria": "Herramientas Obstétricas",
+          "items": [
+            {
+              "etiqueta": "Modos 3D/4D",
+              "valor": "iLive Prime, Smart3D, Color 3D"
+            },
+            {
+              "etiqueta": "Biometría IA",
+              "valor": "Smart OB, Smart ICV, Smart Planes"
+            }
+          ]
+        }
+      ],
+      "accesorios_titulo": "Transductores compatibles",
+      "accesorios": [
+        {
+          "tipo": "Convexo Volumétrico 4D",
+          "modelo": "V11-3HU",
+          "descripcion": "Captura volumétrica 4D fetal de alta velocidad de cuadros.",
+          "imagen": "transductor-convexo.png"
+        },
+        {
+          "tipo": "Endocavitario Ergonómico",
+          "modelo": "V11-3B",
+          "descripcion": "Exploración transvaginal confortable y detallada.",
+          "imagen": null
+        },
+        {
+          "tipo": "Lineal Superficial",
+          "modelo": "L12-3E",
+          "descripcion": "Evaluación mamaria y ginecológica superficial.",
+          "imagen": "transductor-lineal.png"
+        }
+      ],
+      "estado": "publicado",
+      "destacado": true,
+      "orden": 2
+    },
+    {
+      "slug": "consona-n9",
+      "nombre": "Consona N9",
+      "tipo": "Servicio Compartido / Multidisciplinario",
+      "categoria": "ultrasonidos",
+      "marca": "Mindray",
+      "subtitulo": "Versatilidad diagnóstica superior con plataforma ZST+ para clínicas de atención médica integral.",
+      "descripcion": "El Mindray Consona N9 es la solución ideal para clínicas, hospitales y centros diagnósticos que requieren cobertura multidisciplinaria de primer nivel. Su plataforma ZST+ garantiza nitidez de imagen continua en estudios abdominales, vasculares, obstétricos y cardíacos, respaldada por una estructura ergonómica de bajo esfuerzo.",
+      "imagen": "consona-n9.png",
+      "imagen_alt": "Ultrasonido de carro Mindray Consona N9 para servicio compartido",
+      "especificaciones": [
+        "Arquitectura de imagen ZST+ multidisciplinaria",
+        "Monitor LED de 21.5\" Full HD articulado",
+        "Diseño ergonómico con elevación eléctrica"
+      ],
+      "especialidades": [
+        "Medicina General",
+        "Radiología",
+        "Ginecología y Obstetricia",
+        "Cardiología Vascular",
+        "Urología"
+      ],
+      "incluye": [
+        "Asesoría clínica especializada para configurar el equipo a la medida de tu práctica",
+        "Instalación y puesta en marcha por ingenieros biomédicos certificados",
+        "Capacitación clínica para tu equipo de trabajo",
+        "Garantía formal respaldada por Imagmed Nacional",
+        "Soporte técnico continuo y cobertura de servicio en todo México"
+      ],
+      "tecnologias": [
+        {
+          "titulo": "iTouch+",
+          "descripcion": "Optimización automática instantánea de ganancia B, Doppler y Color."
+        },
+        {
+          "titulo": "Smart Calc",
+          "descripcion": "Trazados Doppler automáticos y cálculo inmediato de índices hemodinámicos."
+        },
+        {
+          "titulo": "Sound Touch Elastography",
+          "descripcion": "Evaluación cualitativa y cuantitativa de rigidez tisular."
+        },
+        {
+          "titulo": "Modo Standby Instantáneo",
+          "descripcion": "Batería en espera para traslados entre salas sin apagar el equipo."
+        }
+      ],
+      "especificaciones_detalladas": [
+        {
+          "categoria": "Ergonomía y Pantalla",
+          "items": [
+            {
+              "etiqueta": "Monitor",
+              "valor": "LED Full HD 21.5\" articulado"
+            },
+            {
+              "etiqueta": "Panel Táctil",
+              "valor": "13.3\" multitáctil capacitivo"
+            },
+            {
+              "etiqueta": "Teclado",
+              "valor": "Físico retráctil con iluminación"
+            }
+          ]
+        },
+        {
+          "categoria": "Procesamiento",
+          "items": [
+            {
+              "etiqueta": "Arquitectura",
+              "valor": "ZST+ (Zone Sonography Technology)"
+            },
+            {
+              "etiqueta": "Puertos Activos",
+              "valor": "4 puertos estándar"
+            }
+          ]
+        }
+      ],
+      "accesorios_titulo": "Transductores compatibles",
+      "accesorios": [
+        {
+          "tipo": "Convexo",
+          "modelo": "C5-1U",
+          "descripcion": "Estudios abdominales y obstétricos.",
+          "imagen": "transductor-convexo.png"
+        },
+        {
+          "tipo": "Lineal",
+          "modelo": "L13-3U",
+          "descripcion": "Vascular periférico, tiroides y partes blandas.",
+          "imagen": "transductor-lineal.png"
+        },
+        {
+          "tipo": "Phased Array",
+          "modelo": "P4-2U",
+          "descripcion": "Ecocardiografía en adultos y pacientes pediátricos.",
+          "imagen": null
+        },
+        {
+          "tipo": "Endocavitario",
+          "modelo": "V11-3U",
+          "descripcion": "Urología y ginecología transvaginal.",
+          "imagen": null
+        }
+      ],
+      "estado": "publicado",
+      "destacado": true,
+      "orden": 3
+    },
+    {
+      "slug": "resona-6",
+      "nombre": "Resona 6",
+      "tipo": "Radiología y Cardiología Avanzada",
+      "categoria": "ultrasonidos",
+      "marca": "Mindray",
+      "subtitulo": "Potencia de procesamiento por zonas ZST+ orientada a radiología de alta complejidad y cardiología cuantitativa.",
+      "descripcion": "El Resona 6 pertenece a la línea insignia de Mindray, incorporando adquisición por zonas ZST+ para proporcionar resoluciones tisulares excepcionales con excelente penetración en pacientes con ventana acústica difícil. Cuenta con avanzadas herramientas cuantitativas de miocardio y elastografía por onda de choque.",
+      "imagen": "resona-6.png",
+      "imagen_alt": "Ultrasonido Mindray Resona 6 avanzado para radiología y cardiología",
+      "especificaciones": [
+        "Canales ZST+ de alta definición anatómica",
+        "Monitor LED Full HD 21.5\" sobre brazo flotante",
+        "Pantalla táctil iControl multitáctil"
+      ],
+      "especialidades": [
+        "Radiología Avanzada",
+        "Cardiología",
+        "Vascular Periférico",
+        "Ginecología y Obstetricia",
+        "Medicina Interna"
+      ],
+      "incluye": [
+        "Asesoría clínica especializada para configurar el equipo a la medida de tu práctica",
+        "Instalación y puesta en marcha por ingenieros biomédicos certificados",
+        "Capacitación clínica para tu equipo de trabajo",
+        "Garantía formal respaldada por Imagmed Nacional",
+        "Soporte técnico continuo y cobertura de servicio en todo México"
+      ],
+      "tecnologias": [
+        {
+          "titulo": "Tissue Tracking QA",
+          "descripcion": "Análisis cuantitativo de strain miocárdico y deformación del ventrículo izquierdo."
+        },
+        {
+          "titulo": "UWN+ Contrast Imaging",
+          "descripcion": "Imagenología con agentes de contraste de armónico ultra amplio."
+        },
+        {
+          "titulo": "iClear+",
+          "descripcion": "Filtro de supresión de speckle que preserva bordes estructurales sutiles."
+        }
+      ],
+      "especificaciones_detalladas": [
+        {
+          "categoria": "Pantalla y Conexiones",
+          "items": [
+            {
+              "etiqueta": "Monitor Principal",
+              "valor": "LED 21.5\" Full HD en brazo articulado"
+            },
+            {
+              "etiqueta": "Panel Táctil",
+              "valor": "12.1\" con control gestual"
+            },
+            {
+              "etiqueta": "Puertos Activos",
+              "valor": "4 puertos pinless de alta durabilidad"
+            }
+          ]
+        }
+      ],
+      "accesorios_titulo": "Transductores compatibles",
+      "accesorios": [
+        {
+          "tipo": "Convexo Monocristal",
+          "modelo": "SC5-1E",
+          "descripcion": "Alta resolución y penetración en abdomen.",
+          "imagen": "transductor-convexo.png"
+        },
+        {
+          "tipo": "Phased Array",
+          "modelo": "P4-2E",
+          "descripcion": "Ecocardiografía transtorácica cuantitativa.",
+          "imagen": null
+        },
+        {
+          "tipo": "Lineal",
+          "modelo": "L12-3E",
+          "descripcion": "Evaluación vascular, mamaria y musculoesquelética.",
+          "imagen": "transductor-lineal.png"
+        }
+      ],
+      "estado": "publicado",
+      "destacado": true,
+      "orden": 4
+    },
+    {
+      "slug": "dc-70",
+      "nombre": "DC-70",
+      "tipo": "Ultrasonido Clínico Versátil",
+      "categoria": "ultrasonidos",
+      "marca": "Mindray",
+      "subtitulo": "Eficiencia operativa superior con arquitectura X-Insight para un flujo de trabajo ágil y diagnósticos sin margen de error.",
+      "descripcion": "El Mindray DC-70 con X-Insight ofrece claridad visual asombrosa combinada con una velocidad de procesamiento veloz. Diseñado para simplificar los exámenes rutinarios complejos, integra transductores ComboWave de alto rendimiento que mejoran la sensibilidad del flujo sanguíneo y la resolución espacial.",
+      "imagen": "dc-70.png",
+      "imagen_alt": "Ultrasonido de carro Mindray DC-70 X-Insight",
+      "especificaciones": [
+        "Arquitectura X-Insight con transductores ComboWave",
+        "Monitor LED Full HD de 21.5\" articulado",
+        "Pantalla táctil ultra-sensible de 13.3\""
+      ],
+      "especialidades": [
+        "Radiología General",
+        "Ginecología y Obstetricia",
+        "Cardiología",
+        "Urología",
+        "Medicina Familiar"
+      ],
+      "incluye": [
+        "Asesoría clínica especializada para configurar el equipo a la medida de tu práctica",
+        "Instalación y puesta en marcha por ingenieros biomédicos certificados",
+        "Capacitación clínica para tu equipo de trabajo",
+        "Garantía formal respaldada por Imagmed Nacional",
+        "Soporte técnico continuo y cobertura de servicio en todo México"
+      ],
+      "tecnologias": [
+        {
+          "titulo": "ComboWave Probes",
+          "descripcion": "Transductores de material piezoeléctrico avanzado que maximizan el ancho de banda y la señal."
+        },
+        {
+          "titulo": "iScanHelper",
+          "descripcion": "Guía anatómica e ilustrada integrada en pantalla para referencia clínica instantánea."
+        },
+        {
+          "titulo": "Smart FBC",
+          "descripcion": "Mediciones automáticas en chequeos de rutina obstétrica."
+        }
+      ],
+      "especificaciones_detalladas": [
+        {
+          "categoria": "Especificaciones Principales",
+          "items": [
+            {
+              "etiqueta": "Monitor",
+              "valor": "21.5\" LED Full HD orientable"
+            },
+            {
+              "etiqueta": "Panel Táctil",
+              "valor": "13.3\" multitáctil regulable"
+            },
+            {
+              "etiqueta": "Puertos Activos",
+              "valor": "4 puertos activos"
+            }
+          ]
+        }
+      ],
+      "accesorios_titulo": "Transductores compatibles",
+      "accesorios": [
+        {
+          "tipo": "Convexo ComboWave",
+          "modelo": "C5-1E",
+          "descripcion": "Excelente contraste tisular y flujo Doppler.",
+          "imagen": "transductor-convexo.png"
+        },
+        {
+          "tipo": "Lineal",
+          "modelo": "L14-6WE",
+          "descripcion": "Imagenología detallada en pequeñas partes y vascular.",
+          "imagen": "transductor-lineal.png"
+        },
+        {
+          "tipo": "Endocavitario",
+          "modelo": "V11-3E",
+          "descripcion": "Evaluaciones ginecológicas y prostáticas.",
+          "imagen": null
+        }
+      ],
+      "estado": "publicado",
+      "destacado": true,
+      "orden": 5
+    }
+  ],
+  "ajustes": {
+    "hero_producto": "mx3",
+    "hero_etiqueta": "Ultrasonido Mindray",
+    "hero_titulo": "¿En imagen médica? Somos *tu mejor opción*.",
+    "hero_texto": "Ultrasonidos Mindray y equipo de imagenología con instalación, capacitación y servicio técnico en todo México.",
+    "hero_rotulo_accesorio": "Transductor",
+    "whatsapp": "522711906286",
+    "whatsapp_mensaje": "Hola IMAGMED NACIONAL, me interesa información sobre sus equipos.",
+    "telefono": "",
+    "aviso_privacidad_url": "",
+    "direccion": "C. 38 1705, entre Av. 17 y Av. 17A, Nuevo Córdoba, 94550 Córdoba, Ver.",
+    "horario": "Lunes a viernes: 9:00 - 17:00 hrs",
+    "google_maps_url": "https://maps.app.goo.gl/DVZiHd1BbWLBJw4N6"
+  },
+  "faq": [
+    {
+      "pregunta": "¿Cómo sé qué equipo necesito?",
+      "respuesta": "Cuéntanos tu especialidad, el tipo de estudios que haces y cuántos pacientes atiendes. Un asesor te recomienda opciones y te explica las diferencias antes de cotizar.",
+      "orden": 0
+    },
+    {
+      "pregunta": "¿Puedo ver el equipo funcionando antes de comprar?",
+      "respuesta": "Sí. Solicita una demo en el formulario y coordinamos contigo la fecha y la modalidad.",
+      "orden": 1
+    },
+    {
+      "pregunta": "¿Cuál es el tiempo de entrega?",
+      "respuesta": "Normalmente de 2 a 3 días, según el stock en bodega. Te confirmamos el tiempo exacto en tu cotización.",
+      "orden": 2
+    },
+    {
+      "pregunta": "¿Incluye instalación y capacitación?",
+      "respuesta": "Sí. Instalamos el equipo y capacitamos a tu personal para que lo opere desde el primer día.",
+      "orden": 3
+    },
+    {
+      "pregunta": "¿Qué garantía tienen los equipos?",
+      "respuesta": "La mayoría de nuestros equipos tiene 12 meses de garantía o más. El plazo exacto depende del equipo y modelo, y queda por escrito en tu cotización.",
+      "orden": 4
+    },
+    {
+      "pregunta": "¿Dan servicio a equipos que no compré con ustedes?",
+      "respuesta": "Sí. Nuestros ingenieros certificados dan mantenimiento preventivo y correctivo a todo equipo de imagenología, sin importar dónde lo compraste.",
+      "orden": 5
+    },
+    {
+      "pregunta": "¿Ofrecen opciones de financiamiento?",
+      "respuesta": "Sí. Ofrecemos financiamiento para médicos, sujeto a aprobación según tu historial crediticio, y también arrendamiento (leasing).",
+      "orden": 6
+    },
+    {
+      "pregunta": "¿Atienden en todo México?",
+      "respuesta": "Sí. Atendemos clínicas, consultorios y hospitales en todo el país.",
+      "orden": 7
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { casilla, ErrorAdmin, procesarFormulario, revisar, texto } from '../../lib/admin';
+import { slugificar } from '../../lib/contenido';
+import type { FilaCategoria } from '../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+
+const resultado = await procesarFormulario(Astro, async (f) => {
+  const id = texto(f, 'id');
+  if (texto(f, 'accion') === 'borrar') {
+    revisar(await supabase.from('categorias').delete().eq('id', id));
+    return;
+  }
+  const nombre = texto(f, 'nombre');
+  if (!nombre) throw new ErrorAdmin('Escribe el nombre de la categoría.');
+  const fila = {
+    nombre,
+    slug: slugificar(texto(f, 'slug') || nombre),
+    descripcion: texto(f, 'descripcion'),
+    orden: Number(texto(f, 'orden')) || 0,
+    visible: casilla(f, 'visible'),
+  };
+  revisar(id ? await supabase.from('categorias').update(fila).eq('id', id) : await supabase.from('categorias').insert(fila));
+});
+if (resultado instanceof Response) return resultado;
+
+const [categorias, productos] = (await Promise.all([
+  supabase.from('categorias').select('*').order('orden').order('nombre').then(revisar),
+  supabase.from('productos').select('categoria_id').then(revisar),
+])) as [FilaCategoria[], { categoria_id: string }[]];
+const cuantos = (id: string) => productos.filter((p) => p.categoria_id === id).length;
+const siguiente = Math.max(-1, ...categorias.map((c) => c.orden)) + 1;
+---
+
+<Admin titulo="Categorías" error={resultado}>
+  <p class="ayuda mt-2">
+    Cada categoría visible aparece en el menú «Productos» con su página en /productos/slug, en el orden indicado (menor primero).
+  </p>
+
+  {
+    categorias.map((c) => (
+      <form method="post" class="panel rejilla">
+        <input type="hidden" name="id" value={c.id} />
+        <label>
+          Nombre
+          <input name="nombre" value={c.nombre} required />
+        </label>
+        <label>
+          Slug
+          <input name="slug" value={c.slug} pattern="[a-z0-9\-]*" />
+        </label>
+        <label class="ancho">
+          Descripción
+          <textarea name="descripcion" rows="2">{c.descripcion}</textarea>
+        </label>
+        <label>
+          Orden
+          <input type="number" name="orden" value={c.orden} class="max-w-28" />
+        </label>
+        <div class="flex flex-wrap items-center gap-4 self-end">
+          <label class="opcion">
+            <input type="checkbox" name="visible" checked={c.visible} />
+            Visible en el menú
+          </label>
+          <span class="chip">{cuantos(c.id)} productos</span>
+        </div>
+        <div class="acciones ancho mt-0!">
+          <button name="accion" value="guardar" class="btn btn-primario">Guardar</button>
+          <button
+            name="accion"
+            value="borrar"
+            class="btn btn-peligro"
+            disabled={cuantos(c.id) > 0}
+            title={cuantos(c.id) > 0 ? 'Mueve o borra antes sus productos' : undefined}
+            onclick="return confirm('¿Borrar esta categoría?')"
+          >
+            Borrar
+          </button>
+        </div>
+      </form>
+    ))
+  }
+
+  <form method="post" class="panel rejilla">
+    <h2 class="ancho">Nueva categoría</h2>
+    <label>
+      Nombre
+      <input name="nombre" required />
+    </label>
+    <label>
+      Slug
+      <input name="slug" placeholder="se genera del nombre" pattern="[a-z0-9\-]*" />
+    </label>
+    <label class="ancho">
+      Descripción
+      <textarea name="descripcion" rows="2"></textarea>
+    </label>
+    <label>
+      Orden
+      <input type="number" name="orden" value={siguiente} class="max-w-28" />
+    </label>
+    <label class="opcion self-end">
+      <input type="checkbox" name="visible" checked />
+      Visible en el menú
+    </label>
+    <div class="acciones ancho mt-0!">
+      <button name="accion" value="crear" class="btn btn-primario">Agregar categoría</button>
+    </div>
+  </form>
+</Admin>

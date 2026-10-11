@@ -1,0 +1,213 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import { borrarImagenes, ErrorAdmin, procesarFormulario, revisar, subirImagen, texto } from '../../../lib/admin';
+import { aFechaLocal, deFechaLocal, formatoFecha } from '../../../lib/contenido';
+import { urlImagen } from '../../../lib/supabase';
+import { hero as textosHero } from '../../../data/sitio';
+import type { FilaCampana, FilaProducto } from '../../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+const id = Astro.params.id ?? '';
+const nueva = id === 'nueva';
+if (!nueva && !/^[0-9a-f-]{36}$/.test(id)) return Astro.redirect('/admin/hero');
+
+const existente = nueva
+  ? null
+  : (revisar(await supabase.from('campanas').select('*').eq('id', id).maybeSingle()) as FilaCampana | null);
+if (!nueva && !existente) return Astro.redirect('/admin/hero');
+
+const enviado = Astro.request.method === 'POST' ? await Astro.request.clone().formData() : null;
+
+const resultado = await procesarFormulario(Astro, async (f, subidas) => {
+  if (texto(f, 'accion') === 'borrar') {
+    if (!existente) return '/admin/hero';
+    revisar(await supabase.from('campanas').delete().eq('id', id));
+    await borrarImagenes(supabase, [existente.imagen.ruta]);
+    return '/admin/hero?guardado';
+  }
+
+  const nombre = texto(f, 'nombre');
+  const titulo = texto(f, 'titulo');
+  const inicio = deFechaLocal(texto(f, 'inicio'));
+  const fin = deFechaLocal(texto(f, 'fin'));
+  if (!nombre || !titulo) throw new ErrorAdmin('Escribe el nombre interno y el título.');
+  if (!inicio || !fin) throw new ErrorAdmin('Indica cuándo empieza y cuándo termina.');
+  if (fin <= inicio) throw new ErrorAdmin('El fin debe ser después del inicio.');
+
+  // Mensaje claro antes de que la base la rechace (la restricción sigue siendo la garantía).
+  let otras = supabase.from('campanas').select('nombre, inicio, fin').lt('inicio', fin.toISOString()).gt('fin', inicio.toISOString());
+  if (existente) otras = otras.neq('id', id);
+  const encimada = (revisar(await otras.limit(1)) as Pick<FilaCampana, 'nombre' | 'inicio' | 'fin'>[])[0];
+  if (encimada) {
+    throw new ErrorAdmin(
+      `Se encima con «${encimada.nombre}» (${formatoFecha(encimada.inicio)} → ${formatoFecha(encimada.fin)}). Ajusta las fechas.`,
+    );
+  }
+
+  const imagen =
+    (await subirImagen(supabase, f.get('imagen'), 'campanas', subidas, { proporcion: 4 / 3, anchoMinimo: 1200 })) ??
+    existente?.imagen;
+  if (!imagen) throw new ErrorAdmin('Sube la imagen de la campaña (4:3, p. ej. 1600×1200).');
+  const imagen_alt = texto(f, 'imagen_alt');
+  if (!imagen_alt) throw new ErrorAdmin('Describe la imagen en «Texto alternativo».');
+
+  const fila = {
+    nombre,
+    inicio: inicio.toISOString(),
+    fin: fin.toISOString(),
+    etiqueta: texto(f, 'etiqueta'),
+    titulo,
+    texto: texto(f, 'texto'),
+    cta_principal: texto(f, 'cta_principal') || textosHero.ctaPrincipal,
+    cta_secundario: texto(f, 'cta_secundario') || textosHero.ctaSecundario,
+    imagen,
+    imagen_alt,
+    producto_id: texto(f, 'producto_id') || null,
+  };
+  if (existente) {
+    revisar(await supabase.from('campanas').update(fila).eq('id', id));
+    if (existente.imagen.ruta !== imagen.ruta) await borrarImagenes(supabase, [existente.imagen.ruta]);
+    return `/admin/hero/${id}?guardado`;
+  }
+  const creada = revisar(await supabase.from('campanas').insert(fila).select('id').single()) as { id: string };
+  return `/admin/hero/${creada.id}?guardado`;
+});
+if (resultado instanceof Response) return resultado;
+
+const productos = revisar(
+  await supabase.from('productos').select('id, nombre, estado').neq('estado', 'oculto').order('orden'),
+) as Pick<FilaProducto, 'id' | 'nombre' | 'estado'>[];
+
+const campo = (nombre: keyof FilaCampana, defecto = '') =>
+  enviado ? texto(enviado, nombre) : String(existente?.[nombre] ?? defecto);
+const v = {
+  nombre: campo('nombre'),
+  inicio: enviado ? texto(enviado, 'inicio') : aFechaLocal(existente?.inicio),
+  fin: enviado ? texto(enviado, 'fin') : aFechaLocal(existente?.fin),
+  etiqueta: campo('etiqueta'),
+  titulo: campo('titulo'),
+  texto: campo('texto'),
+  cta_principal: campo('cta_principal', textosHero.ctaPrincipal),
+  cta_secundario: campo('cta_secundario', textosHero.ctaSecundario),
+  imagen_alt: campo('imagen_alt'),
+  producto_id: campo('producto_id'),
+};
+---
+
+<Admin
+  titulo={nueva ? 'Nueva campaña' : (existente?.nombre ?? 'Campaña')}
+  error={[resultado, resultado && enviado ? 'Si habías elegido una imagen nueva, vuelve a seleccionarla.' : ''].filter(Boolean).join(' ')}
+>
+  <p class="mt-2">
+    <a href="/admin/hero" class="enlace">← Hero y campañas</a>
+    {
+      existente && (
+        <>
+          <span class="mx-2 opacity-30">|</span>
+          <a href={`/admin/vista-previa?campana=${existente.id}`} target="_blank" class="enlace">
+            Vista previa ↗
+          </a>
+        </>
+      )
+    }
+  </p>
+
+  <form method="post" enctype="multipart/form-data">
+    <section class="panel">
+      <h2>Cuándo</h2>
+      <div class="rejilla">
+        <label class="ancho">
+          Nombre interno
+          <input name="nombre" value={v.nombre} required placeholder="Buen Fin 2026" />
+          <p class="ayuda">Solo lo ves tú, en el admin.</p>
+        </label>
+        <label>
+          Empieza
+          <input type="datetime-local" name="inicio" value={v.inicio} required />
+        </label>
+        <label>
+          Termina
+          <input type="datetime-local" name="fin" value={v.fin} required />
+        </label>
+      </div>
+      <p class="ayuda">Horas del centro de México. Al terminar, el hero vuelve solo al diseño por defecto.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Imagen</h2>
+      <div class="flex flex-wrap items-start gap-6">
+        {existente && <img src={urlImagen(existente.imagen.ruta)} alt="" class="w-48 rounded-md" />}
+        <div class="grid flex-1 gap-4">
+          <label>
+            {existente ? 'Reemplazar imagen' : 'Imagen de la campaña'}
+            <input type="file" name="imagen" accept="image/png,image/jpeg,image/webp,image/avif" required={!existente} />
+            <p class="ayuda">
+              Proporción <strong>4:3</strong>, de <strong>1600×1200 px</strong> (mínimo 1200 px de ancho). Máximo 4 MB. Va en el lugar del
+              equipo, a la derecha del título; en celular, debajo del texto.
+            </p>
+          </label>
+          <label>
+            Texto alternativo
+            <input name="imagen_alt" value={v.imagen_alt} required placeholder="Ultrasonido MX3 con 15% de descuento por el Buen Fin" />
+            <p class="ayuda">Si la imagen trae texto (precio, promoción), escríbelo aquí: Google y los lectores de pantalla no lo leen de la imagen.</p>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Textos y botones</h2>
+      <div class="rejilla">
+        <label>
+          Etiqueta
+          <input name="etiqueta" value={v.etiqueta} placeholder="Buen Fin" />
+        </label>
+        <label>
+          Producto del botón «Cotiza» (opcional)
+          <select name="producto_id">
+            <option value="">Ninguno</option>
+            {
+              productos.map((p) => (
+                <option value={p.id} selected={v.producto_id === p.id}>
+                  {p.nombre}
+                </option>
+              ))
+            }
+          </select>
+          <p class="ayuda">Al dar clic, el formulario ya trae este producto elegido.</p>
+        </label>
+        <label class="ancho">
+          Título
+          <input name="titulo" value={v.titulo} required placeholder="15% en el *MX3* este fin." />
+          <p class="ayuda">Entre *asteriscos* va en azul.</p>
+        </label>
+        <label class="ancho">
+          Texto
+          <textarea name="texto" rows="2">{v.texto}</textarea>
+        </label>
+        <label>
+          Botón principal
+          <input name="cta_principal" value={v.cta_principal} />
+        </label>
+        <label>
+          Botón secundario
+          <input name="cta_secundario" value={v.cta_secundario} />
+        </label>
+      </div>
+    </section>
+
+    <div class="acciones">
+      <button name="accion" value="guardar" class="btn btn-primario">Guardar</button>
+      <a href="/admin/hero" class="btn btn-secundario">Cancelar</a>
+    </div>
+  </form>
+
+  {
+    existente && (
+      <form method="post" class="mt-10 border-t border-slate-200 pt-6" onsubmit="return confirm('¿Borrar esta campaña?')">
+        <input type="hidden" name="accion" value="borrar" />
+        <button class="btn btn-peligro">Borrar campaña</button>
+      </form>
+    )
+  }
+</Admin>

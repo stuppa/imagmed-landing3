@@ -1,0 +1,36 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { texto } from '../../lib/admin';
+
+const MOTIVOS: Record<string, string> = {
+  expirada: 'Tu sesión expiró. Vuelve a entrar.',
+  'sin-permiso': 'Esta cuenta no es administradora.',
+};
+let error = MOTIVOS[Astro.url.searchParams.get('motivo') ?? ''] ?? '';
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const { error: e } = await Astro.locals.supabase.auth.signInWithPassword({
+    email: texto(f, 'correo'),
+    password: String(f.get('contrasena') ?? ''),
+  });
+  if (!e) return Astro.redirect('/admin/verificar', 303);
+  // Mismo mensaje para correo o contraseña: no revela qué cuentas existen.
+  error = e.status === 429 ? 'Demasiados intentos. Espera unos minutos.' : 'Correo o contraseña incorrectos.';
+}
+---
+
+<Admin titulo="Entrar al admin" error={error} sinMenu>
+  <form method="post" class="panel grid gap-4">
+    <label>
+      Correo
+      <input name="correo" type="email" autocomplete="username" required autofocus />
+    </label>
+    <label>
+      Contraseña
+      <input name="contrasena" type="password" autocomplete="current-password" required />
+    </label>
+    <button class="btn btn-primario mt-2">Entrar</button>
+  </form>
+  <p class="ayuda mt-4">Después te pediremos el código de tu app autenticadora.</p>
+</Admin>

@@ -1,0 +1,168 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import { procesarFormulario, revisar, texto } from '../../../lib/admin';
+import { formatoFecha, vigente } from '../../../lib/contenido';
+import { urlImagen } from '../../../lib/supabase';
+import type { Estado, FilaCategoria, FilaMarca, FilaProducto } from '../../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+const ESTADOS: Estado[] = ['publicado', 'agotado', 'oculto'];
+
+// Acciones rápidas de cada fila; al terminar vuelve a la misma fila.
+const resultado = await procesarFormulario(Astro, async (f) => {
+  const id = texto(f, 'id');
+  const accion = texto(f, 'accion');
+  if (accion === 'estado') {
+    const estado = texto(f, 'estado') as Estado;
+    if (!ESTADOS.includes(estado)) return;
+    revisar(await supabase.from('productos').update({ estado }).eq('id', id));
+  } else if (accion === 'destacado') {
+    revisar(await supabase.from('productos').update({ destacado: texto(f, 'valor') === 'si' }).eq('id', id));
+  } else if (accion === 'mover') {
+    const lista = revisar(await supabase.from('productos').select('id, orden').order('orden').order('nombre')) as {
+      id: string;
+      orden: number;
+    }[];
+    const i = lista.findIndex((p) => p.id === id);
+    const j = texto(f, 'dir') === 'arriba' ? i - 1 : i + 1;
+    if (i < 0 || j < 0 || j >= lista.length) return `/admin/productos#p-${id}`;
+    // Cambia de lugar los dos y renumera (0, 1, 2…) para que no haya empates; solo guarda lo que cambió.
+    const antes = new Map(lista.map((p) => [p.id, p.orden]));
+    [lista[i], lista[j]] = [lista[j]!, lista[i]!];
+    await Promise.all(
+      lista
+        .map((p, orden) => ({ id: p.id, orden }))
+        .filter((p) => antes.get(p.id) !== p.orden)
+        .map(async (p) => revisar(await supabase.from('productos').update({ orden: p.orden }).eq('id', p.id))),
+    );
+  }
+  return `/admin/productos?guardado#p-${id}`;
+});
+if (resultado instanceof Response) return resultado;
+
+const [productos, categorias, marcas] = (await Promise.all([
+  supabase.from('productos').select('*').order('orden').order('nombre').then(revisar),
+  supabase.from('categorias').select('id, nombre').then(revisar),
+  supabase.from('marcas').select('id, nombre').then(revisar),
+])) as [FilaProducto[], FilaCategoria[], FilaMarca[]];
+const categoria = new Map(categorias.map((c) => [c.id, c.nombre]));
+const marca = new Map(marcas.map((m) => [m.id, m.nombre]));
+
+const ahora = new Date();
+function estadoDescuento(p: FilaProducto) {
+  if (!p.descuento_texto) return null;
+  const inicio = p.descuento_inicio ? new Date(p.descuento_inicio) : null;
+  const fin = p.descuento_fin ? new Date(p.descuento_fin) : null;
+  if (vigente({ inicio, fin }, ahora)) return { clase: 'chip-azul', nota: fin ? `hasta ${formatoFecha(fin)}` : 'sin fecha de fin' };
+  if (inicio && inicio > ahora) return { clase: '', nota: `desde ${formatoFecha(inicio)}` };
+  return { clase: 'chip-rojo', nota: 'vencido' };
+}
+---
+
+<Admin titulo="Productos" error={resultado}>
+  <div class="acciones mt-4!">
+    <a href="/admin/productos/nuevo" class="btn btn-primario">Nuevo producto</a>
+    <p class="ayuda">
+      Los <strong>destacados</strong> salen en el catálogo de la landing; todos los no ocultos salen en su categoría.
+    </p>
+  </div>
+
+  <div class="panel scroll">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th colspan="2">Producto</th>
+          <th>Estado</th>
+          <th>Destacado</th>
+          <th>Orden</th>
+          <th>Descuento</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          productos.map((p, i) => {
+            const descuento = estadoDescuento(p);
+            return (
+              <tr id={`p-${p.id}`}>
+                <td>
+                  <img src={urlImagen(p.imagen.ruta)} alt="" class="miniatura" loading="lazy" />
+                </td>
+                <td>
+                  <a href={`/admin/productos/${p.id}`} class="font-semibold hover:underline">
+                    {p.nombre}
+                  </a>
+                  <div class="ayuda mt-0!">
+                    {[p.marca_id && marca.get(p.marca_id), categoria.get(p.categoria_id)].filter(Boolean).join(' · ')}
+                  </div>
+                </td>
+                <td>
+                  <form method="post">
+                    <input type="hidden" name="accion" value="estado" />
+                    <input type="hidden" name="id" value={p.id} />
+                    <select name="estado" aria-label={`Estado de ${p.nombre}`} onchange="this.form.requestSubmit()" class="mt-0! w-auto!">
+                      {ESTADOS.map((e) => (
+                        <option value={e} selected={p.estado === e}>
+                          {e}
+                        </option>
+                      ))}
+                    </select>
+                  </form>
+                </td>
+                <td>
+                  <form method="post">
+                    <input type="hidden" name="accion" value="destacado" />
+                    <input type="hidden" name="id" value={p.id} />
+                    <input type="hidden" name="valor" value={p.destacado ? 'no' : 'si'} />
+                    <button
+                      class:list={['chip', p.destacado && 'chip-azul']}
+                      aria-pressed={p.destacado ? 'true' : 'false'}
+                      title={p.destacado ? 'Quitar del catálogo de la landing' : 'Mostrar en el catálogo de la landing'}
+                    >
+                      {p.destacado ? '★ Sí' : '☆ No'}
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  <form method="post" class="flex gap-1">
+                    <input type="hidden" name="accion" value="mover" />
+                    <input type="hidden" name="id" value={p.id} />
+                    <button name="dir" value="arriba" class="chip" disabled={i === 0} aria-label={`Subir ${p.nombre}`}>
+                      ↑
+                    </button>
+                    <button
+                      name="dir"
+                      value="abajo"
+                      class="chip"
+                      disabled={i === productos.length - 1}
+                      aria-label={`Bajar ${p.nombre}`}
+                    >
+                      ↓
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  {descuento && (
+                    <span class:list={['chip', descuento.clase]} title={descuento.nota}>
+                      {p.descuento_texto} · {descuento.nota}
+                    </span>
+                  )}
+                </td>
+                <td class="whitespace-nowrap">
+                  <a href={`/admin/productos/${p.id}`} class="enlace">
+                    Editar
+                  </a>
+                  <span class="mx-1 opacity-30">|</span>
+                  <a href={`/admin/vista-previa/${p.slug}`} target="_blank" class="enlace">
+                    Vista previa
+                  </a>
+                </td>
+              </tr>
+            );
+          })
+        }
+      </tbody>
+    </table>
+    {productos.length === 0 && <p class="ayuda">Aún no hay productos.</p>}
+  </div>
+</Admin>

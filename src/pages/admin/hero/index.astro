@@ -1,0 +1,143 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import { procesarFormulario, revisar, texto } from '../../../lib/admin';
+import { formatoFecha } from '../../../lib/contenido';
+import { urlImagen } from '../../../lib/supabase';
+import type { FilaAjustes, FilaCampana, FilaProducto } from '../../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+
+const resultado = await procesarFormulario(Astro, async (f) => {
+  revisar(
+    await supabase
+      .from('ajustes')
+      .update({
+        hero_producto_id: texto(f, 'hero_producto_id') || null,
+        hero_etiqueta: texto(f, 'hero_etiqueta'),
+        hero_titulo: texto(f, 'hero_titulo'),
+        hero_texto: texto(f, 'hero_texto'),
+        hero_rotulo_accesorio: texto(f, 'hero_rotulo_accesorio'),
+      })
+      .eq('id', true),
+  );
+});
+if (resultado instanceof Response) return resultado;
+
+const [ajustes, productos, campanas] = (await Promise.all([
+  supabase.from('ajustes').select('*').single().then(revisar),
+  supabase.from('productos').select('id, nombre, estado').order('orden').then(revisar),
+  supabase.from('campanas').select('*').order('inicio', { ascending: false }).then(revisar),
+])) as [FilaAjustes, Pick<FilaProducto, 'id' | 'nombre' | 'estado'>[], FilaCampana[]];
+
+const ahora = new Date();
+const estado = (c: FilaCampana) =>
+  new Date(c.fin) <= ahora
+    ? { texto: 'Terminada', clase: '' }
+    : new Date(c.inicio) <= ahora
+      ? { texto: 'Activa ahora', clase: 'chip-verde' }
+      : { texto: 'Programada', clase: 'chip-azul' };
+---
+
+<Admin titulo="Hero y campañas" error={resultado}>
+  <form method="post" class="panel">
+    <h2>Hero por defecto</h2>
+    <p class="ayuda mb-4">Se ve cuando no hay una campaña activa: el diseño de siempre con el producto que elijas.</p>
+    <div class="rejilla">
+      <label>
+        Producto
+        <select name="hero_producto_id">
+          <option value="">El primer producto destacado</option>
+          {
+            productos.map((p) => (
+              <option value={p.id} selected={ajustes.hero_producto_id === p.id}>
+                {p.nombre}
+                {p.estado === 'oculto' ? ' (oculto)' : ''}
+              </option>
+            ))
+          }
+        </select>
+        <p class="ayuda">Usa su imagen, su nombre como marca de agua y sus accesorios con imagen.</p>
+      </label>
+      <label>
+        Rótulo de los accesorios
+        <input name="hero_rotulo_accesorio" value={ajustes.hero_rotulo_accesorio} placeholder="Transductor" />
+        <p class="ayuda">Texto pequeño junto a cada círculo, p. ej. «Transductor».</p>
+      </label>
+      <label>
+        Etiqueta
+        <input name="hero_etiqueta" value={ajustes.hero_etiqueta} placeholder="Ultrasonido Mindray" />
+      </label>
+      <label>
+        Título
+        <input name="hero_titulo" value={ajustes.hero_titulo} required />
+        <p class="ayuda">Entre *asteriscos* va en azul: Donde la imagen se vuelve *certeza*.</p>
+      </label>
+      <label class="ancho">
+        Texto
+        <textarea name="hero_texto" rows="2">{ajustes.hero_texto}</textarea>
+      </label>
+    </div>
+    <div class="acciones">
+      <button class="btn btn-primario">Guardar</button>
+      <a href="/admin/vista-previa" target="_blank" class="btn btn-secundario">Vista previa ↗</a>
+    </div>
+  </form>
+
+  <section class="panel">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="mb-0!">Campañas</h2>
+      <a href="/admin/hero/nueva" class="btn btn-primario">Nueva campaña</a>
+    </div>
+    <p class="ayuda mt-2">
+      Durante sus fechas, la imagen de la campaña (4:3) reemplaza al producto y sus textos y botones reemplazan a los de arriba.
+      Dos campañas no pueden encimarse.
+    </p>
+    <div class="scroll mt-4">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th colspan="2">Campaña</th>
+            <th>Fechas</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            campanas.map((c) => {
+              const e = estado(c);
+              return (
+                <tr>
+                  <td>
+                    <img src={urlImagen(c.imagen.ruta)} alt="" class="miniatura w-20!" loading="lazy" />
+                  </td>
+                  <td>
+                    <a href={`/admin/hero/${c.id}`} class="font-semibold hover:underline">
+                      {c.nombre}
+                    </a>
+                  </td>
+                  <td class="whitespace-nowrap">
+                    {formatoFecha(c.inicio)} → {formatoFecha(c.fin)}
+                  </td>
+                  <td>
+                    <span class:list={['chip', e.clase]}>{e.texto}</span>
+                  </td>
+                  <td class="whitespace-nowrap">
+                    <a href={`/admin/hero/${c.id}`} class="enlace">
+                      Editar
+                    </a>
+                    <span class="mx-1 opacity-30">|</span>
+                    <a href={`/admin/vista-previa?campana=${c.id}`} target="_blank" class="enlace">
+                      Vista previa
+                    </a>
+                  </td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+      {campanas.length === 0 && <p class="ayuda">Aún no hay campañas.</p>}
+    </div>
+  </section>
+</Admin>

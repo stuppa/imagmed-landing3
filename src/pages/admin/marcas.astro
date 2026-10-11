@@ -1,0 +1,91 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { borrarImagenes, casilla, ErrorAdmin, procesarFormulario, revisar, subirImagen, texto } from '../../lib/admin';
+import { urlImagen } from '../../lib/supabase';
+import type { FilaMarca } from '../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+const marcas = revisar(await supabase.from('marcas').select('*').order('orden').order('nombre')) as FilaMarca[];
+
+const resultado = await procesarFormulario(Astro, async (f, subidas) => {
+  const id = texto(f, 'id');
+  const anterior = marcas.find((m) => m.id === id);
+  if (texto(f, 'accion') === 'borrar') {
+    revisar(await supabase.from('marcas').delete().eq('id', id));
+    await borrarImagenes(supabase, [anterior?.logo?.ruta]);
+    return;
+  }
+  const nombre = texto(f, 'nombre');
+  if (!nombre) throw new ErrorAdmin('Escribe el nombre de la marca.');
+  const nuevo = await subirImagen(supabase, f.get('logo'), 'marcas', subidas);
+  const logo = nuevo ?? (casilla(f, 'quitar_logo') ? null : (anterior?.logo ?? null));
+  const fila = { nombre, orden: Number(texto(f, 'orden')) || 0, logo };
+  revisar(id ? await supabase.from('marcas').update(fila).eq('id', id) : await supabase.from('marcas').insert(fila));
+  if (anterior?.logo && anterior.logo.ruta !== logo?.ruta) await borrarImagenes(supabase, [anterior.logo.ruta]);
+});
+if (resultado instanceof Response) return resultado;
+
+const siguiente = Math.max(-1, ...marcas.map((m) => m.orden)) + 1;
+---
+
+<Admin titulo="Marcas" error={resultado}>
+  <p class="ayuda mt-2">
+    Aparecen en la sección de marcas de la landing (menor orden primero) y se eligen en cada producto. Sin logo se muestra el
+    nombre. Usa el logo oficial, con autorización de uso.
+  </p>
+
+  {
+    marcas.map((m) => (
+      <form method="post" enctype="multipart/form-data" class="panel rejilla">
+        <input type="hidden" name="id" value={m.id} />
+        <label>
+          Nombre
+          <input name="nombre" value={m.nombre} required />
+        </label>
+        <label>
+          Orden
+          <input type="number" name="orden" value={m.orden} class="max-w-28" />
+        </label>
+        <div class="ancho flex flex-wrap items-center gap-4">
+          {m.logo && <img src={urlImagen(m.logo.ruta)} alt="" class="h-12 w-auto" />}
+          <label>
+            {m.logo ? 'Reemplazar logo' : 'Logo (opcional)'}
+            <input type="file" name="logo" accept="image/png,image/webp,image/avif" />
+          </label>
+          {m.logo && (
+            <label class="opcion">
+              <input type="checkbox" name="quitar_logo" />
+              Quitar logo
+            </label>
+          )}
+        </div>
+        <div class="acciones ancho mt-0!">
+          <button name="accion" value="guardar" class="btn btn-primario">Guardar</button>
+          <button name="accion" value="borrar" class="btn btn-peligro" onclick="return confirm('¿Borrar esta marca?')">
+            Borrar
+          </button>
+        </div>
+      </form>
+    ))
+  }
+
+  <form method="post" enctype="multipart/form-data" class="panel rejilla">
+    <h2 class="ancho">Nueva marca</h2>
+    <label>
+      Nombre
+      <input name="nombre" required />
+    </label>
+    <label>
+      Orden
+      <input type="number" name="orden" value={siguiente} class="max-w-28" />
+    </label>
+    <label class="ancho">
+      Logo (opcional)
+      <input type="file" name="logo" accept="image/png,image/webp,image/avif" />
+      <p class="ayuda">PNG con fondo transparente, de al menos 96 px de alto. Máximo 4 MB.</p>
+    </label>
+    <div class="acciones ancho mt-0!">
+      <button name="accion" value="crear" class="btn btn-primario">Agregar marca</button>
+    </div>
+  </form>
+</Admin>

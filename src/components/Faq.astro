@@ -1,11 +1,12 @@
 ---
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
-import { preguntas, seccionFaq as s } from '../data/faq';
+import { seccionFaq as s } from '../data/faq';
 import { whatsappUrl } from '../data/contacto';
 
-const visibles = preguntas.filter((p) => p.pregunta && p.respuesta);
-const wa = whatsappUrl();
+const { faq, contacto } = Astro.locals.sitio;
+const visibles = faq.filter((p) => p.pregunta && p.respuesta);
+const wa = whatsappUrl(contacto);
 ---
 
 <section id="faq" class="pb-20 lg:pb-30" aria-labelledby="titulo-faq">

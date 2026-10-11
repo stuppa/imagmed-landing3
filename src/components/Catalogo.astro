@@ -2,7 +2,9 @@
 import { Picture } from 'astro:assets';
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
-import { equipos, seccionEquipos as s } from '../data/equipos';
+import { seccionCatalogo as s } from '../data/sitio';
+
+const { destacados } = Astro.locals.sitio;
 ---
 
 <section id="equipos" class="seccion relative" aria-labelledby="titulo-equipos">
@@ -17,13 +19,18 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
     <div class="mt-12 lg:mt-16" data-reveal>
       <ul class="carrusel" role="list">
         {
-          equipos.map((e) => (
+          destacados.map((e) => (
             <li class="tarjeta">
               <div class="cara">
                 <div class="foto">
                   <span class="escuadra marco" aria-hidden="true" />
+                  {(e.descuento || e.agotado) && (
+                    <span class:list={['insignia', e.agotado && 'insignia-agotado']}>{e.agotado ? s.agotado : e.descuento}</span>
+                  )}
                   <Picture
-                    src={e.imagen}
+                    src={e.imagen.src}
+                    width={e.imagen.width}
+                    height={e.imagen.height}
                     alt={e.imagenAlt}
                     formats={['avif']}
                     fallbackFormat="webp"
@@ -34,10 +41,10 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
                   />
                 </div>
                 <div class="flex flex-1 flex-col p-6">
-                  <span class="text-xs font-semibold uppercase tracking-wider text-marca mb-1">{e.categoria}</span>
+                  <span class="text-xs font-semibold uppercase tracking-wider text-marca mb-1">{e.tipo || e.categoria.nombre}</span>
                   <h3 class="text-2xl font-semibold tracking-tight">
                     <a href={`/equipos/${e.slug}`} class="hover:text-marca transition-colors">
-                      Mindray {e.nombre}
+                      {e.nombreCompleto}
                     </a>
                   </h3>
                   {e.especificaciones.length > 0 && (
@@ -51,11 +58,11 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
                   )}
                   <div class="mt-auto pt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
                     <a href={`/equipos/${e.slug}`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-marca transition-colors">
-                      <span>Ver detalle</span>
+                      <span>{s.verDetalle}</span>
                       <Icono nombre="flecha" class="size-3.5" />
                     </a>
-                    <a href="#contacto" data-equipo={e.nombre} class="btn btn-primario btn-chico">
-                      {s.cta}
+                    <a href="#contacto" data-equipo={e.nombreCompleto} class="btn btn-primario btn-chico">
+                      {e.agotado ? s.ctaAgotado : s.cta}
                     </a>
                   </div>
                 </div>
@@ -121,6 +128,23 @@ import { equipos, seccionEquipos as s } from '../data/equipos';
     }
   }
 
+  /* Etiqueta de descuento o «Agotado» sobre la foto (se edita en el admin). */
+  .insignia {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 2;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    background: var(--color-marca);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .insignia-agotado {
+    background: var(--color-tinta);
+  }
   .foto {
     position: relative;
     aspect-ratio: 1;

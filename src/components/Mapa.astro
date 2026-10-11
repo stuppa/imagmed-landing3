@@ -2,7 +2,8 @@
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
 
-const googleMapsUrl = 'https://maps.app.goo.gl/DVZiHd1BbWLBJw4N6';
+// Dirección, horario y link de Google Maps se editan en el admin; las coordenadas casi nunca cambian.
+const { direccion, horario, googleMapsUrl } = Astro.locals.sitio.contacto;
 const latitud = 18.8983518;
 const longitud = -96.9561195;
 ---
@@ -61,7 +62,7 @@ const longitud = -96.9561195;
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
-            title="Ubicación Google Maps de Imagmed Nacional"
+            title="Ubicación Google Maps de IMAGMED NACIONAL"
           ></iframe>
         </div>
       </div>
@@ -85,16 +86,12 @@ const longitud = -96.9561195;
         <div class="space-y-4 text-sm">
           <div>
             <span class="block text-xs uppercase tracking-wider text-suave">Dirección Principal</span>
-            <p class="mt-1 font-medium text-white">
-              C. 38 1705, entre Av. 17 y Av. 17A, Nuevo Córdoba, 94550 Córdoba, Ver.
-            </p>
+            <p class="mt-1 font-medium text-white">{direccion}</p>
           </div>
 
           <div>
             <span class="block text-xs uppercase tracking-wider text-suave">Atención y Demostraciones</span>
-            <p class="mt-1 text-roto">
-              Lunes a Viernes: 9:00 - 18:00 hrs
-            </p>
+            <p class="mt-1 text-roto">{horario}</p>
           </div>
 
           <div>

@@ -1,0 +1,62 @@
+---
+// Tarjeta clara de producto: páginas de categoría y «otros equipos» de la ficha.
+import { Picture } from 'astro:assets';
+import Icono from './Icono.astro';
+import { seccionCatalogo as s } from '../data/sitio';
+import type { Producto } from '../lib/sitio';
+
+interface Props {
+  producto: Producto;
+}
+
+const { producto: e } = Astro.props;
+---
+
+<div class="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:border-marca hover:shadow-lg">
+  <div class="relative flex aspect-square items-center justify-center bg-slate-50 p-6">
+    {
+      (e.descuento || e.agotado) && (
+        <span
+          class:list={[
+            'absolute top-3 left-3 z-10 rounded-full px-2.5 py-1 text-xs font-bold text-white',
+            e.agotado ? 'bg-tinta' : 'bg-marca',
+          ]}
+        >
+          {e.agotado ? s.agotado : e.descuento}
+        </span>
+      )
+    }
+    <Picture
+      src={e.imagen.src}
+      width={e.imagen.width}
+      height={e.imagen.height}
+      alt={e.imagenAlt}
+      formats={['avif']}
+      fallbackFormat="webp"
+      widths={[300, 600]}
+      sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"
+      loading="lazy"
+      class="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
+    />
+  </div>
+  <div class="flex flex-1 flex-col p-6">
+    <span class="text-xs font-semibold tracking-wider text-marca uppercase">{e.tipo || e.categoria.nombre}</span>
+    <h3 class="mt-1 text-xl font-bold text-tinta">
+      <a href={`/equipos/${e.slug}`} class="hover:text-marca">{e.nombreCompleto}</a>
+    </h3>
+    {e.subtitulo && <p class="texto-suave mt-2 line-clamp-2 text-xs">{e.subtitulo}</p>}
+
+    <div class="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-5">
+      <a
+        href={`/equipos/${e.slug}`}
+        class="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 transition-colors hover:text-marca"
+      >
+        <span>{s.verDetalle}</span>
+        <Icono nombre="flecha" class="size-3" />
+      </a>
+      <a href={`/equipos/${e.slug}#cotizar`} class="btn btn-primario min-h-9 px-3 text-xs">
+        {e.agotado ? s.ctaAgotado : 'Cotizar'}
+      </a>
+    </div>
+  </div>
+</div>

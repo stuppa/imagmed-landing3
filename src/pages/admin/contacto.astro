@@ -1,0 +1,137 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { casilla, ErrorAdmin, procesarFormulario, revisar, texto } from '../../lib/admin';
+import type { FilaAjustes, FilaFaq } from '../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+
+const resultado = await procesarFormulario(Astro, async (f) => {
+  if (texto(f, 'accion') === 'faq') {
+    // Cada fila: con id se actualiza o se quita; sin id y con pregunta, se agrega.
+    const filas = Math.min(Number(texto(f, 'faq_total')) || 0, 200);
+    for (let i = 0; i < filas; i++) {
+      const id = texto(f, `faq_id_${i}`);
+      const fila = {
+        pregunta: texto(f, `faq_pregunta_${i}`),
+        respuesta: texto(f, `faq_respuesta_${i}`),
+        orden: Number(texto(f, `faq_orden_${i}`)) || 0,
+      };
+      if (id && casilla(f, `faq_quitar_${i}`)) revisar(await supabase.from('faq').delete().eq('id', id));
+      else if (id && fila.pregunta) revisar(await supabase.from('faq').update(fila).eq('id', id));
+      else if (!id && fila.pregunta) revisar(await supabase.from('faq').insert(fila));
+    }
+    return '/admin/contacto?guardado#faq';
+  }
+
+  // Con 10 dígitos se agrega la lada de México.
+  const digitos = texto(f, 'whatsapp').replace(/\D/g, '');
+  const whatsapp = digitos.length === 10 ? `52${digitos}` : digitos;
+  if (whatsapp && !/^52\d{10}$/.test(whatsapp)) {
+    throw new ErrorAdmin('Escribe los 10 dígitos del WhatsApp (p. ej. 271 123 4567).');
+  }
+  revisar(
+    await supabase
+      .from('ajustes')
+      .update({
+        whatsapp,
+        whatsapp_mensaje: texto(f, 'whatsapp_mensaje'),
+        telefono: texto(f, 'telefono'),
+        aviso_privacidad_url: texto(f, 'aviso_privacidad_url'),
+        direccion: texto(f, 'direccion'),
+        horario: texto(f, 'horario'),
+        google_maps_url: texto(f, 'google_maps_url'),
+      })
+      .eq('id', true),
+  );
+});
+if (resultado instanceof Response) return resultado;
+
+const [a, faq] = (await Promise.all([
+  supabase.from('ajustes').select('*').single().then(revisar),
+  supabase.from('faq').select('*').order('orden').then(revisar),
+])) as [FilaAjustes, FilaFaq[]];
+const siguiente = Math.max(-1, ...faq.map((p) => p.orden)) + 1;
+const filasFaq = [
+  ...faq,
+  ...[0, 1].map((k) => ({ id: '', pregunta: '', respuesta: '', orden: siguiente + k })),
+];
+---
+
+<Admin titulo="Contacto y FAQ" error={resultado}>
+  <form method="post" class="panel">
+    <h2>Datos de contacto</h2>
+    <p class="ayuda mb-4">Un dato vacío oculta su botón o enlace en el sitio.</p>
+    <div class="rejilla">
+      <label>
+        WhatsApp
+        <input name="whatsapp" value={a.whatsapp} inputmode="numeric" placeholder="271 123 4567" />
+        <p class="ayuda">10 dígitos; el 52 de México se agrega solo.</p>
+      </label>
+      <label>
+        Teléfono
+        <input name="telefono" value={a.telefono} placeholder="271 123 4567" />
+        <p class="ayuda">Tal como se mostrará.</p>
+      </label>
+      <label class="ancho">
+        Mensaje inicial de WhatsApp
+        <input name="whatsapp_mensaje" value={a.whatsapp_mensaje} />
+      </label>
+      <label class="ancho">
+        URL del aviso de privacidad
+        <input type="url" name="aviso_privacidad_url" value={a.aviso_privacidad_url} placeholder="https://…" />
+        <p class="ayuda">Obligatorio por ley (LFPDPPP) al recabar datos en el formulario.</p>
+      </label>
+      <label class="ancho">
+        Dirección
+        <input name="direccion" value={a.direccion} />
+      </label>
+      <label>
+        Horario
+        <input name="horario" value={a.horario} />
+      </label>
+      <label>
+        Link de Google Maps
+        <input type="url" name="google_maps_url" value={a.google_maps_url} />
+      </label>
+    </div>
+    <div class="acciones">
+      <button name="accion" value="contacto" class="btn btn-primario">Guardar contacto</button>
+    </div>
+  </form>
+
+  <form method="post" class="panel" id="faq">
+    <h2>Preguntas frecuentes</h2>
+    <p class="ayuda mb-4">Menor orden primero. Una pregunta sin respuesta no se muestra en el sitio.</p>
+    <input type="hidden" name="faq_total" value={filasFaq.length} />
+    <div class="grid gap-4">
+      {
+        filasFaq.map((p, i) => (
+          <fieldset class="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-[6rem_1fr]">
+            <input type="hidden" name={`faq_id_${i}`} value={p.id} />
+            <label>
+              Orden
+              <input type="number" name={`faq_orden_${i}`} value={p.orden} />
+            </label>
+            <label>
+              {p.id ? 'Pregunta' : 'Pregunta nueva'}
+              <input name={`faq_pregunta_${i}`} value={p.pregunta} />
+            </label>
+            <label class="md:col-span-2">
+              Respuesta
+              <textarea name={`faq_respuesta_${i}`} rows="2">{p.respuesta}</textarea>
+            </label>
+            {p.id && (
+              <label class="opcion md:col-span-2">
+                <input type="checkbox" name={`faq_quitar_${i}`} />
+                Quitar esta pregunta
+              </label>
+            )}
+          </fieldset>
+        ))
+      }
+    </div>
+    <div class="acciones">
+      <button name="accion" value="faq" class="btn btn-primario">Guardar preguntas</button>
+    </div>
+  </form>
+</Admin>

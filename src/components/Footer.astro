@@ -2,11 +2,12 @@
 import { Image } from 'astro:assets';
 import WhatsappFlotante from './WhatsappFlotante.astro';
 import wordmark from '../assets/marca/imagmed-wordmark.png';
-import { logoMindray, pie, sitio } from '../data/sitio';
-import { contacto, whatsappUrl } from '../data/contacto';
+import { logoMindray, pie, redes, sitio } from '../data/sitio';
+import { whatsappUrl } from '../data/contacto';
 
+const { contacto } = Astro.locals.sitio;
 // En móvil se deja espacio para el botón flotante de WhatsApp, si existe.
-const conFlotante = Boolean(whatsappUrl());
+const conFlotante = Boolean(whatsappUrl(contacto));
 ---
 
 <footer class:list={['oscuro border-t border-(--linea) pt-10 md:pb-10', conFlotante ? 'pb-28' : 'pb-10']}>
@@ -27,6 +28,17 @@ const conFlotante = Boolean(whatsappUrl());
     </div>
 
     <div class="texto-suave flex flex-col gap-2 text-sm md:items-end">
+      <ul class="flex gap-5" role="list" aria-label="Redes sociales">
+        {
+          redes.map((r) => (
+            <li>
+              <a href={r.url} target="_blank" rel="noopener" class="inline-flex min-h-11 items-center hover:text-white">
+                {r.nombre}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
       <p>© {new Date().getFullYear()} {sitio.razonSocial}</p>
       {
         contacto.avisoPrivacidadUrl && (

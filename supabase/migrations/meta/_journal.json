@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791675415240,
+      "tag": "20261010233655_privado",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791675418229,
+      "tag": "20261010233658_tablas",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791675421224,
+      "tag": "20261010233701_extras",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791682060086,
+      "tag": "20261011012740_equipo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791682063356,
+      "tag": "20261011012743_equipo_funciones",
+      "breakpoints": true
+    }
+  ]
+}

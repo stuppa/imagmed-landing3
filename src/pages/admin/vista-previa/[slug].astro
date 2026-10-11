@@ -1,0 +1,26 @@
+---
+// La ficha de cualquier producto, también oculto, tal como se vería publicada.
+import Ficha from '../../../components/Ficha.astro';
+import BarraVistaPrevia from '../../../components/BarraVistaPrevia.astro';
+import { revisar } from '../../../lib/admin';
+import { aProducto, cargarSitio, type FilaProducto } from '../../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+const slug = Astro.params.slug ?? '';
+if (!/^[a-z0-9-]+$/.test(slug)) return Astro.redirect('/admin/productos');
+
+const fila = revisar(await supabase.from('productos').select('*').eq('slug', slug).maybeSingle()) as FilaProducto | null;
+if (!fila) return Astro.redirect('/admin/productos');
+
+const [categoria, marca, sitio] = await Promise.all([
+  supabase.from('categorias').select('slug, nombre').eq('id', fila.categoria_id).single().then(revisar),
+  fila.marca_id ? supabase.from('marcas').select('nombre').eq('id', fila.marca_id).single().then(revisar) : null,
+  cargarSitio(supabase),
+]);
+Astro.locals.sitio = sitio;
+const producto = aProducto(fila, categoria as { slug: string; nombre: string }, (marca as { nombre: string } | null)?.nombre ?? null, new Date());
+---
+
+<Ficha producto={producto}>
+  <BarraVistaPrevia texto={`Vista previa · estado: ${fila.estado}`} volver={`/admin/productos/${fila.id}`} />
+</Ficha>

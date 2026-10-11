@@ -4,23 +4,20 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import Contacto from '../../components/Contacto.astro';
 import Icono from '../../components/Icono.astro';
+import TarjetaProducto from '../../components/TarjetaProducto.astro';
 import { productos, sitio } from '../../data/sitio';
 import { whatsappUrl } from '../../data/contacto';
+import { prepararPagina } from '../../lib/sitio';
 
-type Categoria = (typeof productos.categorias)[number];
+const { categorias, contacto } = await prepararPagina(Astro);
+const categoria = categorias.find((c) => c.slug === Astro.params.slug);
+if (!categoria) return Astro.rewrite('/404');
 
-export function getStaticPaths() {
-  return productos.categorias
-    .filter((c) => c.slug)
-    .map((categoria) => ({ params: { slug: categoria.slug }, props: { categoria } }));
-}
-
-// ponytail: página por categoría solo con descripción + formulario; agregar listado de modelos cuando el cliente los confirme.
-const { categoria } = Astro.props as { categoria: Categoria };
-const wa = whatsappUrl(`Hola Imagmed Nacional, me interesa una cotización de ${categoria.texto}.`);
+const wa = whatsappUrl(contacto, `Hola IMAGMED NACIONAL, me interesa una cotización de ${categoria.nombre}.`);
+const conProductos = categoria.productos.length > 0;
 ---
 
-<Layout titulo={`${categoria.texto} | ${sitio.nombre}`} descripcion={categoria.descripcion}>
+<Layout titulo={`${categoria.nombre} | ${sitio.nombre}`} descripcion={categoria.descripcion}>
   <Header />
 
   <main id="contenido">
@@ -31,15 +28,17 @@ const wa = whatsappUrl(`Hola Imagmed Nacional, me interesa una cotización de ${
           <span class="opacity-40">/</span>
           <span>{productos.texto}</span>
           <span class="opacity-40">/</span>
-          <span class="text-white" aria-current="page">{categoria.texto}</span>
+          <span class="text-white" aria-current="page">{categoria.nombre}</span>
         </nav>
 
         <p class="etiqueta mt-12">{productos.texto}</p>
-        <h1 id="titulo-categoria" class="titulo-1 mt-4">{categoria.texto}</h1>
+        <h1 id="titulo-categoria" class="titulo-1 mt-4">{categoria.nombre}</h1>
         <p class="texto-suave mt-6 max-w-xl text-lg">{categoria.descripcion}</p>
 
         <div class="mt-10 flex flex-wrap gap-4">
-          <a href="#contacto" class="btn btn-primario">Solicitar cotización</a>
+          <a href={conProductos ? '#modelos' : '#contacto'} class="btn btn-primario">
+            {conProductos ? 'Ver modelos' : 'Solicitar cotización'}
+          </a>
           {
             wa && (
               <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno">
@@ -52,7 +51,22 @@ const wa = whatsappUrl(`Hola Imagmed Nacional, me interesa una cotización de ${
       </div>
     </section>
 
-    <Contacto equipoInicial={categoria.texto} tituloPersonalizado={`Cotiza *${categoria.texto}* con Imagmed.`} />
+    {
+      conProductos && (
+        <section id="modelos" class="seccion bg-white" aria-label={`Modelos de ${categoria.nombre}`}>
+          <div class="contenedor grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {categoria.productos.map((p) => (
+              <TarjetaProducto producto={p} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <Contacto
+      equipoInicial={conProductos ? undefined : categoria.nombre}
+      tituloPersonalizado={`Cotiza *${categoria.nombre}* con Imagmed.`}
+    />
   </main>
 
   <Footer />

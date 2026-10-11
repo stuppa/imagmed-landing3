@@ -7,7 +7,6 @@ export const seccionProceso = {
   paso: 'Paso',
 };
 
-// TODO: confirmar con el cliente que el paso 4 (instalación y capacitación) aplica a todos los equipos.
 export const pasos = [
   {
     titulo: 'Cuéntanos qué necesitas',

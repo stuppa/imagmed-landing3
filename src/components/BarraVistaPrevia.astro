@@ -1,0 +1,69 @@
+---
+// Barra fija de las vistas previas del admin: deja claro que no es el sitio público.
+import { aFechaLocal, formatoFecha } from '../lib/contenido';
+
+interface Props {
+  texto: string;
+  volver: string;
+  /** En la vista previa de la landing: la fecha simulada, con un formulario para cambiarla. */
+  fecha?: Date;
+}
+
+const { texto, volver, fecha } = Astro.props;
+---
+
+<aside class="barra" aria-label="Vista previa">
+  <strong>{texto}</strong>
+  {fecha && <span>{formatoFecha(fecha)}</span>}
+  {
+    fecha && (
+      <form method="get" action="/admin/vista-previa">
+        <label class="sr-only" for="vista-previa-fecha">
+          Ver otra fecha
+        </label>
+        <input id="vista-previa-fecha" type="datetime-local" name="en" value={aFechaLocal(fecha)} required />
+        <button>Ver</button>
+      </form>
+    )
+  }
+  <a href={volver}>Volver al admin</a>
+</aside>
+
+<style>
+  .barra {
+    position: fixed;
+    inset: auto 0.75rem 0.75rem;
+    z-index: 100;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    max-width: 48rem;
+    margin-inline: auto;
+    padding: 0.625rem 1rem;
+    border-radius: 0.75rem;
+    background: #b45309;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.35);
+  }
+  form {
+    display: flex;
+    gap: 0.5rem;
+  }
+  input {
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.375rem;
+    color: #0b1220;
+    background: #fff;
+  }
+  button,
+  a {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  a {
+    margin-left: auto;
+  }
+</style>

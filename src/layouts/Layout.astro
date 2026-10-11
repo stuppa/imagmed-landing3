@@ -1,8 +1,6 @@
 ---
 import { Font, getImage } from 'astro:assets';
 import { sitio } from '../data/sitio';
-import { equipos } from '../data/equipos';
-import { contacto } from '../data/contacto';
 import '../styles/global.css';
 
 interface Props {
@@ -13,9 +11,17 @@ interface Props {
 const { titulo = sitio.titulo, descripcion = sitio.descripcion } = Astro.props;
 const url = (ruta: string) => new URL(ruta, Astro.site).href;
 
-// JSON-LD: Organization + un Product por equipo (sin precio ni ofertas).
+// JSON-LD: Organization + un Product por destacado, los del catálogo de la landing (sin precio ni ofertas).
+const { destacados: productos, contacto } = Astro.locals.sitio;
 const imagenes = await Promise.all(
-  equipos.map((e) => getImage({ src: e.imagen, width: 1200, format: 'webp' })),
+  productos.map((p) =>
+    getImage({
+      src: p.imagen.src,
+      width: 1200,
+      height: Math.round((1200 * p.imagen.height) / p.imagen.width),
+      format: 'webp',
+    }),
+  ),
 );
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -37,11 +43,11 @@ const jsonLd = {
         },
       }),
     },
-    ...equipos.map((e, i) => ({
+    ...productos.map((e, i) => ({
       '@type': 'Product',
-      name: `Mindray ${e.nombre}`,
-      brand: { '@type': 'Brand', name: 'Mindray' },
-      category: 'Equipo de ultrasonido',
+      name: e.nombreCompleto,
+      ...(e.marca && { brand: { '@type': 'Brand', name: e.marca } }),
+      category: e.tipo || e.categoria.nombre,
       image: url(imagenes[i]!.src),
       ...(e.especificaciones.length > 0 && { description: e.especificaciones.join('. ') }),
     })),

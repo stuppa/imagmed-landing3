@@ -1,15 +1,36 @@
 ---
+// Encabezado + rejilla de bloques con icono. La usan «Por qué Imagmed» y «Servicio técnico».
 import Encabezado from './Encabezado.astro';
-import Icono from './Icono.astro';
-import { diferenciadores, seccionPorQue as s } from '../data/diferenciadores';
+import Icono, { type NombreIcono } from './Icono.astro';
+import { diferenciadores, seccionPorQue } from '../data/diferenciadores';
+
+interface Props {
+  id?: string;
+  s?: { etiqueta: string; titulo: string; texto: string; cta: string };
+  bloques?: readonly { icono: NombreIcono; titulo: string; texto: string }[];
+  /** Data atributos del CTA: tipo de solicitud y opción precargada en el formulario. */
+  solicitud?: string;
+  equipo?: string;
+  /** Bloques a la izquierda y encabezado a la derecha, para no repetir la misma composición. */
+  invertido?: boolean;
+}
+
+const {
+  id = 'por-que',
+  s = seccionPorQue,
+  bloques = diferenciadores,
+  solicitud = 'Cotización',
+  equipo,
+  invertido = false,
+} = Astro.props;
 ---
 
-<section id="por-que" class="seccion" aria-labelledby="titulo-por-que">
+<section id={id} class="seccion" aria-labelledby={`titulo-${id}`}>
   <div class="contenedor grid gap-12 lg:grid-cols-12 lg:gap-6">
-    <div class="lg:col-span-5" data-reveal>
-      <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-por-que">
+    <div class:list={['lg:col-span-5', invertido && 'lg:order-2 lg:col-start-8']} data-reveal>
+      <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id={`titulo-${id}`}>
         <p class="texto-suave mt-5 max-w-md">{s.texto}</p>
-        <a href="#contacto" data-solicitud="Cotización" class="enlace-flecha mt-6">
+        <a href="#contacto" data-solicitud={solicitud} data-equipo={equipo} class="enlace-flecha mt-6">
           {s.cta}
           <Icono nombre="flecha" />
         </a>
@@ -17,12 +38,12 @@ import { diferenciadores, seccionPorQue as s } from '../data/diferenciadores';
     </div>
 
     <ul
-      class="grid gap-px sm:grid-cols-2 lg:col-span-7"
+      class:list={['grid gap-px sm:grid-cols-2 lg:col-span-7', invertido && 'lg:order-1']}
       role="list"
       data-reveal="lista"
     >
       {
-        diferenciadores.map((d) => (
+        bloques.map((d) => (
           <li class="group grid grid-cols-[auto_1fr] gap-x-4 bg-roto p-5 outline outline-[color-mix(in_srgb,var(--color-tinta)_10%,var(--color-roto))] transition-colors duration-200 hover:bg-white sm:block sm:p-8">
             <Icono
               nombre={d.icono}

@@ -2,64 +2,92 @@
 import { Picture } from 'astro:assets';
 import Enfasis from './Enfasis.astro';
 import Volumen from './Volumen.astro';
-import { hero } from '../data/sitio';
-import { equipos, transductoresHero } from '../data/equipos';
 
-const equipo = equipos.find((e) => e.slug === hero.equipo) ?? equipos[0]!;
+// Por defecto: el producto elegido en el admin, con marca de agua y sus accesorios con imagen.
+// Con una campaña vigente: su imagen estática (4:3) en lugar del visual; textos y botones siguen siendo HTML.
+const { hero } = Astro.locals.sitio;
+const producto = hero.tipo === 'producto' ? hero.producto : null;
+const accesorios = (producto?.accesorios ?? []).flatMap((a) => (a.imagen ? [{ ...a, imagen: a.imagen }] : [])).slice(0, 2);
+// La campaña puede traer su producto ya elegido en el formulario.
+const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : undefined;
 ---
 
 <section id="inicio" class="oscuro relative overflow-clip pt-28 pb-14 md:pt-32 lg:pt-36 lg:pb-24" aria-labelledby="titulo-hero">
   <div class="contenedor hero-grid">
     <div class="hero-texto">
-      <p class="etiqueta">{hero.etiqueta}</p>
+      {hero.etiqueta && <p class="etiqueta">{hero.etiqueta}</p>}
       <h1 id="titulo-hero" class="titulo-1 mt-5"><Enfasis texto={hero.titulo} /></h1>
-      <p class="texto-suave mt-6 max-w-[34rem] text-lg">{hero.texto}</p>
+      {hero.texto && <p class="texto-suave mt-6 max-w-[34rem] text-lg">{hero.texto}</p>}
     </div>
 
-    <div class="hero-visual">
-      <span class="marca-agua" aria-hidden="true">{equipo.nombre}</span>
-      <Picture
-        src={equipo.imagen}
-        alt={equipo.imagenAlt}
-        formats={['avif']}
-        fallbackFormat="webp"
-        widths={[400, 640, 880, 1200]}
-        sizes="(min-width: 1440px) 450px, (min-width: 1280px) 375px, (min-width: 1024px) calc(50vw - 9rem), (min-width: 768px) 360px, calc(100vw - 6.5rem)"
-        loading="eager"
-        fetchpriority="high"
-        class="equipo"
-      />
-      {
-        transductoresHero.length > 0 && (
-          <ul class="transductores" role="list">
-            {transductoresHero.map((t) => (
-              <li>
-                <span class="circulo">
-                  <Picture
-                    src={t.imagen}
-                    alt=""
-                    formats={['avif']}
-                    fallbackFormat="webp"
-                    widths={[96, 192]}
-                    sizes="88px"
-                    loading="eager"
-                  />
-                </span>
-                <span class="rotulo">
-                  <span class="rotulo-tipo">{hero.transductor} </span>
-                  {t.modelo || t.tipo}
-                </span>
-              </li>
-            ))}
-          </ul>
+    {
+      hero.tipo === 'campana' ? (
+        <div class="hero-visual hero-campana">
+          <Picture
+            src={hero.imagen.src}
+            width={hero.imagen.width}
+            height={hero.imagen.height}
+            alt={hero.imagenAlt}
+            formats={['avif']}
+            fallbackFormat="webp"
+            widths={[480, 800, 1200, 1600]}
+            sizes="(min-width: 1440px) 640px, (min-width: 1024px) calc(50vw - 3rem), (min-width: 768px) 576px, calc(100vw - 2rem)"
+            loading="eager"
+            fetchpriority="high"
+            class="campana"
+          />
+        </div>
+      ) : (
+        producto && (
+          <div class="hero-visual">
+            <span class="marca-agua" aria-hidden="true">{producto.nombre}</span>
+            <Picture
+              src={producto.imagen.src}
+              width={producto.imagen.width}
+              height={producto.imagen.height}
+              alt={producto.imagenAlt}
+              formats={['avif']}
+              fallbackFormat="webp"
+              widths={[400, 640, 880, 1200]}
+              sizes="(min-width: 1440px) 450px, (min-width: 1280px) 375px, (min-width: 1024px) calc(50vw - 9rem), (min-width: 768px) 360px, calc(100vw - 6.5rem)"
+              loading="eager"
+              fetchpriority="high"
+              class="equipo"
+            />
+            {accesorios.length > 0 && (
+              <ul class="transductores" role="list">
+                {accesorios.map((t) => (
+                  <li>
+                    <span class="circulo">
+                      <Picture
+                        src={t.imagen.src}
+                        width={t.imagen.width}
+                        height={t.imagen.height}
+                        alt=""
+                        formats={['avif']}
+                        fallbackFormat="webp"
+                        widths={[96, 192]}
+                        sizes="88px"
+                        loading="eager"
+                      />
+                    </span>
+                    <span class="rotulo">
+                      <span class="rotulo-tipo">{hero.rotulo} </span>
+                      {t.tipo}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Volumen />
+          </div>
         )
-      }
-      <Volumen />
-    </div>
+      )
+    }
 
     <div class="hero-acciones">
-      <a href="#contacto" class="btn btn-primario" data-solicitud="Cotización">{hero.ctaPrincipal}</a>
-      <a href="#contacto" class="btn btn-contorno" data-solicitud="Demo">{hero.ctaSecundario}</a>
+      <a href="#contacto" class="btn btn-primario" data-solicitud="Cotización" data-equipo={preseleccion}>{hero.ctaPrincipal}</a>
+      <a href="#contacto" class="btn btn-contorno" data-solicitud="Demo" data-equipo={preseleccion}>{hero.ctaSecundario}</a>
     </div>
   </div>
 </section>
@@ -147,6 +175,13 @@ const equipo = equipos.find((e) => e.slug === hero.equipo) ?? equipos[0]!;
     color: color-mix(in srgb, var(--color-marca) 30%, transparent);
     pointer-events: none;
     user-select: none;
+  }
+  .hero-campana {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .campana {
+    width: 100%;
+    height: auto;
   }
   .equipo {
     width: 100%;

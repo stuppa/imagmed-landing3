@@ -1,7 +1,7 @@
 ---
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
-import { contacto, formulario as f, seccionContacto as s, telefonoUrl, whatsappUrl } from '../data/contacto';
+import { endpointFormulario, formulario as f, seccionContacto as s, telefonoUrl, whatsappUrl } from '../data/contacto';
 import { pasos } from '../data/pasos';
 import { encabezado } from '../data/sitio';
 
@@ -13,7 +13,16 @@ interface Props {
 
 const { equipoInicial, tituloPersonalizado, subtituloPersonalizado } = Astro.props;
 
-const wa = whatsappUrl();
+const { contacto, productos, categorias } = Astro.locals.sitio;
+const wa = whatsappUrl(contacto);
+const tel = telefonoUrl(contacto);
+// Cada producto por su nombre y, para las categorías que aún no tienen modelos, la categoría.
+const opciones = [
+  ...productos.map((p) => p.nombreCompleto),
+  ...categorias.filter((c) => c.productos.length === 0).map((c) => c.nombre),
+  f.servicio,
+  f.sinDecidir,
+];
 const textos = JSON.stringify({
   errores: f.errores,
   enviar: f.enviar,
@@ -36,10 +45,10 @@ const textos = JSON.stringify({
     <div class="profundidad lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1" data-reveal data-ondas-mascara="0.85">
       <form
         id="formulario"
-        action={contacto.endpoint || undefined}
+        action={endpointFormulario || undefined}
         method="post"
         class="panel border border-(--linea) bg-noche p-6 sm:p-8 lg:p-10"
-        data-endpoint={contacto.endpoint}
+        data-endpoint={endpointFormulario}
         data-textos={textos}
       >
         <div class="grid gap-5 sm:grid-cols-2">
@@ -92,7 +101,7 @@ const textos = JSON.stringify({
             <div class="selector">
               <select id="f-equipo" name="equipo" required aria-describedby="e-equipo" class:list={['campo', equipoInicial && 'prellenado']}>
                 <option value="">{f.elige}</option>
-                {f.equipos.map((e) => <option value={e} selected={equipoInicial === e}>{e}</option>)}
+                {opciones.map((e) => <option value={e} selected={equipoInicial === e}>{e}</option>)}
               </select>
               <Icono nombre="chevron" class="size-4" />
             </div>
@@ -186,7 +195,7 @@ const textos = JSON.stringify({
       </ol>
 
       {
-        (wa || telefonoUrl) && (
+        (wa || tel) && (
           <div class="mt-10 border-t border-(--linea) pt-8" data-reveal>
             <p class="font-semibold">{s.alternativa}</p>
             <div class="mt-4 flex flex-wrap gap-3">
@@ -196,8 +205,8 @@ const textos = JSON.stringify({
                   {encabezado.whatsapp}
                 </a>
               )}
-              {telefonoUrl && (
-                <a href={telefonoUrl} class="btn btn-contorno">
+              {tel && (
+                <a href={tel} class="btn btn-contorno">
                   <Icono nombre="telefono" class="size-5" />
                   {contacto.telefono}
                 </a>

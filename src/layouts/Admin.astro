@@ -1,0 +1,254 @@
+---
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+
+interface Props {
+  titulo: string;
+  error?: string;
+  /** Para entrar/verificar: sin menú ni botón de salir. */
+  sinMenu?: boolean;
+}
+
+const { titulo, error, sinMenu = false } = Astro.props;
+const guardado = Astro.url.searchParams.has('guardado');
+const ruta = Astro.url.pathname.replace(/\/+$/, '');
+const menu = [
+  { texto: 'Panel', href: '/admin' },
+  { texto: 'Productos', href: '/admin/productos' },
+  { texto: 'Categorías', href: '/admin/categorias' },
+  { texto: 'Marcas', href: '/admin/marcas' },
+  { texto: 'Hero y campañas', href: '/admin/hero' },
+  { texto: 'Contacto y FAQ', href: '/admin/contacto' },
+  ...(Astro.locals.rol === 'super' ? [{ texto: 'Equipo', href: '/admin/equipo' }] : []),
+];
+const activo = (href: string) => (href === '/admin' ? ruta === '/admin' : ruta.startsWith(href));
+---
+
+<!doctype html>
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{titulo} · Admin Imagmed</title>
+    <Font cssVariable="--font-source-sans" preload />
+  </head>
+  <body class="admin">
+    {
+      !sinMenu && (
+        <header class="oscuro border-b border-(--linea)">
+          <div class="contenedor flex flex-wrap items-center gap-x-6 gap-y-2 py-3">
+            <a href="/admin" class="font-bold tracking-tight">
+              Imagmed <span class="texto-suave font-normal">admin</span>
+            </a>
+            <nav aria-label="Admin" class="flex flex-wrap gap-x-4 gap-y-1 text-[0.9375rem]">
+              {menu.map((m) => (
+                <a
+                  href={m.href}
+                  aria-current={activo(m.href) ? 'page' : undefined}
+                  class="texto-suave py-1 hover:text-white aria-[current=page]:text-white aria-[current=page]:underline aria-[current=page]:underline-offset-8"
+                >
+                  {m.texto}
+                </a>
+              ))}
+            </nav>
+            <div class="ml-auto flex items-center gap-5 text-[0.9375rem]">
+              <a href="/" target="_blank" rel="noopener" class="texto-suave hover:text-white">
+                Ver sitio ↗
+              </a>
+              <form method="post" action="/admin/salir">
+                <button class="texto-suave hover:text-white">Salir</button>
+              </form>
+            </div>
+          </div>
+        </header>
+      )
+    }
+    <main class:list={['contenedor py-8 lg:py-12', sinMenu && 'max-w-md']}>
+      <h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">{titulo}</h1>
+      {
+        guardado && (
+          <p class="aviso aviso-ok" role="status">
+            Guardado. El sitio público se actualiza en unos segundos.
+          </p>
+        )
+      }
+      {
+        error && (
+          <p class="aviso aviso-error" role="alert">
+            {error}
+          </p>
+        )
+      }
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  /* Estilos compartidos de los formularios y tablas del admin. */
+  .admin {
+    font-size: 1rem;
+  }
+  .admin .panel {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid rgb(11 18 32 / 0.1);
+    border-radius: 0.75rem;
+    background: #fff;
+  }
+  @media (width >= 48rem) {
+    .admin .panel {
+      padding: 1.75rem;
+    }
+  }
+  .admin .panel > h2 {
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .admin .rejilla {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (width >= 48rem) {
+    .admin .rejilla {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .admin .rejilla > .ancho {
+      grid-column: 1 / -1;
+    }
+  }
+  .admin label,
+  .admin .rotulo {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .admin :is(input:not([type='checkbox'], [type='radio'], [type='file']), select, textarea) {
+    display: block;
+    width: 100%;
+    margin-top: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgb(11 18 32 / 0.2);
+    border-radius: 0.5rem;
+    background: #fff;
+    font-weight: 400;
+  }
+  .admin textarea {
+    min-height: 6rem;
+    field-sizing: content;
+  }
+  .admin input[type='file'] {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+  }
+  .admin .ayuda {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--color-gris);
+  }
+  .admin .opcion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 400;
+  }
+  .admin .btn {
+    min-height: 2.5rem;
+    padding: 0.5rem 1.25rem;
+    letter-spacing: 0.08em;
+  }
+  .admin .btn-secundario {
+    border-color: rgb(11 18 32 / 0.25);
+    color: var(--color-tinta);
+  }
+  .admin .btn-secundario:hover {
+    border-color: var(--color-tinta);
+  }
+  .admin .btn-peligro {
+    border-color: #b42318;
+    color: #b42318;
+  }
+  .admin .btn-peligro:hover {
+    background: #b42318;
+    color: #fff;
+  }
+  .admin .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .admin .aviso {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+  }
+  .admin .aviso-ok {
+    background: #e7f6ec;
+    color: #0f5132;
+  }
+  .admin .aviso-error {
+    background: #fdecea;
+    color: #8a1c13;
+  }
+  .admin .tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  .admin .tabla :is(th, td) {
+    padding: 0.625rem 0.5rem;
+    border-bottom: 1px solid rgb(11 18 32 / 0.08);
+    text-align: left;
+    vertical-align: middle;
+  }
+  .admin .tabla th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-gris);
+  }
+  .admin .scroll {
+    overflow-x: auto;
+  }
+  .admin .chip {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: rgb(11 18 32 / 0.06);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  .admin .chip-azul {
+    background: color-mix(in srgb, var(--color-marca) 12%, transparent);
+    color: var(--color-marca);
+  }
+  .admin .chip-rojo {
+    background: #fdecea;
+    color: #8a1c13;
+  }
+  .admin .chip-verde {
+    background: #e7f6ec;
+    color: #0f5132;
+  }
+  .admin .miniatura {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+    border-radius: 0.375rem;
+    background: var(--color-roto);
+  }
+  .admin a.enlace {
+    color: var(--color-marca);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>

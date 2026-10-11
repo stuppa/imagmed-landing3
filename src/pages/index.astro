@@ -1,34 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
-import Hero from '../components/Hero.astro';
-import Confianza from '../components/Confianza.astro';
-import Marcas from '../components/Marcas.astro';
-import Catalogo from '../components/Catalogo.astro';
-import Calculadora from '../components/Calculadora.astro';
-import PorQue from '../components/PorQue.astro';
-import Casos from '../components/Casos.astro';
-import Proceso from '../components/Proceso.astro';
-import Faq from '../components/Faq.astro';
-import Mapa from '../components/Mapa.astro';
-import Contacto from '../components/Contacto.astro';
-import Footer from '../components/Footer.astro';
+import Inicio from '../components/Inicio.astro';
+import { prepararPagina } from '../lib/sitio';
+
+await prepararPagina(Astro);
 ---
 
-<Layout>
-  <Header />
-  <main id="contenido">
-    <Hero />
-    <Confianza />
-    <Marcas />
-    <Catalogo />
-    <Calculadora />
-    <PorQue />
-    <Casos />
-    <Proceso />
-    <Faq />
-    <Mapa />
-    <Contacto />
-  </main>
-  <Footer />
-</Layout>
+<Inicio />

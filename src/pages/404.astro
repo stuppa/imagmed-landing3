@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { prepararPagina } from '../lib/sitio';
+import { sitio } from '../data/sitio';
+
+// También llega aquí una ficha o categoría oculta (Astro.rewrite), que ya cargó el contenido.
+if (!Astro.locals.sitio) await prepararPagina(Astro);
+Astro.response.status = 404;
+---
+
+<Layout titulo={`Página no encontrada | ${sitio.nombre}`}>
+  <Header />
+  <main id="contenido" class="oscuro pt-28 pb-24 lg:pt-36 lg:pb-32">
+    <div class="contenedor">
+      <p class="etiqueta">Error 404</p>
+      <h1 class="titulo-1 mt-4 max-w-[18em]">Esta página no existe o el producto ya no está disponible.</h1>
+      <a href="/#equipos" class="btn btn-primario mt-10">Ver catálogo</a>
+    </div>
+  </main>
+  <Footer />
+</Layout>

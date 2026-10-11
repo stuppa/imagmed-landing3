@@ -1,0 +1,26 @@
+---
+// La landing tal como se verá en una fecha: ?en=AAAA-MM-DDTHH:MM (hora de México) o ?campana=id (su inicio).
+import Inicio from '../../../components/Inicio.astro';
+import BarraVistaPrevia from '../../../components/BarraVistaPrevia.astro';
+import { revisar } from '../../../lib/admin';
+import { deFechaLocal } from '../../../lib/contenido';
+import { cargarSitio, type FilaCampana } from '../../../lib/sitio';
+
+const supabase = Astro.locals.supabase;
+let fecha = deFechaLocal(Astro.url.searchParams.get('en') ?? '') ?? new Date();
+const campana = Astro.url.searchParams.get('campana') ?? '';
+if (/^[0-9a-f-]{36}$/.test(campana)) {
+  const c = revisar(await supabase.from('campanas').select('inicio').eq('id', campana).maybeSingle()) as Pick<
+    FilaCampana,
+    'inicio'
+  > | null;
+  if (c) fecha = new Date(c.inicio);
+}
+
+// Con la sesión del admin: también ve campañas pasadas (los ocultos siguen fuera, como en el sitio).
+Astro.locals.sitio = await cargarSitio(supabase, fecha);
+---
+
+<Inicio>
+  <BarraVistaPrevia texto="Vista previa del sitio" volver="/admin/hero" fecha={fecha} />
+</Inicio>
