@@ -122,24 +122,66 @@
     text-align: center;
     text-transform: uppercase;
     transition:
-      background-color 0.2s ease,
-      color 0.2s ease,
-      border-color 0.2s ease;
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease,
+      text-shadow 0.25s ease,
+      box-shadow 0.25s ease;
   }
   .btn-primario {
     background-color: var(--color-marca);
     color: #fff;
   }
-  .btn-primario:hover {
-    background-color: color-mix(in srgb, var(--color-marca) 80%, black);
-  }
   .btn-contorno {
     border-color: color-mix(in srgb, #fff 30%, transparent);
     color: #fff;
   }
-  .btn-contorno:hover {
-    background-color: #fff;
-    color: var(--color-negro);
+  /* Contorno sobre fondo claro. */
+  .btn-claro {
+    border-color: color-mix(in srgb, var(--color-marca) 40%, transparent);
+    color: var(--color-marca);
+  }
+
+  /* Hover de los botones del sitio (no del admin): se vuelven una placa de rayos X, con película oscura, texto como hueso y barrido de escaneo. */
+  .btn:not(.admin .btn) {
+    --rx: #9edcff;
+  }
+  .btn:not(.admin .btn):is(:hover, :focus-visible) {
+    --acento: var(--rx);
+    background-color: #04101c;
+    border-color: color-mix(in srgb, var(--rx) 60%, transparent);
+    color: #eef8ff;
+    text-shadow:
+      0 0 4px var(--rx),
+      0 0 14px color-mix(in srgb, var(--rx) 70%, transparent);
+    box-shadow:
+      inset 0 0 1.25rem color-mix(in srgb, var(--rx) 30%, transparent),
+      0 0 1.25rem color-mix(in srgb, var(--rx) 25%, transparent);
+  }
+  .btn:not(.admin .btn)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      linear-gradient(90deg, transparent, color-mix(in srgb, var(--rx) 45%, transparent), transparent) -60% 0 / 35% 100% no-repeat,
+      repeating-linear-gradient(0deg, color-mix(in srgb, var(--rx) 10%, transparent) 0 1px, transparent 1px 3px);
+    mix-blend-mode: screen;
+    transition: opacity 0.25s ease;
+  }
+  .btn:not(.admin .btn):is(:hover, :focus-visible)::after {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .btn:not(.admin .btn):is(:hover, :focus-visible)::after {
+      animation: barrido-rayos 1.6s ease-in-out infinite;
+    }
+  }
+  @keyframes barrido-rayos {
+    to {
+      background-position: 160% 0, 0 0;
+    }
   }
 
   /* Enlace de texto con flecha: acciones secundarias dentro de las secciones. */
