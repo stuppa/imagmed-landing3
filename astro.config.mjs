@@ -48,5 +48,11 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // El CSS en línea sale del build del servidor, cuyo target no es un navegador: Lightning CSS minifica sin
+      // objetivos y mete animation-timeline dentro del shorthand animation, que Chrome y Safari descartan
+      // (adiós animaciones con scroll en producción). Con los objetivos de navegador de Vite lo deja aparte.
+      cssTarget: ['chrome111', 'edge111', 'firefox114', 'safari16.4', 'ios16.4'],
+    },
   },
 });
