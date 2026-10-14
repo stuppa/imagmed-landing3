@@ -2,6 +2,7 @@
 // Encabezado + rejilla de bloques con icono. La usan «Por qué Imagmed» y «Servicio técnico».
 import Encabezado from './Encabezado.astro';
 import Icono, { type NombreIcono } from './Icono.astro';
+import Radiografia from './Radiografia.astro';
 import { diferenciadores, seccionPorQue } from '../data/diferenciadores';
 
 interface Props {
@@ -13,6 +14,8 @@ interface Props {
   equipo?: string;
   /** Bloques a la izquierda y encabezado a la derecha, para no repetir la misma composición. */
   invertido?: boolean;
+  /** Tramo del esqueleto que muestra la ventana de rayos X bajo el encabezado (solo escritorio, donde queda el hueco). */
+  radiografia?: [number, number];
 }
 
 const {
@@ -22,12 +25,13 @@ const {
   solicitud = 'Cotización',
   equipo,
   invertido = false,
+  radiografia,
 } = Astro.props;
 ---
 
 <section id={id} class="seccion" aria-labelledby={`titulo-${id}`}>
   <div class="contenedor grid gap-12 lg:grid-cols-12 lg:gap-6">
-    <div class:list={['lg:col-span-5', invertido && 'lg:order-2 lg:col-start-8']} data-reveal>
+    <div class:list={['lg:col-span-5 lg:flex lg:flex-col', invertido && 'lg:order-2 lg:col-start-8']} data-reveal>
       <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id={`titulo-${id}`}>
         <p class="texto-suave mt-5 max-w-md">{s.texto}</p>
         <a href="#contacto" data-solicitud={solicitud} data-equipo={equipo} class="enlace-flecha mt-6">
@@ -35,6 +39,7 @@ const {
           <Icono nombre="flecha" />
         </a>
       </Encabezado>
+      {radiografia && <Radiografia tramo={radiografia} class="mt-12 hidden flex-1 lg:block" />}
     </div>
 
     <ul

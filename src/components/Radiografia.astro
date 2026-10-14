@@ -1,0 +1,71 @@
+---
+// Ventana de rayos X para los huecos de las secciones claras. Entre todas recorren un solo esqueleto:
+// cada una recorre su tramo del cuerpo (de la cabeza, 0, a los pies, 100) desde que asoma por abajo hasta que llega arriba.
+// CSS puro (scroll-driven animations, solo translate). Sin soporte o con movimiento reducido, queda quieta al inicio del tramo.
+// Imagen: ilustración de LadyofHats (dominio público, Wikimedia Commons), recoloreada como radiografía y aplanada
+// sobre el azul del fondo. Ya va optimizada (AVIF 30 KB, WebP 44 KB), así que no pasa por el servicio de imágenes.
+import avif from '../assets/esqueleto-rx.avif';
+import webp from '../assets/esqueleto-rx.webp';
+
+interface Props {
+  /** Dónde queda el borde superior de la ventana al empezar y al terminar, en % de la altura del esqueleto.
+   *  La ventana enseña ~15 % del cuerpo, así que para acabar en los pies basta ~86. Fuera de 0–100 deja aire de fondo. */
+  tramo: [number, number];
+  class?: string;
+}
+
+const {
+  tramo: [desde, hasta],
+  class: clase,
+} = Astro.props;
+---
+
+<div class:list={['radiografia reticula', clase]} style={`--desde: ${desde}; --hasta: ${hasta}`} aria-hidden="true">
+  <picture>
+    <source srcset={avif.src} type="image/avif" />
+    <img src={webp.src} width={webp.width} height={webp.height} alt="" loading="lazy" decoding="async" />
+  </picture>
+</div>
+
+<style>
+  .radiografia {
+    min-height: 14rem;
+    background-color: #d6eaf9; /* el mismo azul sobre el que se aplanó la imagen */
+    view-timeline: --radiografia;
+    view-timeline-inset: 5rem 0; /* termina justo bajo el menú fijo, como scroll-padding-top */
+  }
+  picture {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    translate: 0 calc(var(--desde) * -1%);
+  }
+  /* Viñeta de negatoscopio, quieta sobre la placa. */
+  .radiografia::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(closest-side, transparent 60%, color-mix(in srgb, var(--color-marca) 22%, transparent));
+    pointer-events: none;
+  }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      img {
+        animation: recorrido linear both;
+        animation-timeline: --radiografia;
+        animation-range: entry 0% exit 0%;
+      }
+    }
+  }
+  @keyframes recorrido {
+    to {
+      translate: 0 calc(var(--hasta) * -1%);
+    }
+  }
+</style>
