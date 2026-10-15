@@ -21,7 +21,7 @@ if (Astro.request.method === 'POST') {
 ---
 
 <Admin titulo="Entrar al admin" error={error} sinMenu>
-  <form method="post" class="panel grid gap-4">
+  <form method="post" class="panel reticula grid gap-4">
     <label>
       Correo
       <input name="correo" type="email" autocomplete="username" required autofocus />
@@ -32,5 +32,5 @@ if (Astro.request.method === 'POST') {
     </label>
     <button class="btn btn-primario mt-2">Entrar</button>
   </form>
-  <p class="ayuda mt-4">Después te pediremos el código de tu app autenticadora.</p>
+  <p class="ayuda mt-4 text-center">Después te pediremos el código de tu app autenticadora.</p>
 </Admin>

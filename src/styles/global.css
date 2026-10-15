@@ -155,8 +155,8 @@
     color: var(--color-marca);
   }
 
-  /* Botones del sitio (no del admin) encendidos: se vuelven una placa de rayos X, con película oscura, texto como hueso y barrido de escaneo. */
-  .btn:not(.admin .btn) {
+  /* Botones del sitio (y del acceso al admin) encendidos: se vuelven una placa de rayos X, con película oscura, texto como hueso y barrido de escaneo. */
+  .btn:not(.admin:not(.acceso) .btn) {
     --rx: #9edcff;
     -webkit-tap-highlight-color: transparent; /* el toque ya se ve como radiografía */
     @variant encendido {
@@ -175,7 +175,7 @@
       }
     }
   }
-  .btn:not(.admin .btn)::after {
+  .btn:not(.admin:not(.acceso) .btn)::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -188,7 +188,7 @@
     transition: opacity 0.25s ease;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .btn:not(.admin .btn) {
+    .btn:not(.admin:not(.acceso) .btn) {
       @variant encendido {
         &::after {
           animation: barrido-rayos 1.6s ease-in-out infinite;

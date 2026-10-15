@@ -43,13 +43,13 @@ const factor = registro?.factor ?? verificado?.id ?? '';
 <Admin titulo={registro ? 'Activa la verificación en dos pasos' : 'Código de verificación'} error={error} sinMenu>
   {
     registro && (
-      <div class="panel">
+      <div class="panel reticula">
         <ol class="grid list-decimal gap-2 pl-5 text-[0.9375rem]">
           <li>Abre tu app autenticadora (Google Authenticator, 1Password, Authy…).</li>
           <li>Escanea este código QR o escribe la clave a mano.</li>
           <li>Escribe abajo el código de 6 dígitos que te muestre la app.</li>
         </ol>
-        <img src={registro.qr} alt="Código QR para la app autenticadora" width="200" height="200" class="mx-auto mt-4" />
+        <img src={registro.qr} alt="Código QR para la app autenticadora" width="200" height="200" class="mx-auto mt-4 rounded-lg bg-white p-2" />
         <p class="ayuda text-center break-all">
           Clave: <code>{registro.secreto}</code>
         </p>
@@ -58,7 +58,7 @@ const factor = registro?.factor ?? verificado?.id ?? '';
   }
   {
     factor && (
-      <form method="post" class="panel grid gap-4">
+      <form method="post" class="panel reticula grid gap-4">
         <input type="hidden" name="factor" value={factor} />
         {registro && (
           <>
@@ -82,7 +82,7 @@ const factor = registro?.factor ?? verificado?.id ?? '';
       </form>
     )
   }
-  <form method="post" action="/admin/salir" class="mt-4">
-    <button class="ayuda underline">Cancelar y salir</button>
+  <form method="post" action="/admin/salir" class="mt-4 text-center">
+    <button class="ayuda min-h-11 px-2 underline underline-offset-4">Cancelar y salir</button>
   </form>
 </Admin>
