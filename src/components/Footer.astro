@@ -40,13 +40,9 @@ const conFlotante = Boolean(whatsappUrl(contacto));
         }
       </ul>
       <p>© {new Date().getFullYear()} {sitio.razonSocial}</p>
-      {
-        contacto.avisoPrivacidadUrl && (
-          <a href={contacto.avisoPrivacidadUrl} class="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-white">
-            {pie.aviso}
-          </a>
-        )
-      }
+      <a href={contacto.avisoPrivacidadUrl} class="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-white">
+        {pie.aviso}
+      </a>
     </div>
   </div>
   <WhatsappFlotante />

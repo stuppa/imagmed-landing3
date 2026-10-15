@@ -44,12 +44,15 @@ Los cambios se ven en segundos: al guardar se invalida la caché del CDN. El dis
 | Proceso de compra | `src/data/pasos.ts` |
 | Textos de la sección FAQ (las preguntas, en el admin) | `src/data/faq.ts` |
 | Endpoint y textos del formulario (los datos de contacto, en el admin) | `src/data/contacto.ts` |
+| Aviso de privacidad (el simplificado, en `Contacto.astro`; el correo para solicitudes, en `src/data/contacto.ts`) | `src/pages/aviso-de-privacidad.astro` |
 | Colores de marca | `src/styles/global.css` (bloque `@theme`) |
 | Dominio (canonical, Open Graph, sitemap) | `astro.config.mjs` → `site` |
 
 - En los títulos, el texto entre `*asteriscos*` se muestra en itálica bold azul.
 - Si un dato está vacío, su elemento no se muestra: los botones de WhatsApp aparecen al llenar el número,
-  el teléfono y el aviso de privacidad al llenar sus campos, una pregunta frecuente al tener respuesta.
+  el teléfono al llenar su campo, una pregunta frecuente al tener respuesta.
+- El footer y el formulario siempre enlazan el aviso de privacidad: el del sitio (`/aviso-de-privacidad`) o,
+  si se llena en el admin, esa URL.
 - Las fotos se suben desde el admin (Supabase Storage); Vercel las sirve optimizadas en AVIF/WebP.
 - Busca `TODO:` en `src/` y `astro.config.mjs` para ver los datos pendientes de confirmar.
 

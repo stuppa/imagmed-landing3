@@ -1,9 +1,16 @@
 ---
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
-import { endpointFormulario, formulario as f, seccionContacto as s, telefonoUrl, whatsappUrl } from '../data/contacto';
+import {
+  correoPrivacidad,
+  endpointFormulario,
+  formulario as f,
+  seccionContacto as s,
+  telefonoUrl,
+  whatsappUrl,
+} from '../data/contacto';
 import { pasos } from '../data/pasos';
-import { encabezado } from '../data/sitio';
+import { encabezado, sitio } from '../data/sitio';
 
 interface Props {
   equipoInicial?: string;
@@ -146,17 +153,27 @@ const textos = JSON.stringify({
           }
         </div>
 
-        {
-          contacto.avisoPrivacidadUrl && (
-            <p class="texto-suave mt-4 text-sm">
-              {f.privacidad}{' '}
-              <a href={contacto.avisoPrivacidadUrl} class="underline underline-offset-4 hover:text-white">
-                {f.privacidadEnlace}
-              </a>
-              .
-            </p>
-          )
-        }
+        <!-- Aviso simplificado (art. 16 de la LFPDPPP): debe coincidir con src/pages/aviso-de-privacidad.astro. -->
+        <p class="texto-suave mt-4 text-sm">
+          {sitio.razonSocial}, con domicilio en {contacto.direccion}, usará tu nombre, teléfono, correo y los datos de tu
+          solicitud para atenderla y darle seguimiento y, si no te opones, para enviarte promociones. Para no recibir
+          promociones o limitar el uso de tus datos, {
+            correoPrivacidad ? (
+              <>
+                escríbenos a{' '}
+                <a href={`mailto:${correoPrivacidad}`} class="underline underline-offset-4 hover:text-white">
+                  {correoPrivacidad}
+                </a>
+              </>
+            ) : (
+              'envíanos un escrito a ese domicilio'
+            )
+          }. Consulta el{' '}
+          <a href={contacto.avisoPrivacidadUrl} class="underline underline-offset-4 hover:text-white">
+            aviso de privacidad integral
+          </a>
+          .
+        </p>
       </form>
 
       <div

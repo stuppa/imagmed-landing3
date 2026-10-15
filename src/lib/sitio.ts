@@ -211,7 +211,8 @@ export async function cargarSitio(cliente: Supabase = clientePublico(), ahora = 
       whatsapp: ajustes.whatsapp,
       whatsappMensaje: ajustes.whatsapp_mensaje,
       telefono: ajustes.telefono,
-      avisoPrivacidadUrl: ajustes.aviso_privacidad_url,
+      // Vacío en el admin: el aviso del propio sitio.
+      avisoPrivacidadUrl: ajustes.aviso_privacidad_url || '/aviso-de-privacidad',
       direccion: ajustes.direccion,
       horario: ajustes.horario,
       googleMapsUrl: ajustes.google_maps_url,

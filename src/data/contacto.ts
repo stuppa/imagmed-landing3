@@ -6,6 +6,10 @@ import type { Contacto } from '../lib/sitio';
 // TODO: confirmar con el cliente. URL que recibe el formulario por POST ([ENDPOINT] en el brief); luego, Resend.
 export const endpointFormulario = '';
 
+// TODO: confirmar con el cliente. Correo que atiende las solicitudes de datos personales (aviso de privacidad).
+// Vacío: el aviso y el formulario piden las solicitudes por escrito en el domicilio.
+export const correoPrivacidad = '';
+
 // Con dato vacío no se renderizan los botones de WhatsApp o teléfono.
 export const whatsappUrl = (c: Contacto, mensaje = c.whatsappMensaje) =>
   c.whatsapp ? `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}` : '';
@@ -51,8 +55,6 @@ export const formulario = {
   },
   notaDemo: 'Solicitas una demo del equipo.',
   notaProyeccion: 'Incluye tu proyección de retorno.',
-  privacidad: 'Al enviar aceptas nuestro',
-  privacidadEnlace: 'aviso de privacidad',
   exitoWhatsapp: 'Escríbenos por WhatsApp',
   whatsappFlotante: 'Escríbenos por WhatsApp',
 };

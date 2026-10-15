@@ -1,0 +1,145 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { prepararPagina } from '../lib/sitio';
+import { sitio } from '../data/sitio';
+import { correoPrivacidad } from '../data/contacto';
+
+// Aviso integral (art. 15 de la LFPDPPP, DOF 20-03-2025). El simplificado va en el formulario
+// (src/components/Contacto.astro): si cambian los datos o las finalidades, se actualizan los dos.
+const { contacto } = await prepararPagina(Astro);
+const actualizado = '14 de octubre de 2026';
+---
+
+<Layout
+  titulo={`Aviso de privacidad | ${sitio.nombre}`}
+  descripcion={`Cómo ${sitio.nombre} usa y protege los datos personales que le das en este sitio, por WhatsApp, por teléfono o por correo.`}
+>
+  <Header />
+  <main id="contenido" class="oscuro pt-28 pb-24 lg:pt-36 lg:pb-32">
+    <div class="contenedor">
+      <p class="etiqueta">Última actualización: {actualizado}</p>
+      <h1 class="titulo-2 mt-4">Aviso de privacidad</h1>
+
+      <div class="aviso mt-8 max-w-3xl">
+        <p>
+          {sitio.razonSocial}, con domicilio en {contacto.direccion}, es responsable del tratamiento de los datos
+          personales que nos das en este sitio, por WhatsApp, por teléfono o por correo, conforme a la Ley Federal de
+          Protección de Datos Personales en Posesión de los Particulares.
+        </p>
+
+        <h2>Qué datos usamos</h2>
+        <ul>
+          <li>Tu nombre, teléfono y correo electrónico.</li>
+          <li>El equipo que te interesa, cuándo lo necesitas y si pides cotización, demostración o servicio técnico.</li>
+          <li>
+            Si decides enviarla, la proyección de la calculadora de retorno: estudios al día, precio por estudio,
+            inversión e ingreso estimados.
+          </li>
+          <li>Lo que nos cuentes al escribirnos o llamarnos.</li>
+        </ul>
+        <p>No te pedimos datos personales sensibles, como los de salud, ni datos bancarios.</p>
+
+        <h2>Para qué los usamos</h2>
+        <p>Para atender lo que nos pides. Sin estos usos no podríamos hacerlo:</p>
+        <ul>
+          <li>Responder tu solicitud de cotización, demostración o servicio técnico.</li>
+          <li>Contactarte por teléfono, WhatsApp o correo para darle seguimiento.</li>
+          <li>Preparar y enviarte tu cotización.</li>
+        </ul>
+        <p>
+          Y, si no te opones, para enviarte promociones, novedades de equipos e invitaciones a eventos. Este uso
+          requiere tu consentimiento: si no te opones, entendemos que nos lo das. Puedes negarte en cualquier momento
+          sin que afecte tu solicitud.
+        </p>
+
+        <h2>Tus derechos y cómo limitar el uso de tus datos</h2>
+        <p>
+          Puedes pedirnos acceder a tus datos, rectificarlos, cancelarlos u oponerte a su uso (derechos ARCO), revocar
+          tu consentimiento, dejar de recibir promociones o limitar de otra forma el uso de tus datos. Envía tu
+          solicitud {
+            correoPrivacidad && (
+              <>
+                a <a href={`mailto:${correoPrivacidad}`}>{correoPrivacidad}</a> o{' '}
+              </>
+            )
+          }por escrito a nuestro domicilio. Para dejar de recibir promociones también basta con pedirlo al responder
+          cualquiera de ellas.
+        </p>
+        <p>Para ejercer tus derechos ARCO, incluye:</p>
+        <ul>
+          <li>Tu nombre y un correo o domicilio para responderte.</li>
+          <li>
+            Copia de tu identificación oficial o, si te representa alguien, la suya y el documento que acredite la
+            representación.
+          </li>
+          <li>
+            Qué datos y qué derecho quieres ejercer, o qué nos pides. Para rectificar, indica el cambio y adjunta el
+            documento que lo respalde.
+          </li>
+          <li>Cualquier otro dato que nos ayude a encontrar tu información.</li>
+        </ul>
+        <p>
+          Te respondemos en un máximo de 20 días hábiles y, si procede, lo aplicamos en los 15 días hábiles
+          siguientes. Si el caso lo justifica, cada plazo puede ampliarse una sola vez por el mismo tiempo. Si pides
+          acceso, te entregamos tus datos en documento electrónico o copia simple, una vez acreditada tu identidad. El
+          trámite es gratuito; solo se cobran, en su caso, los costos de copias o envío.
+        </p>
+        <p>
+          Si no estás de acuerdo con nuestra respuesta o no te respondemos a tiempo, puedes presentar una solicitud de
+          protección de datos ante la Secretaría Anticorrupción y Buen Gobierno.
+        </p>
+
+        <h2>Con quién los compartimos</h2>
+        <p>
+          No vendemos tus datos ni los transferimos a terceros, salvo en los casos que la Ley permite sin tu
+          consentimiento (artículo 36), por ejemplo, si una autoridad competente nos los requiere. Los proveedores que
+          nos dan el hospedaje del sitio y el envío de correo los tratan por cuenta nuestra y solo para lo que aquí se
+          describe; algunos están fuera de México.
+        </p>
+
+        <h2>Cookies</h2>
+        <p>
+          Este sitio no usa cookies propias para rastrearte ni para publicidad. El mapa de la sección Ubicación lo carga
+          Google Maps, que puede usar cookies conforme a la política de privacidad de Google.
+        </p>
+
+        <h2>Cambios a este aviso</h2>
+        <p>
+          Publicaremos cualquier cambio en esta página, con su fecha de actualización. Si un cambio implica un uso nuevo
+          de tus datos que requiera tu consentimiento, te lo pediremos antes.
+        </p>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .aviso h2 {
+    margin-top: 2.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .aviso :is(p, ul) {
+    margin-top: 1rem;
+    color: var(--suave);
+    line-height: 1.65;
+  }
+  .aviso ul {
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .aviso li + li {
+    margin-top: 0.5rem;
+  }
+  .aviso a {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .aviso a:hover {
+    color: #fff;
+  }
+</style>
