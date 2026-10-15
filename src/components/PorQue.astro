@@ -14,7 +14,7 @@ interface Props {
   equipo?: string;
   /** Bloques a la izquierda y encabezado a la derecha, para no repetir la misma composición. */
   invertido?: boolean;
-  /** Tramo del esqueleto que muestra la ventana de rayos X bajo el encabezado (solo escritorio, donde queda el hueco). */
+  /** Tramo del esqueleto que muestra la ventana de rayos X bajo el encabezado (en escritorio llena el hueco junto a los bloques). */
   radiografia?: [number, number];
 }
 
@@ -39,7 +39,7 @@ const {
           <Icono nombre="flecha" />
         </a>
       </Encabezado>
-      {radiografia && <Radiografia tramo={radiografia} class="mt-12 hidden flex-1 lg:block" />}
+      {radiografia && <Radiografia tramo={radiografia} class="mt-10 flex-1 lg:mt-12" />}
     </div>
 
     <ul

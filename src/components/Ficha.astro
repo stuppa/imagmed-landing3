@@ -34,16 +34,16 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
   <main id="contenido" class="pt-16">
     <!-- Migas de pan / Navegación -->
     <div class="oscuro border-b border-(--linea) py-4">
-      <div class="contenedor flex flex-wrap items-center justify-between gap-4 text-sm">
+      <div class="contenedor flex flex-wrap items-center justify-between gap-x-4 gap-y-7 text-sm">
         <nav aria-label="Migas de pan" class="flex items-center gap-2 texto-suave">
-          <a href="/" class="hover:text-white transition-colors">Inicio</a>
+          <a href="/" class="-mx-1.5 -my-3 px-1.5 py-3 transition-colors hover:text-white">Inicio</a>
           <span class="opacity-40">/</span>
-          <a href={`/productos/${equipo.categoria.slug}`} class="hover:text-white transition-colors">{equipo.categoria.nombre}</a>
+          <a href={`/productos/${equipo.categoria.slug}`} class="-my-3 py-3 transition-colors hover:text-white">{equipo.categoria.nombre}</a>
           <span class="opacity-40">/</span>
           <span class="text-white font-medium">{equipo.nombreCompleto}</span>
         </nav>
 
-        <a href={`/productos/${equipo.categoria.slug}`} class="inline-flex items-center gap-1.5 text-marca-claro hover:underline text-xs font-semibold uppercase tracking-wider">
+        <a href={`/productos/${equipo.categoria.slug}`} class="-my-3.5 inline-flex items-center gap-1.5 py-3.5 text-xs font-semibold tracking-wider text-marca-claro uppercase hover:underline">
           <Icono nombre="flecha" class="size-3.5 rotate-180" />
           <span>Volver al catálogo</span>
         </a>
@@ -352,7 +352,7 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
                 Otros equipos en {equipo.categoria.nombre}
               </h2>
             </div>
-            <a href={`/productos/${equipo.categoria.slug}`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-marca hover:underline">
+            <a href={`/productos/${equipo.categoria.slug}`} class="-my-3 inline-flex items-center gap-1.5 py-3 text-sm font-semibold text-marca hover:underline">
               <span>Ver todos</span>
               <Icono nombre="flecha" class="size-4" />
             </a>
@@ -369,13 +369,13 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
   </main>
 
   <!-- BARRA FLOTANTE DE COTIZACIÓN PARA MÓVIL Y SCROLL -->
-  <div id="barra-cotizar-flotante" class="fixed bottom-0 inset-x-0 z-40 bg-noche/95 border-t border-slate-800 p-3 backdrop-blur-md transition-transform duration-300 translate-y-full md:hidden">
+  <div id="barra-cotizar-flotante" class="fixed bottom-0 inset-x-0 z-40 bg-noche/95 border-t border-slate-800 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md transition-transform duration-300 translate-y-full md:hidden">
     <div class="contenedor flex items-center justify-between gap-3">
       <div>
         <p class="text-xs text-slate-400">{equipo.tipo || equipo.categoria.nombre}</p>
         <p class="text-sm font-bold text-white leading-tight">{equipo.nombreCompleto}</p>
       </div>
-      <a href="#cotizar" class="btn btn-primario min-h-[2.5rem] px-5 text-xs">
+      <a href="#cotizar" class="btn btn-primario min-h-11 px-5 text-xs">
         {equipo.agotado ? seccionCatalogo.ctaAgotado : 'Cotizar ahora'}
       </a>
     </div>

@@ -16,6 +16,19 @@
   --font-sans: var(--font-source-sans);
 }
 
+/* Botón «encendido»: con foco de teclado, mientras se presiona y, solo con mouse, al pasar el cursor.
+   En pantallas táctiles el hover se queda pegado después de tocar, por eso ahí responde al presionar. */
+@custom-variant encendido {
+  &:is(:focus-visible, :active) {
+    @slot;
+  }
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
 @layer base {
   html {
     scroll-padding-top: 5rem;
@@ -142,21 +155,25 @@
     color: var(--color-marca);
   }
 
-  /* Hover de los botones del sitio (no del admin): se vuelven una placa de rayos X, con película oscura, texto como hueso y barrido de escaneo. */
+  /* Botones del sitio (no del admin) encendidos: se vuelven una placa de rayos X, con película oscura, texto como hueso y barrido de escaneo. */
   .btn:not(.admin .btn) {
     --rx: #9edcff;
-  }
-  .btn:not(.admin .btn):is(:hover, :focus-visible) {
-    --acento: var(--rx);
-    background-color: #04101c;
-    border-color: color-mix(in srgb, var(--rx) 60%, transparent);
-    color: #eef8ff;
-    text-shadow:
-      0 0 4px var(--rx),
-      0 0 14px color-mix(in srgb, var(--rx) 70%, transparent);
-    box-shadow:
-      inset 0 0 1.25rem color-mix(in srgb, var(--rx) 30%, transparent),
-      0 0 1.25rem color-mix(in srgb, var(--rx) 25%, transparent);
+    -webkit-tap-highlight-color: transparent; /* el toque ya se ve como radiografía */
+    @variant encendido {
+      --acento: var(--rx);
+      background-color: #04101c;
+      border-color: color-mix(in srgb, var(--rx) 60%, transparent);
+      color: #eef8ff;
+      text-shadow:
+        0 0 4px var(--rx),
+        0 0 14px color-mix(in srgb, var(--rx) 70%, transparent);
+      box-shadow:
+        inset 0 0 1.25rem color-mix(in srgb, var(--rx) 30%, transparent),
+        0 0 1.25rem color-mix(in srgb, var(--rx) 25%, transparent);
+      &::after {
+        opacity: 1;
+      }
+    }
   }
   .btn:not(.admin .btn)::after {
     content: '';
@@ -170,12 +187,13 @@
     mix-blend-mode: screen;
     transition: opacity 0.25s ease;
   }
-  .btn:not(.admin .btn):is(:hover, :focus-visible)::after {
-    opacity: 1;
-  }
   @media (prefers-reduced-motion: no-preference) {
-    .btn:not(.admin .btn):is(:hover, :focus-visible)::after {
-      animation: barrido-rayos 1.6s ease-in-out infinite;
+    .btn:not(.admin .btn) {
+      @variant encendido {
+        &::after {
+          animation: barrido-rayos 1.6s ease-in-out infinite;
+        }
+      }
     }
   }
   @keyframes barrido-rayos {

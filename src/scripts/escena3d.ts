@@ -155,8 +155,11 @@ export function montar3d(contenedor: HTMLElement, cargar: () => Promise<{ crear:
         powerPreference: 'high-performance',
         precision: 'highp',
       });
-      // Limitar a DPR 1.75 máx para pantallas 3K/4K sin pérdida visual perceptible pero ganando un 40% de tasa de refresco
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+      // Limitar a DPR 1.75 máx para pantallas 3K/4K sin pérdida visual perceptible pero ganando un 40% de tasa de refresco.
+      // En pantallas táctiles (celular y tablet) basta 1.25: la mitad de pixeles que pintar, menos batería y calor.
+      // El antialias se queda: en GPUs móviles casi no cuesta y sin él el transductor se ve dentado.
+      const tactil = matchMedia('(pointer: coarse)').matches;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, tactil ? 1.25 : 1.75));
       renderer.setClearColor(0x000000, 0);
       const canvas = renderer.domElement;
       canvas.setAttribute('aria-hidden', 'true');

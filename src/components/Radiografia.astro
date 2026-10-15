@@ -1,15 +1,16 @@
 ---
-// Ventana de rayos X para los huecos de las secciones claras. Entre todas recorren un solo esqueleto:
-// cada una recorre su tramo del cuerpo (de la cabeza, 0, a los pies, 100) desde que asoma por abajo hasta que llega arriba.
+// Ventana de rayos X de las secciones claras (en escritorio llena un hueco; en celular va a lo ancho). Entre todas recorren un solo esqueleto:
+// cada una recorre su tramo del cuerpo (de la cabeza, 0, a los pies, 100) desde que se ve completa hasta que se va por arriba;
+// mientras entra espera quieta en su primer cuadro, para que nadie se pierda el inicio.
 // CSS puro (scroll-driven animations, solo translate). Sin soporte o con movimiento reducido, queda quieta al inicio del tramo.
 // Imagen: ilustración de LadyofHats (dominio público, Wikimedia Commons), recoloreada como radiografía y aplanada
-// sobre el azul del fondo. Ya va optimizada (AVIF 30 KB, WebP 44 KB), así que no pasa por el servicio de imágenes.
+// sobre el azul del fondo. Ya va optimizada (AVIF 23 KB, WebP 34 KB), así que no pasa por el servicio de imágenes.
 import avif from '../assets/esqueleto-rx.avif';
 import webp from '../assets/esqueleto-rx.webp';
 
 interface Props {
   /** Dónde queda el borde superior de la ventana al empezar y al terminar, en % de la altura del esqueleto.
-   *  La ventana enseña ~15 % del cuerpo, así que para acabar en los pies basta ~86. Fuera de 0–100 deja aire de fondo. */
+   *  La ventana enseña ~31 % del cuerpo, así que para acabar en los pies basta ~69. Fuera de 0–100 deja aire de fondo. */
   tramo: [number, number];
   class?: string;
 }
@@ -28,11 +29,21 @@ const {
 </div>
 
 <style>
+  /* Siempre con la proporción del escritorio (486 × 384): así cada ventana enseña la misma parte del cuerpo y cada tramo
+     llega a su final en cualquier pantalla. En escritorio crece para llenar el hueco junto a los bloques. */
   .radiografia {
-    min-height: 14rem;
+    aspect-ratio: 81 / 64;
+    max-width: 28rem;
     background-color: #d6eaf9; /* el mismo azul sobre el que se aplanó la imagen */
     view-timeline: --radiografia;
-    view-timeline-inset: 5rem 0; /* termina justo bajo el menú fijo, como scroll-padding-top */
+    view-timeline-inset: 5rem 0; /* «se va por arriba» = bajo el menú fijo, como scroll-padding-top */
+  }
+  @media (width >= 64rem) {
+    .radiografia {
+      aspect-ratio: auto;
+      max-width: none;
+      min-height: 24rem; /* alta para que el cuerpo se lea y el recorrido vaya despacio */
+    }
   }
   picture {
     position: absolute;
@@ -59,7 +70,9 @@ const {
       img {
         animation: recorrido linear both;
         animation-timeline: --radiografia;
-        animation-range: entry 0% exit 0%;
+        /* Arranca ya completa y acaba casi oculta bajo el menú. 80 % y no 100 %: el build pasa el CSS dos veces
+           por Lightning CSS, que convierte «exit 100%» en «exit 0%». */
+        animation-range: entry 100% exit 80%;
       }
     }
   }

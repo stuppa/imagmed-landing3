@@ -43,7 +43,7 @@ const { destacados } = Astro.locals.sitio;
                 <div class="flex flex-1 flex-col p-6">
                   <span class="text-xs font-semibold uppercase tracking-wider text-marca mb-1">{e.tipo || e.categoria.nombre}</span>
                   <h3 class="text-2xl font-semibold tracking-tight">
-                    <a href={`/equipos/${e.slug}`} class="hover:text-marca transition-colors">
+                    <a href={`/equipos/${e.slug}`} class="-my-1.5 block py-1.5 transition-colors hover:text-marca">
                       {e.nombreCompleto}
                     </a>
                   </h3>
@@ -57,7 +57,7 @@ const { destacados } = Astro.locals.sitio;
                     </ul>
                   )}
                   <div class="mt-auto pt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-                    <a href={`/equipos/${e.slug}`} class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-marca transition-colors">
+                    <a href={`/equipos/${e.slug}`} class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-slate-700 transition-colors hover:text-marca">
                       <span>{s.verDetalle}</span>
                       <Icono nombre="flecha" class="size-3.5" />
                     </a>
@@ -77,8 +77,9 @@ const { destacados } = Astro.locals.sitio;
 </section>
 
 <style>
+  /* 44 px: lo mínimo cómodo para el dedo, igual que los enlaces de la tarjeta. */
   .btn-chico {
-    min-height: 2.25rem;
+    min-height: 2.75rem;
     padding-inline: 0.875rem;
     font-size: 0.8125rem;
   }

@@ -263,7 +263,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
   .rotulo {
     width: max-content;
     height: var(--rotulo);
-    font-size: 0.625rem;
+    font-size: 0.75rem; /* 12 px: lo mínimo legible en celular */
     font-weight: 600;
     line-height: var(--rotulo);
     letter-spacing: 0.12em;
@@ -288,7 +288,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
       gap: 1rem;
     }
     .rotulo {
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       letter-spacing: 0.16em;
     }
   }
@@ -319,7 +319,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
       height: auto;
       overflow: visible;
       clip-path: none;
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       color: var(--suave);
     }
   }

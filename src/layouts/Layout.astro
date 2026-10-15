@@ -92,6 +92,8 @@ const jsonLd = {
     >
     <slot />
     <script is:inline>
+      // iOS solo aplica :active (la respuesta al toque de los botones) si la página escucha toques.
+      document.addEventListener('touchstart', () => {}, { passive: true });
       // Entrada suave de secciones. Inline para que el contenido nunca quede oculto si falla otro script.
       (() => {
         const els = document.querySelectorAll('[data-reveal]');
