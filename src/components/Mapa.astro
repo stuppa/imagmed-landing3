@@ -9,8 +9,8 @@ const longitud = -96.9561195;
 ---
 
 <section id="mapa" class="oscuro seccion relative overflow-hidden" aria-labelledby="titulo-mapa">
-  <!-- Fondo decorativo con resplandor radial -->
-  <div class="pointer-events-none absolute -top-40 left-1/2 -z-10 h-96 w-[50rem] -translate-x-1/2 rounded-full bg-(--color-marca) opacity-10 blur-3xl" aria-hidden="true"></div>
+  <!-- Fondo decorativo con resplandor radial (degradado y no blur: el filtro sobre un área así cuesta mucho en celular) -->
+  <div class="resplandor pointer-events-none absolute -top-64 left-1/2 -z-10 h-[36rem] w-[66rem] -translate-x-1/2" aria-hidden="true"></div>
 
   <div class="contenedor grid gap-10 lg:grid-cols-12 lg:items-start">
     <!-- Encabezado y resumen de información -->
@@ -41,7 +41,7 @@ const longitud = -96.9561195;
     <!-- Contenedor principal del Mapa Animado -->
     <div class="mesa relative lg:col-span-8" data-reveal>
       <!-- Barra de herramientas superior del mapa -->
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-t-lg border border-b-0 border-(--linea) bg-noche/90 px-4 py-3 backdrop-blur-md">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-t-lg border border-b-0 border-(--linea) bg-noche/90 px-4 py-3">
         <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-marca-claro">
           <span class="relative flex size-2.5">
             <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
@@ -72,7 +72,7 @@ const longitud = -96.9561195;
 
     <!-- Tarjeta lateral interactiva con información de contacto y presencia nacional -->
     <div class="mesa mesa-lateral lg:col-span-4" data-reveal>
-      <div class="escuadra border border-(--linea) bg-noche/95 p-6 sm:p-8 backdrop-blur-xl">
+      <div class="escuadra border border-(--linea) bg-noche/95 p-6 sm:p-8">
         <div class="flex items-center gap-3">
           <div class="flex size-10 items-center justify-center rounded-lg bg-marca/20 text-marca-claro">
             <Icono nombre="ubicacionPin" class="size-6" />
@@ -139,6 +139,14 @@ const longitud = -96.9561195;
 </section>
 
 <style>
+  .resplandor {
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--color-marca) 10%, transparent) 35%,
+      color-mix(in srgb, var(--color-marca) 4%, transparent) 70%,
+      transparent
+    );
+  }
   /* Portada del mapa (celular y tablet): cuadrícula de calles, el pin y el botón que carga Google Maps. */
   .portada-mapa {
     position: absolute;

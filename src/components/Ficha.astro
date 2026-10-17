@@ -1,6 +1,6 @@
 ---
 // Ficha de un producto. La usan /equipos/[slug] y la vista previa del admin (productos ocultos).
-import { Picture } from 'astro:assets';
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
@@ -124,15 +124,14 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
 
             <div class="relative z-10 flex flex-col items-center">
               <div class="relative w-full aspect-square max-w-[360px] mx-auto flex place-items-center justify-center">
-                <Picture
+                <Image
                   src={equipo.imagen.src}
                   width={equipo.imagen.width}
                   height={equipo.imagen.height}
                   alt={equipo.imagenAlt}
-                  formats={['avif']}
-                  fallbackFormat="webp"
-                  widths={[400, 600, 800]}
+                  widths={[384, 640, 828, 1080]}
                   sizes="(min-width: 1024px) 400px, 90vw"
+                  quality={80}
                   loading="eager"
                   fetchpriority="high"
                   class="h-auto w-full max-h-[340px] object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.65)] transition-transform duration-500 hover:scale-105"
@@ -271,15 +270,14 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
               <div class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 text-center">
                 {t.imagen ? (
                   <div class="mx-auto mb-4 size-20 overflow-hidden rounded-full bg-slate-50 p-2 border border-slate-100 grid place-items-center">
-                    <Picture
+                    <Image
                       src={t.imagen.src}
                       width={t.imagen.width}
                       height={t.imagen.height}
                       alt={t.tipo}
-                      formats={['avif']}
-                      fallbackFormat="webp"
-                      widths={[160]}
+                      widths={[96, 256]}
                       sizes="80px"
+                      quality={80}
                       class="h-full w-full object-contain"
                     />
                   </div>

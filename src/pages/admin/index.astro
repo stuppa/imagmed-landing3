@@ -9,13 +9,13 @@ const ahora = new Date();
 const [productos, campanas, ajustes] = await Promise.all([
   supabase.from('productos').select('id, nombre, estado, descuento_texto, descuento_inicio, descuento_fin').then(revisar),
   supabase.from('campanas').select('id, nombre, inicio, fin').order('inicio').then(revisar),
-  supabase.from('ajustes').select('hero_producto_id').single().then(revisar),
-]) as [FilaProducto[], FilaCampana[], Pick<FilaAjustes, 'hero_producto_id'>];
+  supabase.from('ajustes').select('hero_productos').single().then(revisar),
+]) as [FilaProducto[], FilaCampana[], Pick<FilaAjustes, 'hero_productos'>];
 
 const fechas = (c: FilaCampana) => ({ ...c, inicio: new Date(c.inicio), fin: new Date(c.fin) });
 const activa = campanaActiva(campanas.map(fechas), ahora);
 const proxima = campanas.map(fechas).find((c) => c.inicio > ahora);
-const heroProducto = productos.find((p) => p.id === ajustes.hero_producto_id);
+const heroProductos = ajustes.hero_productos.flatMap((id) => productos.filter((p) => p.id === id));
 
 const cuenta = (estado: FilaProducto['estado']) => productos.filter((p) => p.estado === estado).length;
 const conDescuento = productos.filter(
@@ -40,9 +40,9 @@ const conDescuento = productos.filter(
           </p>
         ) : (
           <p>
-            Diseño por defecto con <strong>{heroProducto?.nombre ?? 'el primer producto destacado'}</strong>
-            {heroProducto && heroProducto.estado === 'oculto' && (
-              <span class="chip chip-rojo ml-1">oculto: se muestra el primer destacado</span>
+            Diseño por defecto con <strong>{heroProductos.map((p) => p.nombre).join(', ') || 'el primer producto destacado'}</strong>
+            {heroProductos.some((p) => p.estado === 'oculto') && (
+              <span class="chip chip-rojo ml-1">los ocultos no se muestran</span>
             )}
             .
           </p>

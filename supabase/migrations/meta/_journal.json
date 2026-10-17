@@ -36,6 +36,13 @@
       "when": 1791682063356,
       "tag": "20261011012743_equipo_funciones",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792207840175,
+      "tag": "20261017033040_hero_productos",
+      "breakpoints": true
     }
   ]
 }

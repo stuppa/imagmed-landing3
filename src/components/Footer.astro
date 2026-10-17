@@ -13,11 +13,19 @@ const conFlotante = Boolean(whatsappUrl(contacto));
 <footer class:list={['oscuro border-t border-(--linea) pt-10 md:pb-10', conFlotante ? 'pb-28' : 'pb-10']}>
   <div class="contenedor flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
     <div class="flex items-center gap-6">
-      <Image src={wordmark} alt={sitio.nombre} width={128} densities={[1, 2]} class="h-auto w-32" />
+      <Image
+        src={wordmark}
+        alt={sitio.nombre}
+        width={128}
+        widths={[128, 256, 384]}
+        sizes="8rem"
+        quality={90}
+        class="h-auto w-32"
+      />
       <span class="h-8 w-px bg-(--linea)" aria-hidden="true"></span>
       {
         logoMindray ? (
-          <Image src={logoMindray} alt={pie.marca} height={24} densities={[1, 2]} class="h-6 w-auto" />
+          <Image src={logoMindray} alt={pie.marca} height={24} densities={[1, 2]} quality={90} class="h-6 w-auto" />
         ) : (
           <p class="texto-suave text-sm leading-tight">
             {pie.distribuidor}

@@ -785,7 +785,7 @@
     }
   ],
   "ajustes": {
-    "hero_producto": "mx3",
+    "hero_productos": ["mx3", "resona-i9", "consona-n9"],
     "hero_etiqueta": "Ultrasonido Mindray",
     "hero_titulo": "¿En imagen médica? Somos *tu mejor opción*.",
     "hero_texto": "Ultrasonidos Mindray y equipo de imagenología con instalación, capacitación y servicio técnico en todo México.",

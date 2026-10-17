@@ -20,6 +20,7 @@ const imagenes = await Promise.all(
       width: 1200,
       height: Math.round((1200 * p.imagen.height) / p.imagen.width),
       format: 'webp',
+      quality: 80,
     }),
   ),
 );

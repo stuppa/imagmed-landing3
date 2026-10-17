@@ -97,6 +97,10 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
+// Solo puntos de borde suave y sin profundidad: el antialias (MSAA) y el búfer de profundidad no cambian nada en la
+// imagen y, en un lienzo del alto de toda la sección, son mucha memoria de GPU en el celular.
+export const lienzo = { antialias: false, depth: false };
+
 export const crear: CrearEscena = (renderer, contenedor) => {
   const scene = new Scene();
   const camera = new PerspectiveCamera(40, 1, 0.5, 200);

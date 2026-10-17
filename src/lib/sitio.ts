@@ -11,7 +11,7 @@ import type {
   Imagen,
 } from '../db/esquema';
 import { hero as textosHero } from '../data/sitio';
-import { campanaActiva, segundosHastaProximoCambio, vigente, type Grupo } from './contenido';
+import { campanaActiva, productosHero, segundosHastaProximoCambio, vigente, type Grupo } from './contenido';
 import { clientePublico, urlImagen, type Supabase } from './supabase';
 
 // --- Filas de la base de datos: los tipos salen del esquema de Drizzle (src/db/esquema.ts) ---
@@ -34,8 +34,14 @@ export interface ImagenVista {
   src: string;
   width: number;
   height: number;
+  contenido?: Imagen['contenido'];
 }
-export const vistaImagen = (i: Imagen): ImagenVista => ({ src: urlImagen(i.ruta), width: i.ancho, height: i.alto });
+export const vistaImagen = (i: Imagen): ImagenVista => ({
+  src: urlImagen(i.ruta),
+  width: i.ancho,
+  height: i.alto,
+  contenido: i.contenido,
+});
 
 export interface Producto {
   id: string;
@@ -73,7 +79,7 @@ interface TextosHero {
 }
 export type Hero =
   | (TextosHero & { tipo: 'campana'; imagen: ImagenVista; imagenAlt: string; producto: string | null })
-  | (TextosHero & { tipo: 'producto'; producto: Producto | null; rotulo: string });
+  | (TextosHero & { tipo: 'producto'; productos: Producto[]; rotulo: string });
 
 export interface Contacto {
   whatsapp: string;
@@ -191,7 +197,7 @@ export async function cargarSitio(cliente: Supabase = clientePublico(), ahora = 
         texto: ajustes.hero_texto,
         ctaPrincipal: textosHero.ctaPrincipal,
         ctaSecundario: textosHero.ctaSecundario,
-        producto: lista.find((p) => p.id === ajustes.hero_producto_id) ?? destacados[0] ?? lista[0] ?? null,
+        productos: productosHero(ajustes.hero_productos, lista),
         rotulo: ajustes.hero_rotulo_accesorio,
       };
 
