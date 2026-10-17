@@ -25,7 +25,7 @@ Una sola cuenta, con contraseña y verificación en dos pasos (app autenticadora
 - **Productos**: alta, edición y baja; estado publicado / agotado (etiqueta) / oculto; destacado en la landing;
   orden; etiqueta de descuento con fechas; fotos, ficha técnica y accesorios.
 - **Categorías** del menú «Productos» y **marcas** (con logo).
-- **Hero**: producto y textos por defecto, y **campañas** por fechas con imagen estática 4:3.
+- **Hero**: hasta 5 productos que rotan y textos por defecto, y **campañas** por fechas con imagen estática 4:3.
 - **Contacto y FAQ**: WhatsApp, teléfono, aviso de privacidad, dirección, horario y preguntas frecuentes.
 - **Vista previa** de la landing en cualquier fecha y de productos ocultos.
 

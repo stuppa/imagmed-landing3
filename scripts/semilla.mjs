@@ -34,12 +34,15 @@ async function subir(archivo, destino) {
   if (subidas.has(archivo)) return subidas.get(archivo);
   const buffer = await readFile(new URL(`imagenes/${archivo}`, carpeta));
   const { width, height, format } = await sharp(buffer).metadata();
+  // Caja del equipo sin el fondo transparente, como la calcula la subida del admin (el hero la usa para encuadrar).
+  const { info } = await sharp(buffer).trim().raw().toBuffer({ resolveWithObject: true });
+  const contenido = { x: -info.trimOffsetLeft, y: -info.trimOffsetTop, ancho: info.width, alto: info.height };
   const ruta = `${destino}/${archivo}`;
   ok(
     await db.storage.from('imagenes').upload(ruta, buffer, { contentType: `image/${format}`, cacheControl: '31536000', upsert: true }),
     `subir ${archivo}`,
   );
-  const imagen = { ruta, ancho: width, alto: height };
+  const imagen = { ruta, ancho: width, alto: height, contenido };
   subidas.set(archivo, imagen);
   return imagen;
 }
@@ -63,11 +66,11 @@ for (const { categoria, marca, imagen, accesorios, ...p } of datos.productos) {
 }
 const creados = ok(await db.from('productos').insert(productos).select('id, slug'), 'productos');
 
-const { hero_producto, ...ajustes } = datos.ajustes;
+const { hero_productos, ...ajustes } = datos.ajustes;
 ok(
   await db
     .from('ajustes')
-    .update({ ...ajustes, hero_producto_id: creados.find((p) => p.slug === hero_producto)?.id ?? null })
+    .update({ ...ajustes, hero_productos: hero_productos.flatMap((slug) => creados.find((p) => p.slug === slug)?.id ?? []) })
     .eq('id', true),
   'ajustes',
 );

@@ -6,13 +6,15 @@
 import { sql } from 'drizzle-orm';
 import { boolean, check, index, integer, jsonb, pgEnum, pgPolicy, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { anonRole, authenticatedRole, authUsers } from 'drizzle-orm/supabase';
-import type { Grupo } from '../lib/contenido';
+import type { Caja, Grupo } from '../lib/contenido';
 
 /** Imagen del bucket «imagenes». */
 export interface Imagen {
   ruta: string;
   ancho: number;
   alto: number;
+  /** Dónde está el contenido sin el fondo transparente (lo calcula la subida); el hero lo usa para encuadrar. */
+  contenido?: Caja;
 }
 export interface Accesorio {
   tipo: string;
@@ -137,7 +139,10 @@ export const ajustes = pgTable(
   'ajustes',
   {
     id: boolean().primaryKey().default(true),
+    // Obsoleta (la reemplaza hero_productos), pero el deploy anterior aún la lee: se borra cuando este cambio esté en producción.
     hero_producto_id: uuid().references(() => productos.id, { onDelete: 'set null' }),
+    // Los que rotan en el hero, en orden. Sin FK (Postgres no la tiene en arreglos): el sitio salta los que ya no están.
+    hero_productos: uuid().array().notNull().default(sql`'{}'`),
     hero_etiqueta: text().notNull().default(''),
     hero_titulo: text().notNull().default(''),
     hero_texto: text().notNull().default(''),

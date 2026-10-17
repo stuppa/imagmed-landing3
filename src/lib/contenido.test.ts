@@ -5,11 +5,13 @@ import {
   aFechaLocal,
   campanaActiva,
   deFechaLocal,
+  encuadreHero,
   grupos,
   gruposATexto,
   lineas,
   pares,
   paresATexto,
+  productosHero,
   segundosHastaProximoCambio,
   slugificar,
   vigente,
@@ -32,6 +34,26 @@ test('campanaActiva: devuelve la que cubre el momento o undefined', () => {
   const futura = { id: 'c', inicio: d('2026-12-01T00:00:00Z'), fin: d('2026-12-25T00:00:00Z') };
   assert.equal(campanaActiva([pasada, actual, futura], ahora)?.id, 'b');
   assert.equal(campanaActiva([pasada, futura], ahora), undefined);
+});
+
+test('productosHero: los elegidos en su orden, sin los que ya no se muestran; sin elección, el primer destacado', () => {
+  const lista = [
+    { id: 'a', destacado: false },
+    { id: 'b', destacado: true },
+    { id: 'c', destacado: true },
+  ];
+  const ids = (l: { id: string }[]) => l.map((p) => p.id);
+  assert.deepEqual(ids(productosHero(['c', 'borrado', 'a'], lista)), ['c', 'a']);
+  assert.deepEqual(ids(productosHero([], lista)), ['b']);
+  assert.deepEqual(ids(productosHero(['borrado'], [{ id: 'a', destacado: false }])), ['a']);
+  assert.deepEqual(productosHero([], []), []);
+});
+
+test('encuadreHero: un equipo alto se recorta a su parte de arriba en 4:3; uno ancho o sin caja va completo', () => {
+  // Carro de 500×1000 dentro de un lienzo transparente: ventana de 600×450 centrada y un poco arriba de él.
+  assert.deepEqual(encuadreHero({ x: 300, y: 100, ancho: 500, alto: 1000 }), { x: 250, y: 82, ancho: 600, alto: 450 });
+  assert.equal(encuadreHero({ x: 0, y: 0, ancho: 1385, alto: 1149 }), null); // portátil tipo laptop
+  assert.equal(encuadreHero(undefined), null);
 });
 
 test('segundosHastaProximoCambio: la fecha futura más cercana, entre 1 s y el tope', () => {

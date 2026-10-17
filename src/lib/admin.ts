@@ -1,6 +1,7 @@
 // Utilidades de las páginas del admin: formularios, imágenes y errores legibles.
 import sharp from 'sharp';
 import type { APIContext } from 'astro';
+import type { Caja } from './contenido';
 import { BUCKET, type Supabase } from './supabase';
 import { invalidarSitio, type Imagen } from './sitio';
 
@@ -90,13 +91,26 @@ export async function subirImagen(
     throw new ErrorAdmin(`«${archivo.name}» mide ${ancho}×${alto}; debe ser proporción 4:3 (p. ej. 1600×1200).`);
   }
 
+  // Fotos giradas por EXIF: sin caja (el recorte saldría en la orientación equivocada).
+  const contenido = (meta.orientation ?? 1) < 5 ? await cajaContenido(buffer) : undefined;
+
   const ruta = `${carpeta}/${crypto.randomUUID()}.${formato === 'jpeg' ? 'jpg' : formato}`;
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(ruta, buffer, { contentType: TIPOS[formato], cacheControl: '31536000', upsert: false });
   if (error) throw new ErrorAdmin(`No se pudo subir «${archivo.name}»: ${error.message}`);
   subidas.push(ruta);
-  return { ruta, ancho, alto };
+  return { ruta, ancho, alto, contenido };
+}
+
+/** Caja del contenido sin el fondo (transparente o de un color), o undefined si no hay nada que recortar. */
+async function cajaContenido(buffer: Buffer): Promise<Caja | undefined> {
+  try {
+    const { info } = await sharp(buffer).trim().raw().toBuffer({ resolveWithObject: true });
+    return { x: -(info.trimOffsetLeft ?? 0), y: -(info.trimOffsetTop ?? 0), ancho: info.width, alto: info.height };
+  } catch {
+    return undefined; // p. ej. una imagen de un solo color
+  }
 }
 
 /** Borra del bucket las imágenes que ya no se usan. Si falla solo queda un archivo huérfano: no se interrumpe. */

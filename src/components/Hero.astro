@@ -1,13 +1,29 @@
 ---
-import { Picture } from 'astro:assets';
+import { Image } from 'astro:assets';
 import Enfasis from './Enfasis.astro';
 import Volumen from './Volumen.astro';
+import { encuadreHero } from '../lib/contenido';
 
-// Por defecto: el producto elegido en el admin, con marca de agua y sus accesorios con imagen.
+// Por defecto: los productos elegidos en el admin, que rotan; cada uno con marca de agua y sus accesorios con imagen.
 // Con una campaña vigente: su imagen estática (4:3) en lugar del visual; textos y botones siguen siendo HTML.
 const { hero } = Astro.locals.sitio;
-const producto = hero.tipo === 'producto' ? hero.producto : null;
-const accesorios = (producto?.accesorios ?? []).flatMap((a) => (a.imagen ? [{ ...a, imagen: a.imagen }] : [])).slice(0, 2);
+// ponytail: el volumen 3D está hecho a la medida de la foto del MX3 (el abanico de su pantalla, detrás de la tapa) y
+// solo va con él. Otro equipo necesitaría su propio ajuste en Volumen.astro y su slug aquí.
+const CON_VOLUMEN = 'mx3';
+// Ancho con que se ve la foto: el del recuadro 4:3, o `zoom` veces más si es un recorte.
+const sizes = (zoom: number) =>
+  `(min-width: 1440px) ${Math.round(450 * zoom)}px, (min-width: 1280px) ${Math.round(375 * zoom)}px, (min-width: 1024px) calc((50vw - 9rem) * ${zoom}), (min-width: 768px) ${Math.round(360 * zoom)}px, calc((100vw - 6.5rem) * ${zoom})`;
+const productos = (hero.tipo === 'producto' ? hero.productos : []).map((p) => {
+  // Equipos altos: la foto se agranda y se corre para que el recuadro muestre solo su parte de arriba.
+  const ventana = encuadreHero(p.imagen.contenido);
+  const zoom = ventana ? +(p.imagen.width / ventana.ancho).toFixed(3) : 1;
+  return {
+    ...p,
+    accesorios: p.accesorios.flatMap((a) => (a.imagen ? [{ ...a, imagen: a.imagen }] : [])).slice(0, 2),
+    recorte: ventana && `--ancho: ${zoom * 100}%; --x: ${(-100 * ventana.x) / ventana.ancho}%; --y: ${(-100 * ventana.y) / ventana.alto}%`,
+    sizes: sizes(zoom),
+  };
+});
 // La campaña puede traer su producto ya elegido en el formulario.
 const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : undefined;
 ---
@@ -23,63 +39,92 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     {
       hero.tipo === 'campana' ? (
         <div class="hero-visual hero-campana">
-          <Picture
+          <Image
             src={hero.imagen.src}
             width={hero.imagen.width}
             height={hero.imagen.height}
             alt={hero.imagenAlt}
-            formats={['avif']}
-            fallbackFormat="webp"
-            widths={[480, 800, 1200, 1600]}
+            widths={[640, 828, 1080, 1200, 1920]}
             sizes="(min-width: 1440px) 640px, (min-width: 1024px) calc(50vw - 3rem), (min-width: 768px) 576px, calc(100vw - 2rem)"
+            quality={80}
             loading="eager"
             fetchpriority="high"
             class="campana"
           />
         </div>
       ) : (
-        producto && (
-          <div class="hero-visual">
-            <span class="marca-agua" aria-hidden="true">{producto.nombre}</span>
-            <Picture
-              src={producto.imagen.src}
-              width={producto.imagen.width}
-              height={producto.imagen.height}
-              alt={producto.imagenAlt}
-              formats={['avif']}
-              fallbackFormat="webp"
-              widths={[400, 640, 880, 1200]}
-              sizes="(min-width: 1440px) 450px, (min-width: 1280px) 375px, (min-width: 1024px) calc(50vw - 9rem), (min-width: 768px) 360px, calc(100vw - 6.5rem)"
-              loading="eager"
-              fetchpriority="high"
-              class="equipo"
-            />
-            {accesorios.length > 0 && (
-              <ul class="transductores" role="list">
-                {accesorios.map((t) => (
-                  <li>
-                    <span class="circulo">
-                      <Picture
-                        src={t.imagen.src}
-                        width={t.imagen.width}
-                        height={t.imagen.height}
-                        alt=""
-                        formats={['avif']}
-                        fallbackFormat="webp"
-                        widths={[96, 192]}
-                        sizes="88px"
+        productos.length > 0 && (
+          <div class="hero-visual" data-rotacion={productos.length > 1 || undefined}>
+            {productos.map((producto, i) => {
+              // Solo las fotos del primero cargan con la página; las de los demás esperan en un <template> (inerte)
+              // hasta que se acerca su turno (script de abajo), así no le quitan ancho de banda al LCP.
+              const Diferida = i === 0 ? Fragment : 'template';
+              return (
+                <div class="diapositiva" data-activa={i === 0 || undefined}>
+                  <span class="marca-agua" aria-hidden="true" style={`--letras: ${producto.nombre.length}`}>
+                    {producto.nombre}
+                  </span>
+                  <div class:list={['foto', producto.recorte && 'recorte']} style={producto.recorte || undefined}>
+                    <Diferida>
+                      <Image
+                        src={producto.imagen.src}
+                        width={producto.imagen.width}
+                        height={producto.imagen.height}
+                        alt={producto.imagenAlt}
+                        widths={[640, 828, 1080, 1200]}
+                        sizes={producto.sizes}
+                        quality={80}
                         loading="eager"
+                        fetchpriority={i === 0 ? 'high' : 'low'}
+                        class="equipo"
                       />
-                    </span>
-                    <span class="rotulo">
-                      <span class="rotulo-tipo">{hero.rotulo} </span>
-                      {t.tipo}
-                    </span>
-                  </li>
+                    </Diferida>
+                  </div>
+                  {producto.accesorios.length > 0 && (
+                    <ul class="transductores" role="list">
+                      {producto.accesorios.map((t) => (
+                        <li>
+                          <span class="circulo">
+                            <Diferida>
+                              <Image
+                                src={t.imagen.src}
+                                width={t.imagen.width}
+                                height={t.imagen.height}
+                                alt=""
+                                widths={[96, 128, 256]}
+                                sizes="(min-width: 80rem) 88px, (min-width: 48rem) 72px, 48px"
+                                quality={80}
+                                loading="eager"
+                              />
+                            </Diferida>
+                          </span>
+                          <span class="rotulo">
+                            <span class="rotulo-tipo">{hero.rotulo} </span>
+                            {t.tipo}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {producto.slug === CON_VOLUMEN && <Volumen />}
+                </div>
+              );
+            })}
+            {productos.length > 1 && (
+              <div class="rotacion" role="group" aria-label="Equipos destacados">
+                {productos.map((p, i) => (
+                  <button type="button" class="barra" aria-label={`Ver ${p.nombreCompleto}`} aria-current={i === 0 ? 'true' : 'false'}>
+                    <span />
+                  </button>
                 ))}
-              </ul>
+                <button type="button" class="pausa" aria-label="Pausar la rotación" aria-pressed="false">
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path class="icono-pausa" d="M4 3h3v10H4zm5 0h3v10H9z" />
+                    <path class="icono-seguir" d="M5 2.5v11l8.5-5.5z" />
+                  </svg>
+                </button>
+              </div>
             )}
-            <Volumen />
           </div>
         )
       )
@@ -91,6 +136,36 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     </div>
   </div>
 </section>
+
+<script>
+  // Rotación de productos: la barra activa se llena con CSS y, al terminar, pasa al siguiente. La pausa también es CSS
+  // (botón, mouse encima o foco de teclado): congela la barra. Con movimiento reducido la barra no se anima, así que no
+  // rota sola; las barras siguen cambiando de producto. Sin JS se queda el primero y no hay controles.
+  const visual = document.querySelector<HTMLElement>('[data-rotacion]');
+  if (visual) {
+    const diapositivas = visual.querySelectorAll('.diapositiva');
+    const barras = visual.querySelectorAll('.barra');
+    // Fotos diferidas: la del segundo se pide un segundo después de la carga (ya con el LCP pintado y de sobra antes
+    // de los 6 s de su turno) y cada cambio adelanta la que sigue.
+    const cargar = (i: number) =>
+      diapositivas[i % diapositivas.length]!.querySelectorAll('template').forEach((t) => t.replaceWith(t.content));
+    const mostrar = (i: number) => {
+      cargar(i);
+      cargar(i + 1);
+      diapositivas.forEach((d, j) => d.toggleAttribute('data-activa', i === j));
+      barras.forEach((b, j) => b.setAttribute('aria-current', String(i === j)));
+    };
+    const despues = () => setTimeout(() => cargar(1), 1000);
+    if (document.readyState === 'complete') despues();
+    else addEventListener('load', despues, { once: true });
+    barras.forEach((b, i) => {
+      b.addEventListener('click', () => mostrar(i));
+      b.addEventListener('animationend', () => mostrar((i + 1) % barras.length));
+    });
+    const pausa = visual.querySelector('.pausa')!;
+    pausa.addEventListener('click', () => pausa.setAttribute('aria-pressed', String(pausa.getAttribute('aria-pressed') !== 'true')));
+  }
+</script>
 
 <style>
   .hero-grid {
@@ -147,6 +222,37 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     isolation: isolate;
+    container-type: inline-size; /* la marca de agua se ajusta a su ancho */
+  }
+  /* Los productos que rotan se apilan en las mismas celdas: foto en la 1, transductores en la 2. La columna de
+     transductores mide lo del más ancho, así la foto no cambia de tamaño al rotar. */
+  .diapositiva {
+    display: contents;
+  }
+  .foto {
+    grid-area: 1 / 1;
+  }
+  .transductores {
+    grid-area: 1 / 2;
+  }
+  /* :global para alcanzar también el volumen 3D, que es otro componente. */
+  .diapositiva:not([data-activa]) > :global(*) {
+    opacity: 0;
+    visibility: hidden; /* también lo saca de lectores de pantalla */
+  }
+  .diapositiva:not([data-activa]) > .marca-agua {
+    translate: 1.5rem -58%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .diapositiva > :global(*) {
+      transition:
+        opacity 0.6s ease,
+        translate 0.6s ease,
+        visibility 0.6s;
+    }
+    .diapositiva[data-activa] > .transductores {
+      transition-delay: 0.15s;
+    }
   }
   .hero-visual::before {
     content: '';
@@ -162,11 +268,13 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
   }
   .marca-agua {
     position: absolute;
+    grid-area: 1 / 1 / 2 / -1; /* centrada en la fila de la foto, no en la de los controles */
     top: 50%;
     right: -0.12em;
     z-index: -1;
     translate: 0 -58%;
-    font-size: clamp(8rem, 38vw, 21rem);
+    /* Nombres largos («Consona N9») se achican para no invadir la columna del texto; el MX3 queda igual. */
+    font-size: min(clamp(8rem, 38vw, 21rem), 190cqi / var(--letras));
     font-style: italic;
     font-weight: 900;
     line-height: 0.8;
@@ -183,35 +291,57 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     width: 100%;
     height: auto;
   }
+  /* Todas en un recuadro 4:3 (las cuadradas quedan centradas), así la rotación no mueve nada. */
   .equipo {
+    display: block;
     width: 100%;
     height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
     filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
+  }
+  /* Equipos altos: solo su parte de arriba (encuadreHero), que se desvanece hacia abajo en vez de cortarse en seco. */
+  .recorte {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(#000 65%, transparent);
+    mask-image: linear-gradient(#000 65%, transparent);
+  }
+  .recorte .equipo {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    width: var(--ancho);
+    max-width: none;
+    aspect-ratio: auto;
   }
 
   /*
    * Líneas en escuadra: tallo desde el equipo, tramo vertical entre los centros de los círculos y un brazo a cada círculo.
-   * Donde falta ancho (móvil y 1024–1279 px) el rótulo va debajo del círculo (--rotulo es su alto);
-   * en tableta y desde 1280 px va a un lado (--rotulo: 0).
+   * Donde falta ancho (móvil y 1024–1279 px) el rótulo va debajo del círculo (--rotulo es el alto de un renglón);
+   * en tableta y desde 1280 px va a un lado (--rotulo: 0). Un rótulo largo pasa a otro renglón.
    */
   .transductores {
     --circulo: 3rem;
     --brazo: 0.625rem;
     --tallo: 0.75rem;
     --rotulo: 1.25rem;
+    --hueco: 0.75rem;
     --trazo: color-mix(in srgb, var(--color-roto) 45%, transparent);
     position: relative;
     display: grid;
-    gap: 0.75rem;
+    gap: var(--hueco);
     margin-left: var(--tallo);
     padding-left: var(--brazo);
   }
-  .transductores::before {
+  /* Tramo vertical por círculo, hasta el centro del siguiente: no depende de cuántos renglones tenga el rótulo. */
+  .transductores li:not(:last-child)::after {
     content: '';
     position: absolute;
     top: calc(var(--circulo) / 2);
-    bottom: calc(var(--circulo) / 2 + var(--rotulo));
-    left: 0;
+    left: calc(-1 * var(--brazo));
+    height: calc(100% + var(--hueco));
     border-left: 1px solid var(--trazo);
   }
   .transductores::after {
@@ -222,10 +352,15 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     width: var(--tallo);
     border-top: 1px solid var(--trazo);
   }
+  /* Bajo el círculo, el rótulo ensancha su fila hasta 2rem más que el círculo y si no cabe pasa a otro renglón (una
+     palabra más larga sobresale por igual a los lados, dentro del margen); el círculo queda centrado y el brazo llega
+     hasta él. */
   .transductores li {
     position: relative;
     display: flex;
-    width: var(--circulo);
+    width: max-content;
+    min-width: var(--circulo);
+    max-width: calc(var(--circulo) + 2rem);
     flex-direction: column;
     align-items: center;
   }
@@ -234,7 +369,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     position: absolute;
     top: calc(var(--circulo) / 2);
     left: calc(-1 * var(--brazo));
-    width: var(--brazo);
+    width: calc(var(--brazo) + (100% - var(--circulo)) / 2);
     border-top: 1px solid var(--trazo);
   }
   .circulo {
@@ -249,7 +384,6 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
       0 0 0 1px rgb(255 255 255 / 0.25),
       0 0 2rem color-mix(in srgb, var(--color-marca) 50%, transparent);
   }
-  .circulo :global(picture),
   .circulo :global(img) {
     display: block;
     width: 100%;
@@ -261,15 +395,14 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     translate: 0 4%;
   }
   .rotulo {
-    width: max-content;
-    height: var(--rotulo);
+    min-height: var(--rotulo);
     font-size: 0.75rem; /* 12 px: lo mínimo legible en celular */
     font-weight: 600;
     line-height: var(--rotulo);
     letter-spacing: 0.12em;
     text-align: center;
     text-transform: uppercase;
-    white-space: nowrap;
+    text-wrap: balance;
   }
   .rotulo-tipo {
     position: absolute;
@@ -285,7 +418,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
       --brazo: 1rem;
       --tallo: 1.25rem;
       --rotulo: 1.5rem;
-      gap: 1rem;
+      --hueco: 1rem;
     }
     .rotulo {
       font-size: 0.75rem;
@@ -298,15 +431,20 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
       --brazo: 1.25rem;
       --tallo: 1.5rem;
       --rotulo: 0rem;
-      gap: 1.5rem;
+      --hueco: 1.5rem;
     }
     .transductores li {
       width: auto;
+      max-width: none;
       flex-direction: row;
       gap: 0.75rem;
     }
+    .transductores li::before {
+      width: var(--brazo);
+    }
     .rotulo {
       display: grid;
+      max-width: 7rem; /* lo que mide «Transductor»: un tipo largo pasa a otro renglón y no le quita ancho a la foto */
       height: auto;
       font-size: 0.8125rem;
       line-height: 1.4;
@@ -326,6 +464,88 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
   @media (width >= 80rem) {
     .transductores {
       --circulo: 5.5rem;
+    }
+  }
+
+  /* Controles de la rotación (solo con JS): una barra por producto, la activa se llena mientras se ve, y pausa. */
+  .rotacion {
+    display: none;
+    grid-area: 2 / 1;
+    justify-self: center;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+  :global(.js) .rotacion {
+    display: flex;
+  }
+  .barra,
+  .pausa {
+    display: grid;
+    height: 2rem;
+    cursor: pointer;
+  }
+  .barra {
+    --pista: color-mix(in srgb, var(--color-roto) 25%, transparent);
+    width: 2.75rem;
+    align-items: center;
+    padding-inline: 0.25rem;
+    background: linear-gradient(var(--pista) 0 0) center / 100% 2px no-repeat content-box;
+  }
+  .barra > span {
+    height: 2px;
+    background: var(--color-marca-claro);
+    scale: 0 1;
+    transform-origin: left;
+  }
+  .barra[aria-current='true'] > span {
+    scale: none;
+  }
+  .pausa {
+    width: 2rem;
+    place-items: center;
+    margin-left: 0.25rem;
+    color: var(--suave);
+  }
+  .pausa svg {
+    width: 0.75rem;
+    fill: currentColor;
+  }
+  .pausa[aria-pressed='true'] .icono-pausa,
+  .pausa:not([aria-pressed='true']) .icono-seguir {
+    display: none;
+  }
+  @media (hover: hover) {
+    .barra:hover {
+      --pista: color-mix(in srgb, var(--color-roto) 50%, transparent);
+    }
+    .pausa:hover {
+      color: var(--color-roto);
+    }
+  }
+  /* 6 s por producto. Se congela con el botón, con el foco de teclado adentro o, con mouse, al pasar encima. */
+  @media (prefers-reduced-motion: no-preference) {
+    .barra[aria-current='true'] > span {
+      animation: progreso 6s linear;
+    }
+    .rotacion:has([aria-pressed='true']) .barra > span,
+    .hero-visual:has(:focus-visible) .barra > span {
+      animation-play-state: paused;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .hero-visual:hover .barra > span {
+      animation-play-state: paused;
+    }
+  }
+  /* Sin animación no rota sola, así que la pausa sobra. */
+  @media (prefers-reduced-motion: reduce) {
+    .pausa {
+      display: none;
+    }
+  }
+  @keyframes progreso {
+    from {
+      scale: 0 1;
     }
   }
 
@@ -349,7 +569,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
       transform-origin: left;
       animation: trazo-x 0.3s 0.2s ease-out both;
     }
-    .transductores::before {
+    .transductores li::after {
       animation: trazo-y 0.3s 0.45s ease-out both;
     }
     .transductores li::before {

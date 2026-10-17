@@ -6,13 +6,16 @@ import { urlImagen } from '../../../lib/supabase';
 import type { FilaAjustes, FilaCampana, FilaProducto } from '../../../lib/sitio';
 
 const supabase = Astro.locals.supabase;
+// ponytail: 5 lugares fijos; si piden más, subir el número.
+const LUGARES = 5;
 
 const resultado = await procesarFormulario(Astro, async (f) => {
   revisar(
     await supabase
       .from('ajustes')
       .update({
-        hero_producto_id: texto(f, 'hero_producto_id') || null,
+        // En el orden de los lugares; los vacíos no cuentan y un producto repetido cuenta una vez.
+        hero_productos: [...new Set(f.getAll('hero_productos').map(String).filter(Boolean))],
         hero_etiqueta: texto(f, 'hero_etiqueta'),
         hero_titulo: texto(f, 'hero_titulo'),
         hero_texto: texto(f, 'hero_texto'),
@@ -41,23 +44,31 @@ const estado = (c: FilaCampana) =>
 <Admin titulo="Hero y campañas" error={resultado}>
   <form method="post" class="panel">
     <h2>Hero por defecto</h2>
-    <p class="ayuda mb-4">Se ve cuando no hay una campaña activa: el diseño de siempre con el producto que elijas.</p>
+    <p class="ayuda mb-4">Se ve cuando no hay una campaña activa: el diseño de siempre con los productos que elijas, uno tras otro.</p>
     <div class="rejilla">
-      <label>
-        Producto
-        <select name="hero_producto_id">
-          <option value="">El primer producto destacado</option>
-          {
-            productos.map((p) => (
-              <option value={p.id} selected={ajustes.hero_producto_id === p.id}>
-                {p.nombre}
-                {p.estado === 'oculto' ? ' (oculto)' : ''}
-              </option>
-            ))
-          }
-        </select>
-        <p class="ayuda">Usa su imagen, su nombre como marca de agua y sus accesorios con imagen.</p>
-      </label>
+      <fieldset class="ancho grid gap-3 rounded-lg border border-slate-200 p-4 sm:grid-cols-3 lg:grid-cols-5">
+        <legend class="rotulo px-1">Productos que rotan</legend>
+        {
+          Array.from({ length: LUGARES }, (_, i) => (
+            <label>
+              {i + 1}.º
+              <select name="hero_productos">
+                <option value="">—</option>
+                {productos.map((p) => (
+                  <option value={p.id} selected={ajustes.hero_productos[i] === p.id}>
+                    {p.nombre}
+                    {p.estado === 'oculto' ? ' (oculto)' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))
+        }
+        <p class="ayuda col-span-full">
+          Se turnan cada 6 segundos en este orden: tus más vendidos, la promoción del mes o lo de temporada. Cada uno lleva su imagen, su
+          nombre como marca de agua y sus accesorios con imagen. Con uno solo no rota; sin ninguno, va el primer producto destacado.
+        </p>
+      </fieldset>
       <label>
         Rótulo de los accesorios
         <input name="hero_rotulo_accesorio" value={ajustes.hero_rotulo_accesorio} placeholder="Transductor" />
@@ -67,7 +78,7 @@ const estado = (c: FilaCampana) =>
         Etiqueta
         <input name="hero_etiqueta" value={ajustes.hero_etiqueta} placeholder="Ultrasonido Mindray" />
       </label>
-      <label>
+      <label class="ancho">
         Título
         <input name="hero_titulo" value={ajustes.hero_titulo} required />
         <p class="ayuda">Entre *asteriscos* va en azul: Donde la imagen se vuelve *certeza*.</p>

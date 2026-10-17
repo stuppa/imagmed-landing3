@@ -14,6 +14,35 @@ export const vigente = ({ inicio, fin }: Rango, ahora: Date) =>
 export const campanaActiva = <T extends Rango>(campanas: T[], ahora: Date) =>
   campanas.find((c) => vigente(c, ahora));
 
+/**
+ * Productos que rotan en el hero, en el orden elegido en el admin; se saltan los que ya no se muestran
+ * (ocultos o borrados). Sin elección, el primer destacado (o el primer producto).
+ */
+export function productosHero<T extends { id: string; destacado: boolean }>(ids: string[], lista: T[]) {
+  const elegidos = ids.flatMap((id) => lista.filter((p) => p.id === id));
+  return elegidos.length ? elegidos : [...lista.filter((p) => p.destacado), ...lista].slice(0, 1);
+}
+
+/** Rectángulo en píxeles de una imagen. */
+export interface Caja {
+  x: number;
+  y: number;
+  ancho: number;
+  alto: number;
+}
+
+/**
+ * Equipos altos (carros, rayos X móviles…): completos se ven chicos, así que el hero muestra solo la parte de arriba,
+ * en una ventana 4:3 un poco más ancha que el equipo. `equipo` es la caja del equipo sin el fondo transparente.
+ * Devuelve la ventana en píxeles de la imagen, o null para mostrarla completa.
+ */
+export function encuadreHero(equipo: Caja | null | undefined): Caja | null {
+  if (!equipo || equipo.alto < equipo.ancho * 1.3) return null;
+  const ancho = equipo.ancho * 1.2;
+  const alto = (ancho * 3) / 4;
+  return { x: equipo.x - (ancho - equipo.ancho) / 2, y: equipo.y - alto * 0.04, ancho, alto };
+}
+
 /** Segundos hasta la fecha futura más cercana (inicio o fin de algo programado), entre 1 s y el tope. */
 export function segundosHastaProximoCambio(fechas: (Date | null | undefined)[], ahora: Date, tope = 86_400) {
   const faltan = fechas.filter((f): f is Date => !!f && f > ahora).map((f) => (f.getTime() - ahora.getTime()) / 1000);

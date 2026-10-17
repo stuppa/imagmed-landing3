@@ -12,7 +12,7 @@ Fecha: 2026-10-09. Estado: aprobado. El usuario aprobó el modelo de datos y pid
   - **Edge Function `equipo`:** crea, quita y resetea miembros. La llave secreta nunca sale de Supabase.
 - **Catálogo general:** un producto es cualquier equipo, con su categoría y su marca. Los ultrasonidos son una categoría más.
 - **Hero:**
-  - Por defecto se ve el diseño actual, con el producto que elija el admin.
+  - Por defecto se ve el diseño actual, con los productos que elija el admin (cambio del 2026-10-16: hasta 5, que rotan cada 6 s en el orden elegido).
   - Una campaña programada por fechas reemplaza **solo el visual** con una imagen estática 4:3 (1600×1200). Etiqueta, título, texto y botones siguen siendo HTML y se pueden editar en cada campaña.
 - **Vista previa:** de la landing en una fecha (para campañas y descuentos programados) y de productos ocultos en su ficha real.
 - **Fuera de alcance:**
@@ -49,7 +49,7 @@ El esquema vive en `src/db/esquema.ts`, escrito con Drizzle: tablas, checks, FKs
 | `marcas` | nombre, logo (`{ruta, ancho, alto}`), orden |
 | `productos` | slug, nombre, `tipo` (etiqueta corta, p. ej. «Ultrasonido Portátil»), categoría, marca (opcional), subtítulo, descripción, imagen + alt, especificaciones/especialidades/incluye (`text[]`), tecnologías, especificaciones detalladas, accesorios (`jsonb`), `accesorios_titulo`, estado (`publicado`, `agotado`, `oculto`), destacado, orden, descuento (texto, inicio, fin) |
 | `campanas` | nombre interno, inicio, fin, etiqueta, título, texto, textos de los 2 botones, imagen + alt, producto opcional (para preseleccionarlo en el formulario). Una restricción `EXCLUDE` impide que dos campañas se encimen. |
-| `ajustes` | Una sola fila. Hero por defecto (producto, etiqueta, título, texto, rótulo de accesorios) y contacto (WhatsApp, mensaje, teléfono, aviso de privacidad, dirección, horario, link de Google Maps). |
+| `ajustes` | Una sola fila. Hero por defecto (productos que rotan, etiqueta, título, texto, rótulo de accesorios) y contacto (WhatsApp, mensaje, teléfono, aviso de privacidad, dirección, horario, link de Google Maps). |
 | `faq` | pregunta, respuesta, orden |
 | `administradores` | `user_id`. Solo `service_role` puede leerla. |
 
@@ -85,7 +85,7 @@ El esquema vive en `src/db/esquema.ts`, escrito con Drizzle: tablas, checks, FKs
 
 ## 4. Sitio público
 
-- **Hero:** muestra la campaña vigente y, si no hay, el producto por defecto con su marca de agua y los accesorios que tienen imagen (como hoy).
+- **Hero:** muestra la campaña vigente y, si no hay, los productos elegidos, que rotan; cada uno con su marca de agua y los accesorios que tienen imagen. Los equipos altos (carros, rayos X móviles) se ven en acercamiento, solo su parte de arriba: la subida guarda la caja del equipo sin el fondo transparente (`imagen.contenido`). El volumen 3D va solo con el MX3, para el que se hizo.
 - **Catálogo de la landing:** productos destacados y no ocultos, en el orden definido, con las etiquetas de descuento y «Agotado».
 - **Páginas por categoría:** listan sus productos.
 - **Ficha de producto:** textos genéricos (sin «Ultrasonido Mindray» fijo) y «otros equipos» de la misma categoría.
