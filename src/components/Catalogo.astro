@@ -1,5 +1,5 @@
 ---
-import { Picture } from 'astro:assets';
+import { Image } from 'astro:assets';
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
 import { seccionCatalogo as s } from '../data/sitio';
@@ -27,15 +27,14 @@ const { destacados } = Astro.locals.sitio;
                   {(e.descuento || e.agotado) && (
                     <span class:list={['insignia', e.agotado && 'insignia-agotado']}>{e.agotado ? s.agotado : e.descuento}</span>
                   )}
-                  <Picture
+                  <Image
                     src={e.imagen.src}
                     width={e.imagen.width}
                     height={e.imagen.height}
                     alt={e.imagenAlt}
-                    formats={['avif']}
-                    fallbackFormat="webp"
-                    widths={[320, 480, 640, 800]}
+                    widths={[384, 640, 828]}
                     sizes="(min-width: 1280px) 340px, (min-width: 1024px) 27vw, (min-width: 768px) 42vw, 64vw"
+                    quality={80}
                     loading="lazy"
                     decoding="async"
                   />
@@ -187,9 +186,6 @@ const { destacados } = Astro.locals.sitio;
     .cara,
     .foto {
       transform-style: preserve-3d;
-    }
-    .foto :global(picture) {
-      display: contents; /* sin caja propia: la imagen hereda el contexto 3D de .foto */
     }
     .foto :global(img) {
       transition: translate 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -345,8 +341,10 @@ const { destacados } = Astro.locals.sitio;
 <script>
   import { montar3d } from '../scripts/escena3d';
 
+  // Armar el transductor (reflejos y geometría) cuesta ~0.3 s de CPU en un celular: se precarga a los 5 s, cuando ya
+  // terminó la entrada del hero, para que llegar al catálogo no dé un tirón. Si el usuario llega antes, se arma ahí.
   const transductor = document.querySelector<HTMLElement>('[data-transductor-3d]');
-  if (transductor) montar3d(transductor, () => import('../scripts/escenas/transductor'));
+  if (transductor) montar3d(transductor, () => import('../scripts/escenas/transductor'), 5000);
 
   // Inclinación de las tarjetas hacia el cursor: un solo listener delegado y una escritura por cuadro.
   const carrusel = document.querySelector<HTMLElement>('#equipos .carrusel');

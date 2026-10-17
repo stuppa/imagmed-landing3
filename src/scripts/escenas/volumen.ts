@@ -224,6 +224,8 @@ function crearContornoCorte() {
 }
 
 const aditivo = { transparent: true, depthWrite: false, blending: AdditiveBlending, premultipliedAlpha: true } as const;
+// Nada escribe profundidad (todo es aditivo): el contexto va sin ese búfer. El antialias se queda por las aristas.
+export const lienzo = { depth: false };
 
 /** Rampa del corte: -1 → 1 → 0 con las mismas pausas que la animación CSS (22 % y 78 %). */
 function barrido(u: number) {

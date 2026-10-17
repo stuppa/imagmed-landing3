@@ -27,7 +27,7 @@ import {
 } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import type { CrearEscena, Estado } from '../escena3d';
+import { ceder, type CrearEscena, type Estado } from '../escena3d';
 
 // Medidas tomadas de transductor-convexo.png (1 unidad ≈ 100 px de la imagen), con la cara en y = 0.
 const ANCHO = 1.07; // media anchura máxima de la cabeza
@@ -61,7 +61,7 @@ function moldear(geo: BufferGeometry) {
   return g;
 }
 
-export const crear: CrearEscena = (renderer, contenedor) => {
+export const crear: CrearEscena = async (renderer, contenedor) => {
   renderer.toneMapping = NeutralToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFShadowMap; // three r186 quitó PCFSoftShadowMap (avisaba en consola); PCF ya suaviza con shadow.radius
@@ -71,10 +71,13 @@ export const crear: CrearEscena = (renderer, contenedor) => {
   const scene = new Scene();
   const pmrem = new PMREMGenerator(renderer);
   const cuarto = new RoomEnvironment();
-  scene.environment = pmrem.fromScene(cuarto, 0.04).texture;
+  // Reflejos a 128 px por cara y no 256: un cuarto del trabajo de GPU (256 muestras por pixel) y el transductor mide
+  // a lo mucho ~400 px, así que no se nota.
+  scene.environment = pmrem.fromScene(cuarto, 0.04, 0.1, 100, { size: 128 }).texture;
   scene.environmentIntensity = 0.5;
   cuarto.dispose();
   pmrem.dispose();
+  await ceder(); // reflejos y geometría en dos tareas, no en un solo congelón al llegar al catálogo
 
   const camera = new PerspectiveCamera(24, 1, 0.1, 100);
 

@@ -21,7 +21,9 @@ const lista = Astro.locals.sitio.marcas;
                 src={m.logo.src}
                 width={Math.round((48 * m.logo.width) / m.logo.height)}
                 height={48}
-                densities={[1, 2]}
+                widths={[128, 256, 384, 640]}
+                sizes={`${Math.round((48 * m.logo.width) / m.logo.height)}px`}
+                quality={90}
                 alt={m.nombre}
                 class="h-10 w-auto lg:h-12"
               />

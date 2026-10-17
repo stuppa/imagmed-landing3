@@ -1,6 +1,6 @@
 ---
 // Tarjeta clara de producto: páginas de categoría y «otros equipos» de la ficha.
-import { Picture } from 'astro:assets';
+import { Image } from 'astro:assets';
 import Icono from './Icono.astro';
 import { seccionCatalogo as s } from '../data/sitio';
 import type { Producto } from '../lib/sitio';
@@ -26,15 +26,14 @@ const { producto: e } = Astro.props;
         </span>
       )
     }
-    <Picture
+    <Image
       src={e.imagen.src}
       width={e.imagen.width}
       height={e.imagen.height}
       alt={e.imagenAlt}
-      formats={['avif']}
-      fallbackFormat="webp"
-      widths={[300, 600]}
+      widths={[384, 640, 828, 1080]}
       sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 90vw"
+      quality={80}
       loading="lazy"
       class="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
     />
