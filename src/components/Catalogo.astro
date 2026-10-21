@@ -233,31 +233,8 @@ const { destacados } = Astro.locals.sitio;
     }
   }
 
-  /* Móvil: el carrusel horizontal gira como coverflow según la posición de cada tarjeta.
-     Meseta en 40–62 %: la tarjeta asentada por el snap (≈56 %, o ≈44 % la última) queda plana y nítida. */
-  @supports (animation-timeline: view(inline)) {
-    @media (width < 48rem) and (prefers-reduced-motion: no-preference) {
-      .cara {
-        animation: girar linear both;
-        animation-timeline: view(inline);
-      }
-    }
-  }
-  @keyframes girar {
-    from {
-      rotate: y -26deg;
-      scale: 0.9;
-    }
-    40%,
-    62% {
-      rotate: none;
-      scale: none;
-    }
-    to {
-      rotate: y 26deg;
-      scale: 0.9;
-    }
-  }
+  /* Sin coverflow en el carrusel móvil: girar las tarjetas con animation-timeline: view(inline) cerraba la app entera
+     en iPhone (Safari y Brave) al cargar la página (2026-10-20). La barra de avance de abajo sí funciona ahí. */
 
   /* Hueco del encabezado donde flota el transductor: arriba a la derecha, nunca sobre el texto.
      Móvil: a la derecha de la etiqueta, encima del título. md: a la derecha del título (12.6em es su
