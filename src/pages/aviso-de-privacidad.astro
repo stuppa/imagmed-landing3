@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Enfasis from '../components/Enfasis.astro';
 import { prepararPagina } from '../lib/sitio';
 import { sitio } from '../data/sitio';
 import { correoPrivacidad } from '../data/contacto';
@@ -20,7 +21,7 @@ const actualizado = '14 de octubre de 2026';
   <main id="contenido" class="oscuro pt-28 pb-24 lg:pt-36 lg:pb-32">
     <div class="contenedor">
       <p class="etiqueta">Última actualización: {actualizado}</p>
-      <h1 class="titulo-2 mt-4">Aviso de privacidad</h1>
+      <h1 class="titulo-2 mt-4"><Enfasis texto="Aviso de privacidad" /></h1>
 
       <div class="aviso mt-8 max-w-3xl">
         <p>

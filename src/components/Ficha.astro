@@ -7,6 +7,7 @@ import Footer from './Footer.astro';
 import Contacto from './Contacto.astro';
 import Icono from './Icono.astro';
 import Encabezado from './Encabezado.astro';
+import Enfasis from './Enfasis.astro';
 import TarjetaProducto from './TarjetaProducto.astro';
 import { seccionCatalogo, sitio } from '../data/sitio';
 import { whatsappUrl } from '../data/contacto';
@@ -58,7 +59,7 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
           <span class="etiqueta">{equipo.tipo || equipo.categoria.nombre}</span>
 
           <h1 id="titulo-equipo" class="titulo-1 mt-4">
-            {equipo.marca && <>{equipo.marca} </>}<span class="text-marca-claro">{equipo.nombre}</span>
+            {equipo.marca && <><Enfasis texto={equipo.marca} /> </>}<span class="text-marca-claro"><Enfasis texto={equipo.nombre} /></span>
           </h1>
 
           {(equipo.descuento || equipo.agotado) && (
@@ -190,15 +191,17 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
     {equipo.tecnologias.length > 0 && (
       <section class="seccion" aria-labelledby="titulo-tecnologias">
         <div class="contenedor">
-          <Encabezado
-            etiqueta="Innovación Médica"
-            titulo={`Tecnologías clave en el *${equipo.nombreCompleto}*.`}
-            id="titulo-tecnologias"
-          >
-            <p class="texto-suave mt-3 max-w-xl">
-              Imágenes de alta resolución, flujo inteligente y herramientas cuantitativas para un diagnóstico sin margen de duda.
-            </p>
-          </Encabezado>
+          <div data-reveal>
+            <Encabezado
+              etiqueta="Innovación Médica"
+              titulo={`Tecnologías clave en el *${equipo.nombreCompleto}*.`}
+              id="titulo-tecnologias"
+            >
+              <p class="texto-suave mt-3 max-w-xl">
+                Imágenes de alta resolución, flujo inteligente y herramientas cuantitativas para un diagnóstico sin margen de duda.
+              </p>
+            </Encabezado>
+          </div>
 
           <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
             {equipo.tecnologias.map((tech) => (
@@ -255,15 +258,17 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
     {equipo.accesorios.length > 0 && (
       <section class="seccion" aria-labelledby="titulo-transductores">
         <div class="contenedor">
-          <Encabezado
-            etiqueta="Configuración"
-            titulo={`${equipo.accesoriosTitulo} con *${equipo.nombreCompleto}*.`}
-            id="titulo-transductores"
-          >
-            <p class="texto-suave mt-3 max-w-xl">
-              Configura tu equipo con lo necesario para las especialidades de tu centro médico.
-            </p>
-          </Encabezado>
+          <div data-reveal>
+            <Encabezado
+              etiqueta="Configuración"
+              titulo={`${equipo.accesoriosTitulo} con *${equipo.nombreCompleto}*.`}
+              id="titulo-transductores"
+            >
+              <p class="texto-suave mt-3 max-w-xl">
+                Configura tu equipo con lo necesario para las especialidades de tu centro médico.
+              </p>
+            </Encabezado>
+          </div>
 
           <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
             {equipo.accesorios.map((t) => (
