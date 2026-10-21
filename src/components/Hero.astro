@@ -549,8 +549,8 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     }
   }
 
-  /* Un solo momento orquestado: el texto sube, las líneas se trazan y los transductores aparecen.
-     La foto del equipo no se anima: es el LCP. */
+  /* Un solo momento orquestado: el texto sube (el título, palabra por palabra: global.css), las líneas se trazan y los
+     transductores aparecen. La foto del equipo no se anima: es el LCP. */
   @media (prefers-reduced-motion: no-preference) {
     .hero-texto > *,
     .hero-acciones {

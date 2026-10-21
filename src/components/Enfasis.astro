@@ -1,9 +1,18 @@
 ---
-// Convierte "texto *con énfasis*" en texto <em>con énfasis</em>.
+// Convierte "texto *con énfasis*" en texto <em>con énfasis</em>, con cada palabra en un span para que el título entre
+// palabra por palabra (.palabra en global.css). Spans inline y <em> por fuera: así Chrome sigue equilibrando renglones.
 interface Props {
   texto: string;
 }
-const partes = Astro.props.texto.split('*');
+let n = 0;
+const partes = Astro.props.texto
+  .split('*')
+  .map((parte) => parte.split(/( +)/).map((t) => (t.trim() ? { palabra: t, n: n++ } : t)));
 ---
 
-{partes.map((parte, i) => (i % 2 ? <em>{parte}</em> : parte))}
+{
+  partes.map((tramo, i) => {
+    const html = tramo.map((t) => (typeof t === 'string' ? t : <span class="palabra" style={`--p: ${t.n}`}>{t.palabra}</span>));
+    return i % 2 ? <em>{html}</em> : html;
+  })
+}

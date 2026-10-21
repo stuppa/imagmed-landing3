@@ -298,3 +298,24 @@
     translate: 0 1rem;
   }
 }
+
+/* Títulos palabra por palabra (Enfasis.astro): al cargar la página o, dentro de un data-reveal, cuando su bloque entra
+   en pantalla (y sube). Solo opacity: con inline-block (para translate) Chrome deja de equilibrar los renglones. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .palabra {
+    animation: palabra 0.5s calc(var(--p, 0) * 60ms) ease-out backwards;
+  }
+  .js [data-reveal]:not(.is-visible) .palabra {
+    animation: none;
+  }
+
+  /* Cambio de página: fundido corto del propio navegador entre documentos. Sin soporte, navegación normal. */
+  @view-transition {
+    navigation: auto;
+  }
+}
+@keyframes palabra {
+  from {
+    opacity: 0;
+  }
+}
