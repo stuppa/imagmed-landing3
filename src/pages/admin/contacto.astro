@@ -4,6 +4,9 @@ import { casilla, ErrorAdmin, procesarFormulario, revisar, texto } from '../../l
 import type { FilaAjustes, FilaFaq } from '../../lib/sitio';
 
 const supabase = Astro.locals.supabase;
+const CAMPOS = ['whatsapp', 'telefono', 'whatsapp_mensaje', 'aviso_privacidad_url', 'direccion', 'horario', 'google_maps_url'] as const;
+// Copia del formulario para volver a mostrar lo escrito si algo falla (el original lo consume procesarFormulario).
+const enviado = Astro.request.method === 'POST' ? await Astro.request.clone().formData() : null;
 
 const resultado = await procesarFormulario(Astro, async (f) => {
   if (texto(f, 'accion') === 'faq') {
@@ -50,6 +53,11 @@ const [a, faq] = (await Promise.all([
   supabase.from('ajustes').select('*').single().then(revisar),
   supabase.from('faq').select('*').order('orden').then(revisar),
 ])) as [FilaAjustes, FilaFaq[]];
+// Si falló el guardado del contacto, se muestra lo escrito y no lo guardado.
+const v =
+  enviado?.get('accion') === 'contacto'
+    ? (Object.fromEntries(CAMPOS.map((c) => [c, texto(enviado, c)])) as Pick<FilaAjustes, (typeof CAMPOS)[number]>)
+    : a;
 const siguiente = Math.max(-1, ...faq.map((p) => p.orden)) + 1;
 const filasFaq = [
   ...faq,
@@ -64,34 +72,34 @@ const filasFaq = [
     <div class="rejilla">
       <label>
         WhatsApp
-        <input name="whatsapp" value={a.whatsapp} inputmode="numeric" placeholder="271 123 4567" />
+        <input name="whatsapp" value={v.whatsapp} inputmode="numeric" placeholder="271 123 4567" />
         <p class="ayuda">10 dígitos; el 52 de México se agrega solo.</p>
       </label>
       <label>
         Teléfono
-        <input name="telefono" value={a.telefono} placeholder="271 123 4567" />
+        <input name="telefono" value={v.telefono} placeholder="271 123 4567" />
         <p class="ayuda">Tal como se mostrará.</p>
       </label>
       <label class="ancho">
         Mensaje inicial de WhatsApp
-        <input name="whatsapp_mensaje" value={a.whatsapp_mensaje} />
+        <input name="whatsapp_mensaje" value={v.whatsapp_mensaje} />
       </label>
       <label class="ancho">
         URL del aviso de privacidad
-        <input type="url" name="aviso_privacidad_url" value={a.aviso_privacidad_url} placeholder="https://…" />
+        <input type="url" name="aviso_privacidad_url" value={v.aviso_privacidad_url} placeholder="https://…" />
         <p class="ayuda">Vacío: se usa el aviso del sitio (/aviso-de-privacidad). Llénalo solo si el aviso está en otra dirección.</p>
       </label>
       <label class="ancho">
         Dirección
-        <input name="direccion" value={a.direccion} />
+        <input name="direccion" value={v.direccion} />
       </label>
       <label>
         Horario
-        <input name="horario" value={a.horario} />
+        <input name="horario" value={v.horario} />
       </label>
       <label>
         Link de Google Maps
-        <input type="url" name="google_maps_url" value={a.google_maps_url} />
+        <input type="url" name="google_maps_url" value={v.google_maps_url} />
       </label>
     </div>
     <div class="acciones">

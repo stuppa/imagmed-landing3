@@ -55,7 +55,8 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
   const fin = deFechaLocal(texto(f, 'descuento_fin'));
   if (inicio && fin && fin <= inicio) throw new ErrorAdmin('El fin del descuento debe ser después del inicio.');
 
-  const imagen = (await subirImagen(supabase, f.get('imagen'), 'productos', subidas)) ?? existente?.imagen;
+  const imagen =
+    (await subirImagen(supabase, f.get('imagen'), 'productos', subidas, { transparente: true })) ?? existente?.imagen;
   if (!imagen) throw new ErrorAdmin('Sube la imagen principal del producto.');
 
   // Las filas de accesorios se guardan en orden; la imagen anterior se toma por posición de la fila.
@@ -89,7 +90,6 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
     incluye: lineas(texto(f, 'incluye')),
     tecnologias: pares(texto(f, 'tecnologias')),
     especificaciones_detalladas: grupos(texto(f, 'especificaciones_detalladas')),
-    accesorios_titulo: texto(f, 'accesorios_titulo') || 'Transductores compatibles',
     accesorios,
     estado: ESTADOS.some((e) => e.valor === estado) ? estado : 'oculto',
     destacado: casilla(f, 'destacado'),
@@ -138,7 +138,6 @@ const v = enviado
       incluye: texto(enviado, 'incluye'),
       tecnologias: texto(enviado, 'tecnologias'),
       especificaciones_detalladas: texto(enviado, 'especificaciones_detalladas'),
-      accesorios_titulo: texto(enviado, 'accesorios_titulo'),
       estado: texto(enviado, 'estado'),
       destacado: casilla(enviado, 'destacado'),
       descuento_texto: texto(enviado, 'descuento_texto'),
@@ -164,7 +163,6 @@ const v = enviado
       incluye: (existente?.incluye ?? incluyeDefecto).join('\n'),
       tecnologias: paresATexto(existente?.tecnologias ?? []),
       especificaciones_detalladas: gruposATexto(existente?.especificaciones_detalladas ?? []),
-      accesorios_titulo: existente?.accesorios_titulo ?? 'Transductores compatibles',
       estado: existente?.estado ?? 'oculto',
       destacado: existente?.destacado ?? false,
       descuento_texto: existente?.descuento_texto ?? '',
@@ -293,8 +291,19 @@ const avisoImagenes = enviado ? 'Si habías elegido imágenes nuevas, vuelve a s
           <label>
             {existente ? 'Reemplazar imagen' : 'Imagen principal'}
             <input type="file" name="imagen" accept="image/png,image/jpeg,image/webp,image/avif" required={!existente} />
-            <p class="ayuda">PNG con fondo transparente, cuadrada o 4:3, de 1200 px o más. Máximo 4 MB.</p>
+            <p class="ayuda">
+              PNG con fondo transparente, cuadrada de <strong>1200×1200 px</strong> (o 4:3, de 1600×1200), con el equipo completo y
+              centrado, sin sombra: el sitio pone la suya. Máximo 4 MB.
+            </p>
           </label>
+          {
+            existente?.imagen.fondo && (
+              <p class="aviso aviso-error mt-0!" role="status">
+                Esta imagen trae fondo (no es transparente): en el hero, que es oscuro, se ve como un recuadro. Quítale el fondo
+                (remove.bg o Canva lo hacen gratis) y vuelve a subirla en PNG.
+              </p>
+            )
+          }
           <label>
             Texto alternativo
             <input name="imagen_alt" value={v.imagen_alt} placeholder="Ultrasonido portátil Mindray MX3 tipo laptop" />
@@ -362,11 +371,6 @@ const avisoImagenes = enviado ? 'Si habías elegido imágenes nuevas, vuelve a s
 
     <section class="panel">
       <h2>Accesorios compatibles</h2>
-      <label>
-        Título de la sección
-        <input name="accesorios_titulo" value={v.accesorios_titulo} />
-        <p class="ayuda">En la ficha se lee «{v.accesorios_titulo || 'Transductores compatibles'} con Marca Nombre».</p>
-      </label>
       <input type="hidden" name="acc_total" value={filasAccesorios.length} />
       <div class="mt-4 grid gap-4">
         {
@@ -406,7 +410,11 @@ const avisoImagenes = enviado ? 'Si habías elegido imágenes nuevas, vuelve a s
         }
       </div>
       <p class="ayuda mt-3">
-        Deja «Tipo» vacío para quitar un accesorio. Los que tienen imagen aparecen en los círculos del hero (los 2 primeros).
+        Imágenes: PNG con fondo transparente, cuadradas de <strong>600×600 px</strong> o más, con el transductor de pie y centrado.
+        Máximo 4 MB cada una y 4 MB entre todas las que subas al guardar.
+      </p>
+      <p class="ayuda">
+        Deja «Tipo» vacío para quitar un accesorio. Solo se ven en los círculos del hero: los 2 primeros que tengan imagen.
         ¿Necesitas más filas? Guarda y aparecerán otras dos.
       </p>
     </section>

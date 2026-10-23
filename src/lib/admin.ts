@@ -1,7 +1,8 @@
 // Utilidades de las páginas del admin: formularios, imágenes y errores legibles.
 import sharp from 'sharp';
 import type { APIContext } from 'astro';
-import type { Caja } from './contenido';
+import { tamanoLogo, type Caja } from './contenido';
+import { coloresDiseno, recortarLogo, tieneFondo } from './imagenes';
 import { BUCKET, type Supabase } from './supabase';
 import { invalidarSitio, type Imagen } from './sitio';
 
@@ -58,6 +59,12 @@ interface Reglas {
   /** Ancho / alto exigido (±2 %), p. ej. 4 / 3. */
   proporcion?: number;
   anchoMinimo?: number;
+  /** Logo de marca: se guarda sin márgenes (recortarLogo). */
+  logo?: boolean;
+  /** Debe ser un recorte transparente: si trae fondo se marca `fondo` para avisar. */
+  transparente?: boolean;
+  /** Diseño de fondo de una campaña: se guardan sus colores para que el hero se adapte. */
+  colores?: boolean;
 }
 
 /**
@@ -74,16 +81,16 @@ export async function subirImagen(
   if (!(archivo instanceof File) || archivo.size === 0) return null;
   if (archivo.size > MAX_BYTES) throw new ErrorAdmin(`«${archivo.name}» pesa más de 4 MB; comprímela antes de subirla.`);
 
-  const buffer = Buffer.from(await archivo.arrayBuffer());
+  let buffer: Buffer = Buffer.from(await archivo.arrayBuffer());
   const meta = await sharp(buffer)
     .metadata()
     .catch(() => null);
-  const formato = meta?.format === 'heif' && meta.compression === 'av1' ? 'avif' : meta?.format;
+  let formato: string | undefined = meta?.format === 'heif' && meta.compression === 'av1' ? 'avif' : meta?.format;
   if (!meta?.width || !meta.height || !formato || !TIPOS[formato]) {
     throw new ErrorAdmin(`«${archivo.name}» no es una imagen válida: usa PNG, JPG, WebP o AVIF.`);
   }
   // Fotos de celular giradas por EXIF (orientación 5–8): ancho y alto van al revés.
-  const [ancho, alto] = (meta.orientation ?? 1) >= 5 ? [meta.height, meta.width] : [meta.width, meta.height];
+  let [ancho, alto] = (meta.orientation ?? 1) >= 5 ? [meta.height, meta.width] : [meta.width, meta.height];
   if (reglas.anchoMinimo && ancho < reglas.anchoMinimo) {
     throw new ErrorAdmin(`«${archivo.name}» mide ${ancho} px de ancho; se necesitan al menos ${reglas.anchoMinimo}.`);
   }
@@ -91,16 +98,30 @@ export async function subirImagen(
     throw new ErrorAdmin(`«${archivo.name}» mide ${ancho}×${alto}; debe ser proporción 4:3 (p. ej. 1600×1200).`);
   }
 
-  // Fotos giradas por EXIF: sin caja (el recorte saldría en la orientación equivocada).
-  const contenido = (meta.orientation ?? 1) < 5 ? await cajaContenido(buffer) : undefined;
+  if (reglas.logo) {
+    ({ buffer, ancho, alto } = await recortarLogo(buffer));
+    formato = 'png';
+    const enSitio = tamanoLogo(ancho, alto);
+    if (ancho < enSitio.ancho) {
+      throw new ErrorAdmin(
+        `«${archivo.name}» mide ${ancho}×${alto} px sin márgenes y se vería borroso: súbelo de al menos ${2 * enSitio.ancho} px de ancho.`,
+      );
+    }
+  }
+
+  // Fotos giradas por EXIF: sin caja (el recorte saldría en la orientación equivocada). Los logos ya van recortados.
+  const contenido = !reglas.logo && !reglas.colores && (meta.orientation ?? 1) < 5 ? await cajaContenido(buffer) : undefined;
+  const fondo = reglas.transparente && (await tieneFondo(buffer));
+  const colores = reglas.colores ? await coloresDiseno(buffer) : undefined;
 
   const ruta = `${carpeta}/${crypto.randomUUID()}.${formato === 'jpeg' ? 'jpg' : formato}`;
+  // Antes de subir: si la subida falla a medias, procesarFormulario igual la borra (había archivos huérfanos).
+  subidas.push(ruta);
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(ruta, buffer, { contentType: TIPOS[formato], cacheControl: '31536000', upsert: false });
   if (error) throw new ErrorAdmin(`No se pudo subir «${archivo.name}»: ${error.message}`);
-  subidas.push(ruta);
-  return { ruta, ancho, alto, contenido };
+  return { ruta, ancho, alto, contenido, fondo: fondo || undefined, colores };
 }
 
 /** Caja del contenido sin el fondo (transparente o de un color), o undefined si no hay nada que recortar. */

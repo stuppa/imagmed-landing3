@@ -2,8 +2,9 @@
 import { Image } from 'astro:assets';
 import Enfasis from './Enfasis.astro';
 import { marcas } from '../data/sitio';
+import { tamanoLogo } from '../lib/contenido';
 
-const lista = Astro.locals.sitio.marcas;
+const lista = Astro.locals.sitio.marcas.map((m) => ({ ...m, tamano: m.logo && tamanoLogo(m.logo.width, m.logo.height) }));
 ---
 
 <section id="marcas" class="seccion bg-white text-center" aria-labelledby="titulo-marcas">
@@ -16,16 +17,17 @@ const lista = Astro.locals.sitio.marcas;
       {
         lista.map((m) => (
           <li>
-            {m.logo ? (
+            {m.logo && m.tamano ? (
               <Image
                 src={m.logo.src}
-                width={Math.round((48 * m.logo.width) / m.logo.height)}
-                height={48}
+                width={m.tamano.ancho}
+                height={m.tamano.alto}
                 widths={[128, 256, 384, 640]}
-                sizes={`${Math.round((48 * m.logo.width) / m.logo.height)}px`}
+                sizes={`${m.tamano.ancho}px`}
                 quality={90}
                 alt={m.nombre}
-                class="h-10 w-auto lg:h-12"
+                class="logo"
+                style={`--alto: ${m.tamano.alto}px`}
               />
             ) : (
               <span class="nombre">{m.nombre}</span>
@@ -50,6 +52,16 @@ const lista = Astro.locals.sitio.marcas;
   @media (width >= 64rem) {
     .logos {
       justify-content: space-between;
+    }
+  }
+  /* Medida de tamanoLogo (escritorio); en celular, un poco menor. */
+  .logo {
+    width: auto;
+    height: calc(var(--alto) * 0.8);
+  }
+  @media (width >= 64rem) {
+    .logo {
+      height: var(--alto);
     }
   }
   .nombre {

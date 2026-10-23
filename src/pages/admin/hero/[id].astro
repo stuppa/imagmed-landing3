@@ -1,6 +1,6 @@
 ---
 import Admin from '../../../layouts/Admin.astro';
-import { borrarImagenes, ErrorAdmin, procesarFormulario, revisar, subirImagen, texto } from '../../../lib/admin';
+import { borrarImagenes, casilla, ErrorAdmin, procesarFormulario, revisar, subirImagen, texto } from '../../../lib/admin';
 import { aFechaLocal, deFechaLocal, formatoFecha } from '../../../lib/contenido';
 import { urlImagen } from '../../../lib/supabase';
 import { hero as textosHero } from '../../../data/sitio';
@@ -44,12 +44,13 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
     );
   }
 
+  // El diseño cubre todo el hero: cualquier proporción horizontal sirve (el sitio lo recorta), pero con ancho de sobra.
   const imagen =
-    (await subirImagen(supabase, f.get('imagen'), 'campanas', subidas, { proporcion: 4 / 3, anchoMinimo: 1200 })) ??
+    (await subirImagen(supabase, f.get('imagen'), 'campanas', subidas, { anchoMinimo: 1600, colores: true })) ??
     existente?.imagen;
-  if (!imagen) throw new ErrorAdmin('Sube la imagen de la campaña (4:3, p. ej. 1600×1200).');
-  const imagen_alt = texto(f, 'imagen_alt');
-  if (!imagen_alt) throw new ErrorAdmin('Describe la imagen en «Texto alternativo».');
+  if (!imagen) throw new ErrorAdmin('Sube el diseño de la campaña (horizontal, de 1920×1080 px).');
+  // Vertical, en escritorio se recortaría casi todo. Si se acaba de subir, procesarFormulario la borra.
+  if (imagen.alto > imagen.ancho) throw new ErrorAdmin('El diseño debe ser horizontal (más ancho que alto), p. ej. 1920×1080 px.');
 
   const fila = {
     nombre,
@@ -61,8 +62,10 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
     cta_principal: texto(f, 'cta_principal') || textosHero.ctaPrincipal,
     cta_secundario: texto(f, 'cta_secundario') || textosHero.ctaSecundario,
     imagen,
-    imagen_alt,
+    // ponytail: el diseño es decorativo (en el sitio va con alt vacío); la base exige un texto, va el nombre.
+    imagen_alt: nombre,
     producto_id: texto(f, 'producto_id') || null,
+    mostrar_productos: casilla(f, 'mostrar_productos'),
   };
   if (existente) {
     revisar(await supabase.from('campanas').update(fila).eq('id', id));
@@ -89,9 +92,10 @@ const v = {
   texto: campo('texto'),
   cta_principal: campo('cta_principal', textosHero.ctaPrincipal),
   cta_secundario: campo('cta_secundario', textosHero.ctaSecundario),
-  imagen_alt: campo('imagen_alt'),
   producto_id: campo('producto_id'),
+  mostrar_productos: enviado ? casilla(enviado, 'mostrar_productos') : (existente?.mostrar_productos ?? true),
 };
+const colores = existente?.imagen.colores;
 ---
 
 <Admin
@@ -134,23 +138,45 @@ const v = {
     </section>
 
     <section class="panel">
-      <h2>Imagen</h2>
+      <h2>Diseño de fondo</h2>
       <div class="flex flex-wrap items-start gap-6">
-        {existente && <img src={urlImagen(existente.imagen.ruta)} alt="" class="w-48 rounded-md" />}
+        {existente && <img src={urlImagen(existente.imagen.ruta)} alt="" class="w-64 rounded-md" />}
         <div class="grid flex-1 gap-4">
           <label>
-            {existente ? 'Reemplazar imagen' : 'Imagen de la campaña'}
+            {existente ? 'Reemplazar diseño' : 'Diseño de la campaña'}
             <input type="file" name="imagen" accept="image/png,image/jpeg,image/webp,image/avif" required={!existente} />
             <p class="ayuda">
-              Proporción <strong>4:3</strong>, de <strong>1600×1200 px</strong> (mínimo 1200 px de ancho). Máximo 4 MB. Va en el lugar del
-              equipo, a la derecha del título; en celular, debajo del texto.
+              JPG o PNG horizontal de <strong>1920×1080 px</strong> (16:9; mínimo 1600 px de ancho). Máximo 4 MB. Cubre todo el hero y
+              encima van el título, los botones y los productos que rotan: usa colores, texturas o ilustraciones, y escribe la
+              promoción en «Textos y botones», no en la imagen. En celular el sitio muestra el centro del diseño.
             </p>
           </label>
-          <label>
-            Texto alternativo
-            <input name="imagen_alt" value={v.imagen_alt} required placeholder="Ultrasonido MX3 con 15% de descuento por el Buen Fin" />
-            <p class="ayuda">Si la imagen trae texto (precio, promoción), escríbelo aquí: Google y los lectores de pantalla no lo leen de la imagen.</p>
-          </label>
+          {
+            colores && (
+              <div class="ayuda flex flex-wrap items-center gap-x-5 gap-y-2" role="status">
+                <span>El hero se pinta solo con:</span>
+                <span class="inline-flex items-center gap-2">
+                  <span class="muestra" style={`background: ${colores.acento}`} />
+                  acento
+                </span>
+                <span class="inline-flex items-center gap-2">
+                  <span class="muestra" style={`background: ${colores.fondo}`} />
+                  fondo
+                </span>
+                <span>texto {colores.claro ? 'oscuro' : 'blanco'}</span>
+              </div>
+            )
+          }
+          <div>
+            <label class="opcion">
+              <input type="checkbox" name="mostrar_productos" checked={v.mostrar_productos} />
+              Mostrar los productos que rotan encima del diseño
+            </label>
+            <p class="ayuda">
+              Encendido, rotan los de «Productos que rotan», con sombra o brillo para que resalten sobre cualquier diseño.
+              Apágalo si el diseño ya trae sus propios productos: se ve solo el diseño con el texto y los botones.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -179,7 +205,7 @@ const v = {
         <label class="ancho">
           Título
           <input name="titulo" value={v.titulo} required placeholder="15% en el *MX3* este fin." />
-          <p class="ayuda">Entre *asteriscos* va en azul.</p>
+          <p class="ayuda">Entre *asteriscos* va en el color de acento del diseño.</p>
         </label>
         <label class="ancho">
           Texto
@@ -211,3 +237,14 @@ const v = {
     )
   }
 </Admin>
+
+<style>
+  /* Colores que se sacaron del diseño. */
+  .muestra {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 1px solid rgb(11 18 32 / 0.2);
+    border-radius: 0.25rem;
+  }
+</style>

@@ -31,6 +31,8 @@
 
 @layer base {
   html {
+    /* Lo que asoma al estirar la página y, en iPhone (Safari 26 ignora theme-color), el tinte de la barra de estado. */
+    background-color: var(--color-negro);
     scroll-padding-top: 5rem;
     -webkit-text-size-adjust: 100%;
   }
@@ -55,6 +57,12 @@
   ::selection {
     background-color: var(--color-marca);
     color: #fff;
+  }
+  /* En iPhone, dos toques rápidos a un botón (las barras del hero, al cambiar de producto) hacían zoom y la página se
+     quedaba agrandada, con fotos y textos cortados en las orillas (2026-10-22). Pellizcar para hacer zoom sigue igual. */
+  a,
+  button {
+    touch-action: manipulation;
   }
 }
 
@@ -143,7 +151,7 @@
   }
   .btn-primario {
     background-color: var(--color-marca);
-    color: #fff;
+    color: var(--texto-marca, #fff); /* una campaña con acento claro lo cambia a oscuro (Hero.astro) */
   }
   .btn-contorno {
     border-color: color-mix(in srgb, #fff 30%, transparent);

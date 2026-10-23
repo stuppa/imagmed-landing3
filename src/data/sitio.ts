@@ -25,9 +25,22 @@ export const navegacion = [
   { texto: 'FAQ', href: '/#faq' },
 ];
 
-// Submenú "Productos": una entrada por categoría visible (/productos/[slug]).
+// Submenú "Productos": una entrada por categoría visible (/productos/[slug]) y al final todo el catálogo (/productos).
 export const productos = {
   texto: 'Productos',
+  verTodos: 'Ver todo el catálogo',
+};
+
+// Página /productos: todo el catálogo agrupado por categoría.
+export const catalogoCompleto = {
+  tituloSeo: 'Catálogo de equipos de imagenología',
+  titulo: 'Todo nuestro *catálogo*.',
+  descripcion:
+    'Ultrasonidos, rayos X, detectores, tomógrafos, densitómetros y más. Elige un equipo y te enviamos una cotización formal con la configuración que necesitas.',
+  saltar: 'Ir a una categoría',
+  verCategoria: 'Ver categoría',
+  otras: 'También cotizamos',
+  contacto: 'Cotiza tu equipo con *Imagmed*.',
 };
 
 export const encabezado = {

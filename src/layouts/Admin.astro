@@ -11,7 +11,8 @@ interface Props {
 }
 
 const { titulo, error, sinMenu = false } = Astro.props;
-const guardado = Astro.url.searchParams.has('guardado');
+// El formulario se envía a la misma URL: tras un guardado exitoso trae ?guardado aunque el siguiente envío falle.
+const guardado = Astro.url.searchParams.has('guardado') && !error;
 const ruta = Astro.url.pathname.replace(/\/+$/, '');
 const menu = [
   { texto: 'Panel', href: '/admin' },
@@ -91,6 +92,46 @@ const activo = (href: string) => (href === '/admin' ? ruta === '/admin' : ruta.s
       }
       <slot />
     </main>
+    <script>
+      // Al enviar: un formulario a la vez (con varios clics se subía la misma imagen varias veces) y un indicador mientras
+      // guarda. Las imágenes de más de 4 MB se frenan aquí: Vercel corta el envío a los 4.5 MB con su propia página de error.
+      const MAX = 4 * 1024 * 1024;
+      const mb = (bytes: number) => `${(bytes / 1048576).toFixed(1)} MB`;
+
+      addEventListener('change', (e) => {
+        const input = e.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== 'file') return;
+        const archivo = input.files?.[0];
+        input.setCustomValidity(
+          archivo && archivo.size > MAX ? `Pesa ${mb(archivo.size)} y el máximo es 4 MB: comprímela y vuelve a elegirla.` : '',
+        );
+        input.reportValidity();
+      });
+
+      addEventListener('submit', (e) => {
+        const form = e.target as HTMLFormElement;
+        if (e.defaultPrevented || form.method !== 'post') return;
+        if (form.hasAttribute('aria-busy')) return e.preventDefault();
+        const total = [...form.querySelectorAll<HTMLInputElement>('input[type="file"]')].reduce(
+          (suma, i) => suma + (i.files?.[0]?.size ?? 0),
+          0,
+        );
+        if (total > MAX) {
+          e.preventDefault();
+          alert(`Entre todas, las imágenes elegidas pesan ${mb(total)} y el máximo por guardado es 4 MB. Sube unas, guarda y luego las demás.`);
+          return;
+        }
+        form.setAttribute('aria-busy', 'true');
+        e.submitter?.insertAdjacentHTML('afterbegin', '<span class="girando" aria-hidden="true"></span>');
+      });
+
+      // Al volver con «atrás» el navegador puede restaurar la página tal cual la dejó: que se pueda guardar otra vez.
+      addEventListener('pageshow', (e) => {
+        if (!e.persisted) return;
+        document.querySelectorAll('form[aria-busy]').forEach((f) => f.removeAttribute('aria-busy'));
+        document.querySelectorAll('.girando').forEach((s) => s.remove());
+      });
+    </script>
   </body>
 </html>
 
@@ -325,5 +366,34 @@ const activo = (href: string) => (href === '/admin' ? ruta === '/admin' : ruta.s
     color: var(--color-marca);
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+  /* Formulario guardando (script de abajo). */
+  .admin form[aria-busy='true'] {
+    cursor: progress;
+  }
+  .admin form[aria-busy='true'] :is(button, select) {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  .admin .girando {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+    margin-inline-end: 0.25em;
+    vertical-align: -0.125em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .admin .girando {
+      animation: girar 0.7s linear infinite;
+    }
+  }
+  @keyframes girar {
+    to {
+      rotate: 1turn;
+    }
   }
 </style>

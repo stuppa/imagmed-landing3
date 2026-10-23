@@ -6,6 +6,7 @@ export const GET: APIRoute = async (ctx) => {
   const { productos, categorias } = await prepararPagina(ctx);
   const rutas = [
     '/',
+    '/productos',
     ...productos.map((p) => `/equipos/${p.slug}`),
     ...categorias.map((c) => `/productos/${c.slug}`),
   ];

@@ -32,15 +32,94 @@ export interface Caja {
 }
 
 /**
- * Equipos altos (carros, rayos X móviles…): completos se ven chicos, así que el hero muestra solo la parte de arriba,
- * en una ventana 4:3 un poco más ancha que el equipo. `equipo` es la caja del equipo sin el fondo transparente.
- * Devuelve la ventana en píxeles de la imagen, o null para mostrarla completa.
+ * Equipos altos (carros, rayos X móviles…): completos, nunca cortados, pero sin el margen transparente de la foto, que
+ * los achicaba. La ventana 4:3 mide el alto del equipo más 2.5 % arriba y abajo, centrada en él. `equipo` es la caja
+ * del equipo sin el fondo transparente. Devuelve la ventana en píxeles de la imagen, o null para mostrarla completa.
  */
 export function encuadreHero(equipo: Caja | null | undefined): Caja | null {
   if (!equipo || equipo.alto < equipo.ancho * 1.3) return null;
-  const ancho = equipo.ancho * 1.2;
-  const alto = (ancho * 3) / 4;
-  return { x: equipo.x - (ancho - equipo.ancho) / 2, y: equipo.y - alto * 0.04, ancho, alto };
+  const alto = equipo.alto * 1.05;
+  const ancho = (alto * 4) / 3;
+  return { x: equipo.x + (equipo.ancho - ancho) / 2, y: equipo.y + (equipo.alto - alto) / 2, ancho, alto };
+}
+
+/**
+ * Medida en px (escritorio) de un logo en la sección de marcas. A alto fijo uno cuadrado se ve chico y uno muy ancho,
+ * enorme: aquí todos ocupan la misma área (la de un logo 4:1 de 160×40), con tope de 64 px de alto y 220 de ancho.
+ */
+export function tamanoLogo(ancho: number, alto: number) {
+  const proporcion = ancho / alto;
+  const a = Math.min(64, Math.sqrt(6400 / proporcion), 220 / proporcion);
+  return { ancho: Math.round(a * proporcion), alto: Math.round(a) };
+}
+
+// --- Colores de un diseño de campaña ---
+
+/** Lo que el hero toma del diseño de una campaña; se calcula al subirlo (coloresDiseno en imagenes.ts). */
+export interface Colores {
+  /** Promedio del diseño: el fondo mientras carga la imagen. */
+  fondo: string;
+  /** Su color vivo que más contrasta con el fondo (mínimo 4.5:1, el de texto chico): brillo, acentos, barras y botón. */
+  acento: string;
+  /** Texto legible sobre el acento (el del botón principal). */
+  textoAcento: string;
+  /** Diseño claro: el texto del hero pasa a oscuro. */
+  claro: boolean;
+}
+
+type Rgb = [number, number, number];
+const MARCA: Rgb = [0x00, 0x66, 0xdd]; // --color-marca, para diseños sin colores vivos
+const TINTA: Rgb = [0x0b, 0x12, 0x20]; // --color-tinta
+const BLANCO: Rgb = [255, 255, 255];
+
+const hex = (c: Rgb) => `#${c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
+const lineal = (v: number) => (v / 255 <= 0.04045 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
+const luminancia = ([r, g, b]: Rgb) => 0.2126 * lineal(r) + 0.7152 * lineal(g) + 0.0722 * lineal(b);
+/** Contraste WCAG entre dos colores, de 1 a 21. */
+export const contraste = (a: Rgb, b: Rgb) => {
+  const [x, y] = [luminancia(a), luminancia(b)].sort((m, n) => n - m) as [number, number];
+  return (x + 0.05) / (y + 0.05);
+};
+const mezclar = (a: Rgb, b: Rgb, t: number) => a.map((v, i) => v + (b[i]! - v) * t) as Rgb;
+
+/**
+ * Colores de un diseño a partir de sus píxeles RGB (basta una miniatura). Los colores vivos se agrupan en 24 tonos
+ * pesados por saturación × brillo; de los tonos con peso, el acento es el que más contrasta con el promedio (en un
+ * fondo rojo con amarillo gana el amarillo). Si el diseño es gris, el azul de la marca. Al final se oscurece (diseño
+ * claro) o aclara (oscuro) hasta 4.5:1 con el promedio, lo que pide el texto chico (la etiqueta va en el acento).
+ */
+export function paletaDiseno(pixeles: ArrayLike<number>): Colores {
+  const n = Math.floor(pixeles.length / 3);
+  const suma: Rgb = [0, 0, 0];
+  const tonos = Array.from({ length: 24 }, () => ({ peso: 0, rgb: [0, 0, 0] as Rgb }));
+  let vivo = 0;
+  for (let i = 0; i < n; i++) {
+    const c: Rgb = [pixeles[i * 3]!, pixeles[i * 3 + 1]!, pixeles[i * 3 + 2]!];
+    c.forEach((v, j) => (suma[j] += v));
+    const max = Math.max(...c);
+    const rango = max - Math.min(...c);
+    if (!rango) continue;
+    const [r, g, b] = c;
+    const h = max === r ? ((g - b) / rango + 6) % 6 : max === g ? (b - r) / rango + 2 : (r - g) / rango + 4;
+    const peso = (rango / max) * (max / 255);
+    const tono = tonos[Math.floor(h * 4) % 24]!;
+    tono.peso += peso;
+    c.forEach((v, j) => (tono.rgb[j] += v * peso));
+    vivo += peso;
+  }
+  const fondo = suma.map((v) => v / n) as Rgb;
+  const claro = contraste(fondo, TINTA) > contraste(fondo, BLANCO);
+  const mayor = Math.max(...tonos.map((t) => t.peso));
+  // ponytail: umbrales fijos (4 % de color vivo; tonos con al menos 15 % del peso del mayor). Ajustar si un diseño real confunde.
+  const candidatos = tonos.filter((t) => t.peso >= mayor * 0.15).map((t) => t.rgb.map((v) => v / t.peso) as Rgb);
+  let acento = vivo / n > 0.04 ? candidatos.reduce((a, b) => (contraste(b, fondo) > contraste(a, fondo) ? b : a)) : MARCA;
+  for (let paso = 0; paso < 30 && contraste(acento, fondo) < 4.5; paso++) acento = mezclar(acento, claro ? TINTA : BLANCO, 0.1);
+  return {
+    fondo: hex(fondo),
+    acento: hex(acento),
+    textoAcento: contraste(acento, BLANCO) >= contraste(acento, TINTA) ? '#ffffff' : hex(TINTA),
+    claro,
+  };
 }
 
 /** Segundos hasta la fecha futura más cercana (inicio o fin de algo programado), entre 1 s y el tope. */

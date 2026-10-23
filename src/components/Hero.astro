@@ -4,17 +4,24 @@ import Enfasis from './Enfasis.astro';
 import Volumen from './Volumen.astro';
 import { encuadreHero } from '../lib/contenido';
 
-// Por defecto: los productos elegidos en el admin, que rotan; cada uno con marca de agua y sus accesorios con imagen.
-// Con una campaña vigente: su imagen estática (4:3) en lugar del visual; textos y botones siguen siendo HTML.
+// Los productos elegidos en el admin rotan siempre; cada uno con marca de agua y sus accesorios con imagen.
+// Con una campaña vigente, su diseño cubre el hero y el hero se pinta con los colores que se sacaron de él al subirlo:
+// acento en brillos, marca de agua, barras y botón; texto oscuro si el diseño es claro. Textos y botones siguen en HTML.
 const { hero } = Astro.locals.sitio;
+const { campana } = hero;
+const colores = campana?.colores;
+const claro = colores?.claro ?? false;
+const pintura =
+  colores &&
+  `--color-marca: ${colores.acento}; --color-marca-claro: ${colores.acento}; --texto-marca: ${colores.textoAcento}; background-color: ${colores.fondo}`;
 // ponytail: el volumen 3D está hecho a la medida de la foto del MX3 (el abanico de su pantalla, detrás de la tapa) y
 // solo va con él. Otro equipo necesitaría su propio ajuste en Volumen.astro y su slug aquí.
 const CON_VOLUMEN = 'mx3';
 // Ancho con que se ve la foto: el del recuadro 4:3, o `zoom` veces más si es un recorte.
 const sizes = (zoom: number) =>
   `(min-width: 1440px) ${Math.round(450 * zoom)}px, (min-width: 1280px) ${Math.round(375 * zoom)}px, (min-width: 1024px) calc((50vw - 9rem) * ${zoom}), (min-width: 768px) ${Math.round(360 * zoom)}px, calc((100vw - 6.5rem) * ${zoom})`;
-const productos = (hero.tipo === 'producto' ? hero.productos : []).map((p) => {
-  // Equipos altos: la foto se agranda y se corre para que el recuadro muestre solo su parte de arriba.
+const productos = hero.productos.map((p) => {
+  // Equipos altos: la foto se corre y se escala para que el equipo, completo, ocupe el alto del recuadro.
   const ventana = encuadreHero(p.imagen.contenido);
   const zoom = ventana ? +(p.imagen.width / ventana.ancho).toFixed(3) : 1;
   return {
@@ -25,10 +32,32 @@ const productos = (hero.tipo === 'producto' ? hero.productos : []).map((p) => {
   };
 });
 // La campaña puede traer su producto ya elegido en el formulario.
-const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : undefined;
+const preseleccion = campana?.producto ?? undefined;
 ---
 
-<section id="inicio" class="oscuro relative overflow-clip pt-28 pb-14 md:pt-32 lg:pt-36 lg:pb-24" aria-labelledby="titulo-hero">
+<section
+  id="inicio"
+  class:list={['relative isolate overflow-clip pt-28 pb-14 md:pt-32 lg:pt-36 lg:pb-24', !claro && 'oscuro', campana && 'con-campana', claro && 'claro']}
+  style={pintura || undefined}
+  aria-labelledby="titulo-hero"
+>
+  {
+    campana && (
+      <div class="diseno" aria-hidden="true">
+        <Image
+          src={campana.fondo.src}
+          width={campana.fondo.width}
+          height={campana.fondo.height}
+          alt=""
+          widths={[640, 960, 1280, 1920, 2560]}
+          sizes="100vw"
+          quality={75}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    )
+  }
   <div class="contenedor hero-grid">
     <div class="hero-texto">
       {hero.etiqueta && <p class="etiqueta">{hero.etiqueta}</p>}
@@ -37,22 +66,6 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     </div>
 
     {
-      hero.tipo === 'campana' ? (
-        <div class="hero-visual hero-campana">
-          <Image
-            src={hero.imagen.src}
-            width={hero.imagen.width}
-            height={hero.imagen.height}
-            alt={hero.imagenAlt}
-            widths={[640, 828, 1080, 1200, 1920]}
-            sizes="(min-width: 1440px) 640px, (min-width: 1024px) calc(50vw - 3rem), (min-width: 768px) 576px, calc(100vw - 2rem)"
-            quality={80}
-            loading="eager"
-            fetchpriority="high"
-            class="campana"
-          />
-        </div>
-      ) : (
         productos.length > 0 && (
           <div class="hero-visual" data-rotacion={productos.length > 1 || undefined}>
             {productos.map((producto, i) => {
@@ -64,21 +77,23 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
                   <span class="marca-agua" aria-hidden="true" style={`--letras: ${producto.nombre.length}`}>
                     {producto.nombre}
                   </span>
-                  <div class:list={['foto', producto.recorte && 'recorte']} style={producto.recorte || undefined}>
-                    <Diferida>
-                      <Image
-                        src={producto.imagen.src}
-                        width={producto.imagen.width}
-                        height={producto.imagen.height}
-                        alt={producto.imagenAlt}
-                        widths={[640, 828, 1080, 1200]}
-                        sizes={producto.sizes}
-                        quality={80}
-                        loading="eager"
-                        fetchpriority={i === 0 ? 'high' : 'low'}
-                        class="equipo"
-                      />
-                    </Diferida>
+                  <div class="sombra">
+                    <div class:list={['foto', producto.recorte && 'recorte']} style={producto.recorte || undefined}>
+                      <Diferida>
+                        <Image
+                          src={producto.imagen.src}
+                          width={producto.imagen.width}
+                          height={producto.imagen.height}
+                          alt={producto.imagenAlt}
+                          widths={[640, 828, 1080, 1200]}
+                          sizes={producto.sizes}
+                          quality={80}
+                          loading="eager"
+                          fetchpriority={i === 0 ? 'high' : 'low'}
+                          class="equipo"
+                        />
+                      </Diferida>
+                    </div>
                   </div>
                   {producto.accesorios.length > 0 && (
                     <ul class="transductores" role="list">
@@ -106,7 +121,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
                       ))}
                     </ul>
                   )}
-                  {producto.slug === CON_VOLUMEN && <Volumen />}
+                  {producto.slug === CON_VOLUMEN && <Volumen ligero={!!campana} />}
                 </div>
               );
             })}
@@ -127,12 +142,13 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
             )}
           </div>
         )
-      )
     }
 
     <div class="hero-acciones">
       <a href="#contacto" class="btn btn-primario" data-solicitud="Cotización" data-equipo={preseleccion}>{hero.ctaPrincipal}</a>
-      <a href="#contacto" class="btn btn-contorno" data-solicitud="Demo" data-equipo={preseleccion}>{hero.ctaSecundario}</a>
+      <a href="#contacto" class:list={['btn', claro ? 'btn-claro' : 'btn-contorno']} data-solicitud="Demo" data-equipo={preseleccion}>
+        {hero.ctaSecundario}
+      </a>
     </div>
   </div>
 </section>
@@ -229,8 +245,20 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
   .diapositiva {
     display: contents;
   }
-  .foto {
+  /* La sombra va en una envoltura, fuera de la máscara de .recorte: en Chromium un filtro dentro de ella se comía lo que
+     hay detrás y se veía un rectángulo sobre el brillo o el diseño de una campaña (2026-10-22). */
+  .sombra {
     grid-area: 1 / 1;
+    filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
+  }
+  /* Campaña: el equipo siempre se despega del diseño, aunque compartan tono. En uno oscuro lo rodea el brillo del acento
+     (separa sus partes oscuras, como las pantallas); en uno claro, una sombra (separa las blancas, como la carcasa). */
+  .con-campana .sombra {
+    filter: drop-shadow(0 0 1.25rem color-mix(in srgb, var(--color-marca) 45%, transparent))
+      drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
+  }
+  .con-campana.claro .sombra {
+    filter: drop-shadow(0 0 1rem rgb(11 18 32 / 0.4)) drop-shadow(0 1.25rem 1.5rem rgb(11 18 32 / 0.25));
   }
   .transductores {
     grid-area: 1 / 2;
@@ -284,12 +312,35 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     pointer-events: none;
     user-select: none;
   }
-  .hero-campana {
-    grid-template-columns: minmax(0, 1fr);
+  /* Campaña: su diseño cubre todo el hero, detrás del contenido; un velo del color del texto contrario asegura que se
+     lea encima de cualquier diseño. En celular (texto arriba, productos al centro, botones abajo) el velo va de arriba
+     abajo; en escritorio, de izquierda a derecha. El recorte lo hace object-fit: en celular se ve el centro. */
+  .con-campana {
+    --velo: 3 6 13; /* --color-negro */
   }
-  .campana {
+  .con-campana.claro {
+    --velo: 255 255 255;
+  }
+  .diseno {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .diseno :global(img) {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+  }
+  .diseno::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgb(var(--velo) / 0.72), rgb(var(--velo) / 0.3) 50%, rgb(var(--velo) / 0.55));
+  }
+  @media (width >= 64rem) {
+    .diseno::after {
+      background: linear-gradient(90deg, rgb(var(--velo) / 0.75), rgb(var(--velo) / 0.35) 50%, rgb(var(--velo) / 0.1));
+    }
   }
   /* Todas en un recuadro 4:3 (las cuadradas quedan centradas), así la rotación no mueve nada. */
   .equipo {
@@ -298,15 +349,12 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     height: auto;
     aspect-ratio: 4 / 3;
     object-fit: contain;
-    filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
   }
-  /* Equipos altos: solo su parte de arriba (encuadreHero), que se desvanece hacia abajo en vez de cortarse en seco. */
+  /* Equipos altos: completos, al alto del recuadro (encuadreHero); lo que queda fuera es solo margen transparente. */
   .recorte {
     position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(#000 65%, transparent);
-    mask-image: linear-gradient(#000 65%, transparent);
   }
   .recorte .equipo {
     position: absolute;
@@ -328,7 +376,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     --tallo: 0.75rem;
     --rotulo: 1.25rem;
     --hueco: 0.75rem;
-    --trazo: color-mix(in srgb, var(--color-roto) 45%, transparent);
+    --trazo: color-mix(in srgb, currentColor 45%, transparent); /* del color del texto: también sobre un diseño claro */
     position: relative;
     display: grid;
     gap: var(--hueco);
@@ -485,7 +533,7 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     cursor: pointer;
   }
   .barra {
-    --pista: color-mix(in srgb, var(--color-roto) 25%, transparent);
+    --pista: color-mix(in srgb, currentColor 25%, transparent);
     width: 2.75rem;
     align-items: center;
     padding-inline: 0.25rem;
@@ -516,10 +564,10 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
   }
   @media (hover: hover) {
     .barra:hover {
-      --pista: color-mix(in srgb, var(--color-roto) 50%, transparent);
+      --pista: color-mix(in srgb, currentColor 50%, transparent);
     }
     .pausa:hover {
-      color: var(--color-roto);
+      color: inherit;
     }
   }
   /* 6 s por producto. Se congela con el botón, con el foco de teclado adentro o, con mouse, al pasar encima. */

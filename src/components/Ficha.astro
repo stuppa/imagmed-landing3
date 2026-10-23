@@ -254,54 +254,6 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
       </section>
     )}
 
-    <!-- TRANSDUCTORES Y COMPONENTES -->
-    {equipo.accesorios.length > 0 && (
-      <section class="seccion" aria-labelledby="titulo-transductores">
-        <div class="contenedor">
-          <div data-reveal>
-            <Encabezado
-              etiqueta="Configuración"
-              titulo={`${equipo.accesoriosTitulo} con *${equipo.nombreCompleto}*.`}
-              id="titulo-transductores"
-            >
-              <p class="texto-suave mt-3 max-w-xl">
-                Configura tu equipo con lo necesario para las especialidades de tu centro médico.
-              </p>
-            </Encabezado>
-          </div>
-
-          <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
-            {equipo.accesorios.map((t) => (
-              <div class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 text-center">
-                {t.imagen ? (
-                  <div class="mx-auto mb-4 size-20 overflow-hidden rounded-full bg-slate-50 p-2 border border-slate-100 grid place-items-center">
-                    <Image
-                      src={t.imagen.src}
-                      width={t.imagen.width}
-                      height={t.imagen.height}
-                      alt={t.tipo}
-                      widths={[96, 256]}
-                      sizes="80px"
-                      quality={80}
-                      class="h-full w-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div class="mx-auto mb-4 grid size-16 place-items-center rounded-full bg-marca/10 text-marca font-bold">
-                    {t.tipo.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-
-                <h3 class="text-base font-bold text-tinta">{t.tipo}</h3>
-                {t.modelo && <span class="text-xs font-mono text-marca font-semibold mt-0.5">{t.modelo}</span>}
-                <p class="texto-suave mt-2 text-xs leading-relaxed flex-1">{t.descripcion}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    )}
-
     <!-- BENEFICIOS CON IMAGMED NACIONAL -->
     <section class="seccion bg-slate-100 border-y border-slate-200" aria-labelledby="titulo-beneficios">
       <div class="contenedor">

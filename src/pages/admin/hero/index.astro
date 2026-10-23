@@ -44,7 +44,10 @@ const estado = (c: FilaCampana) =>
 <Admin titulo="Hero y campañas" error={resultado}>
   <form method="post" class="panel">
     <h2>Hero por defecto</h2>
-    <p class="ayuda mb-4">Se ve cuando no hay una campaña activa: el diseño de siempre con los productos que elijas, uno tras otro.</p>
+    <p class="ayuda mb-4">
+      Los productos que elijas rotan uno tras otro, también durante una campaña, salvo que esa campaña los apague. Estos textos se
+      ven cuando no hay campaña activa, sobre el diseño de siempre.
+    </p>
     <div class="rejilla">
       <fieldset class="ancho grid gap-3 rounded-lg border border-slate-200 p-4 sm:grid-cols-3 lg:grid-cols-5">
         <legend class="rotulo px-1">Productos que rotan</legend>
@@ -67,6 +70,10 @@ const estado = (c: FilaCampana) =>
         <p class="ayuda col-span-full">
           Se turnan cada 6 segundos en este orden: tus más vendidos, la promoción del mes o lo de temporada. Cada uno lleva su imagen, su
           nombre como marca de agua y sus accesorios con imagen. Con uno solo no rota; sin ninguno, va el primer producto destacado.
+        </p>
+        <p class="ayuda col-span-full">
+          El encuadre es automático: los equipos altos (carros de ultrasonido, rayos X rodables, ortopantomógrafos) se ven en
+          acercamiento, solo su parte de arriba; los demás, completos. Para que se vean bien, la foto del producto debe ser PNG sin fondo.
         </p>
       </fieldset>
       <label>
@@ -100,8 +107,8 @@ const estado = (c: FilaCampana) =>
       <a href="/admin/hero/nueva" class="btn btn-primario">Nueva campaña</a>
     </div>
     <p class="ayuda mt-2">
-      Durante sus fechas, la imagen de la campaña (4:3) reemplaza al producto y sus textos y botones reemplazan a los de arriba.
-      Dos campañas no pueden encimarse.
+      Durante sus fechas, su diseño cubre todo el hero y sus textos y botones reemplazan a los de arriba. Los productos siguen
+      rotando encima (cada campaña puede apagarlos) y el hero toma solo los colores del diseño. Dos campañas no pueden encimarse.
     </p>
     <div class="scroll mt-4">
       <table class="tabla">

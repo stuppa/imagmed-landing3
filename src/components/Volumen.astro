@@ -4,9 +4,15 @@
 // sin JS o sin WebGL queda la versión solo CSS: el abanico repetido en cortes que giran sobre el transductor.
 // Decorativo: sin imágenes ni texto, detrás del equipo, así nunca compite con la foto (LCP).
 const planos = [-27, -18, -9, 9, 18, 27]; // sin 0°: ahí descansa el corte activo (evita planos coplanares)
+
+interface Props {
+  /** Solo la versión CSS: toma los colores de la página (una campaña), el 3D trae el azul de la marca fijo en el shader. */
+  ligero?: boolean;
+}
+const { ligero = false } = Astro.props;
 ---
 
-<div class="volumen-3d" aria-hidden="true" data-volumen-3d></div>
+{!ligero && <div class="volumen-3d" aria-hidden="true" data-volumen-3d></div>}
 <div class="volumen" aria-hidden="true">
   <div class="escena">
     {
