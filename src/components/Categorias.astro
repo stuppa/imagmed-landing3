@@ -1,0 +1,219 @@
+---
+import { Image } from 'astro:assets';
+import Encabezado from './Encabezado.astro';
+import Icono from './Icono.astro';
+import { productos, seccionCategorias as s } from '../data/sitio';
+
+// Una por categoría, con la foto de su primer equipo (el orden lo pone el admin).
+// ponytail: las categorías sin productos no salen porque no tienen foto; aparecen solas cuando tengan uno.
+const lista = Astro.locals.sitio.categorias.flatMap((c) => (c.productos[0] ? [{ ...c, foto: c.productos[0].imagen }] : []));
+---
+
+<section id="categorias" class="seccion bg-white" aria-labelledby="titulo-categorias">
+  <div class="contenedor">
+    <div class="grid gap-8 lg:grid-cols-12 lg:items-end" data-reveal>
+      <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-categorias" class="lg:col-span-7" />
+      {/* Abre el buscador del encabezado (Header.astro). */}
+      <div class="max-w-md lg:col-span-4 lg:col-start-9">
+        <p id="ayuda-buscar" class="texto-suave text-sm">{s.buscarAyuda}</p>
+        <button type="button" popovertarget="buscador" aria-describedby="ayuda-buscar" class="campo">
+          {s.buscar}
+          <Icono nombre="lupa" class="size-5" />
+        </button>
+      </div>
+    </div>
+
+    <div class="@container relative mt-10 lg:mt-14">
+      <ul class="fila" role="list" data-reveal="lista">
+        {
+          lista.map((c) => (
+            <li>
+              <a href={`/productos/${c.slug}`} class="categoria">
+                <span class="foto">
+                  <span class="escuadra marco" aria-hidden="true" />
+                  <Image
+                    src={c.foto.src}
+                    width={c.foto.width}
+                    height={c.foto.height}
+                    alt=""
+                    widths={[128, 256, 384]}
+                    sizes="(min-width: 64rem) 9rem, (min-width: 48rem) 20vw, 37vw"
+                    quality={80}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
+                {c.nombre}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="mt-10 flex justify-center lg:mt-14">
+      <a href="/productos" class="btn btn-claro">
+        {productos.verTodos}
+        <Icono nombre="flecha" class="size-4" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Parece un campo de texto, pero abre el buscador del encabezado. */
+  .campo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    min-height: 3rem;
+    margin-top: 0.25rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-tinta) 60%, transparent);
+    color: var(--color-gris);
+    font-size: 1.0625rem;
+    text-align: left;
+    cursor: text;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .campo :global(svg) {
+    flex: none;
+    color: var(--color-tinta);
+  }
+  .campo:hover {
+    border-color: var(--color-marca);
+    color: var(--color-tinta);
+  }
+
+  /* Una sola fila. Si no caben todas, se desliza hacia los lados; en celular siempre, y se asoma la siguiente.
+     La sangría deja lugar al contorno del foco y, en celular, lleva la fila hasta la orilla de la pantalla. */
+  .fila {
+    --sangria: 1rem;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 38%;
+    gap: 1rem;
+    margin-inline: calc(var(--sangria) * -1);
+    padding: 0.5rem var(--sangria);
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--sangria);
+    scrollbar-width: none;
+  }
+  .fila > li {
+    scroll-snap-align: start;
+  }
+  /* Tablet: columnas a la medida para que la última visible se asome a la mitad y no quede cortada en el nombre.
+     --col va en cqi (ancho del contenido de la fila) porque también centra las flechas en las fotos.
+     ponytail: cuentas para las 8 categorías de hoy; con muchas menos, las de 48–78rem quedan angostas. */
+  @media (width >= 48rem) {
+    .fila {
+      --sangria: 0.5rem;
+      --col: calc((100cqi - 4rem) / 4.5);
+      grid-auto-columns: var(--col);
+    }
+  }
+  @media (width >= 64rem) {
+    .fila {
+      --col: calc((100cqi - 6rem) / 6.5);
+    }
+  }
+  @media (width >= 78rem) {
+    .fila {
+      --col: 8.5rem;
+      grid-auto-columns: minmax(8.5rem, 1fr);
+    }
+  }
+
+  .categoria {
+    display: block;
+    font-size: 1rem;
+    line-height: 1.35;
+    text-align: center;
+    text-wrap: balance;
+    transition: color 0.2s ease;
+  }
+  .categoria:hover {
+    color: var(--color-marca);
+  }
+  .foto {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    margin-bottom: 0.75rem;
+  }
+  .foto :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  /* Encuadre en escuadra al pasar el cursor, como en las tarjetas del catálogo. */
+  .marco {
+    position: absolute;
+    inset: 0;
+    --l: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .categoria:is(:hover, :focus-visible) .marco {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .foto :global(img) {
+      transition: translate 0.3s ease;
+    }
+    .categoria:hover .foto :global(img) {
+      translate: 0 -0.25rem;
+    }
+  }
+
+  /* Con mouse no hay gesto para deslizar: barra delgada y, donde existen (Chrome), flechas nativas en las orillas.
+     Las flechas solo se ven si hay hacia dónde avanzar. */
+  @media (hover: hover) and (pointer: fine) {
+    .fila {
+      scrollbar-width: thin;
+      scrollbar-color: color-mix(in srgb, var(--color-tinta) 20%, transparent) transparent;
+    }
+  }
+  @supports selector(::scroll-button(*)) {
+    @media (width >= 48rem) and (hover: hover) and (pointer: fine) {
+      .fila {
+        scrollbar-width: none;
+      }
+      /* Centradas en las fotos (cuadradas, del ancho de la columna; desde 78rem solo hay flechas si las columnas están en su mínimo). */
+      .fila::scroll-button(*) {
+        position: absolute;
+        top: calc(0.5rem + var(--col) / 2 - 1.375rem);
+        z-index: 1;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 1px solid color-mix(in srgb, var(--color-tinta) 12%, transparent);
+        border-radius: 999px;
+        background: #fff center / 1.25rem no-repeat;
+        box-shadow: 0 0.75rem 1.5rem -0.75rem color-mix(in srgb, var(--color-tinta) 40%, transparent);
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+      }
+      .fila::scroll-button(*):hover {
+        border-color: var(--color-marca);
+      }
+      .fila::scroll-button(*):disabled {
+        visibility: hidden;
+      }
+      .fila::scroll-button(inline-start) {
+        content: '' / 'Categorías anteriores';
+        left: -1.375rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B1220' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E");
+      }
+      .fila::scroll-button(inline-end) {
+        content: '' / 'Más categorías';
+        right: -1.375rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B1220' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+      }
+    }
+  }
+</style>

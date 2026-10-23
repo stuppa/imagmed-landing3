@@ -308,10 +308,11 @@
 }
 
 /* Títulos palabra por palabra (Enfasis.astro): al cargar la página o, dentro de un data-reveal, cuando su bloque entra
-   en pantalla (y sube). Solo opacity: con inline-block (para translate) Chrome deja de equilibrar los renglones. */
+   en pantalla. Arranca cuando el bloque ya casi apareció; si van juntos, su fundido tapa la cascada y no se nota.
+   Solo opacity: con inline-block (para translate) Chrome deja de equilibrar los renglones. */
 @media screen and (prefers-reduced-motion: no-preference) {
   .palabra {
-    animation: palabra 0.5s calc(var(--p, 0) * 60ms) ease-out backwards;
+    animation: palabra 0.6s calc(0.25s + var(--p, 0) * 90ms) ease-out backwards;
   }
   .js [data-reveal]:not(.is-visible) .palabra {
     animation: none;
