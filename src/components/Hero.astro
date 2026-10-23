@@ -245,8 +245,8 @@ const preseleccion = campana?.producto ?? undefined;
   .diapositiva {
     display: contents;
   }
-  /* La sombra va en una envoltura, fuera de la máscara de .recorte: en Chromium un filtro dentro de ella se comía lo que
-     hay detrás y se veía un rectángulo sobre el brillo o el diseño de una campaña (2026-10-22). */
+  /* La sombra va en una envoltura, fuera del recuadro que recorta (.recorte): adentro se cortaba en su orilla y, en
+     Chromium, un filtro dentro de él se comía lo que hay detrás y se veía un rectángulo (2026-10-22). */
   .sombra {
     grid-area: 1 / 1;
     filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
