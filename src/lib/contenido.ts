@@ -32,15 +32,15 @@ export interface Caja {
 }
 
 /**
- * Equipos altos (carros, rayos X móviles…): completos se ven chicos, así que el hero muestra solo la parte de arriba,
- * en una ventana 4:3 un poco más ancha que el equipo. `equipo` es la caja del equipo sin el fondo transparente.
- * Devuelve la ventana en píxeles de la imagen, o null para mostrarla completa.
+ * Equipos altos (carros, rayos X móviles…): completos, nunca cortados, pero sin el margen transparente de la foto, que
+ * los achicaba. La ventana 4:3 mide el alto del equipo más 2.5 % arriba y abajo, centrada en él. `equipo` es la caja
+ * del equipo sin el fondo transparente. Devuelve la ventana en píxeles de la imagen, o null para mostrarla completa.
  */
 export function encuadreHero(equipo: Caja | null | undefined): Caja | null {
   if (!equipo || equipo.alto < equipo.ancho * 1.3) return null;
-  const ancho = equipo.ancho * 1.2;
-  const alto = (ancho * 3) / 4;
-  return { x: equipo.x - (ancho - equipo.ancho) / 2, y: equipo.y - alto * 0.04, ancho, alto };
+  const alto = equipo.alto * 1.05;
+  const ancho = (alto * 4) / 3;
+  return { x: equipo.x + (equipo.ancho - ancho) / 2, y: equipo.y + (equipo.alto - alto) / 2, ancho, alto };
 }
 
 /** Segundos hasta la fecha futura más cercana (inicio o fin de algo programado), entre 1 s y el tope. */

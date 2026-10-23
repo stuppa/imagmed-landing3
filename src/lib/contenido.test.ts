@@ -49,9 +49,10 @@ test('productosHero: los elegidos en su orden, sin los que ya no se muestran; si
   assert.deepEqual(productosHero([], []), []);
 });
 
-test('encuadreHero: un equipo alto se recorta a su parte de arriba en 4:3; uno ancho o sin caja va completo', () => {
-  // Carro de 500×1000 dentro de un lienzo transparente: ventana de 600×450 centrada y un poco arriba de él.
-  assert.deepEqual(encuadreHero({ x: 300, y: 100, ancho: 500, alto: 1000 }), { x: 250, y: 82, ancho: 600, alto: 450 });
+test('encuadreHero: un equipo alto va completo, al alto del recuadro 4:3; uno ancho o sin caja va como viene', () => {
+  // Carro de 500×1000 dentro de un lienzo transparente: ventana 4:3 de 1050 de alto (el carro y 2.5 % arriba y abajo),
+  // centrada en él. Ningún pedazo del carro queda fuera.
+  assert.deepEqual(encuadreHero({ x: 300, y: 100, ancho: 500, alto: 1000 }), { x: -150, y: 75, ancho: 1400, alto: 1050 });
   assert.equal(encuadreHero({ x: 0, y: 0, ancho: 1385, alto: 1149 }), null); // portátil tipo laptop
   assert.equal(encuadreHero(undefined), null);
 });

@@ -14,7 +14,7 @@ const CON_VOLUMEN = 'mx3';
 const sizes = (zoom: number) =>
   `(min-width: 1440px) ${Math.round(450 * zoom)}px, (min-width: 1280px) ${Math.round(375 * zoom)}px, (min-width: 1024px) calc((50vw - 9rem) * ${zoom}), (min-width: 768px) ${Math.round(360 * zoom)}px, calc((100vw - 6.5rem) * ${zoom})`;
 const productos = (hero.tipo === 'producto' ? hero.productos : []).map((p) => {
-  // Equipos altos: la foto se agranda y se corre para que el recuadro muestre solo su parte de arriba.
+  // Equipos altos: la foto se corre y se escala para que el equipo, completo, ocupe el alto del recuadro.
   const ventana = encuadreHero(p.imagen.contenido);
   const zoom = ventana ? +(p.imagen.width / ventana.ancho).toFixed(3) : 1;
   return {
@@ -64,21 +64,23 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
                   <span class="marca-agua" aria-hidden="true" style={`--letras: ${producto.nombre.length}`}>
                     {producto.nombre}
                   </span>
-                  <div class:list={['foto', producto.recorte && 'recorte']} style={producto.recorte || undefined}>
-                    <Diferida>
-                      <Image
-                        src={producto.imagen.src}
-                        width={producto.imagen.width}
-                        height={producto.imagen.height}
-                        alt={producto.imagenAlt}
-                        widths={[640, 828, 1080, 1200]}
-                        sizes={producto.sizes}
-                        quality={80}
-                        loading="eager"
-                        fetchpriority={i === 0 ? 'high' : 'low'}
-                        class="equipo"
-                      />
-                    </Diferida>
+                  <div class="sombra">
+                    <div class:list={['foto', producto.recorte && 'recorte']} style={producto.recorte || undefined}>
+                      <Diferida>
+                        <Image
+                          src={producto.imagen.src}
+                          width={producto.imagen.width}
+                          height={producto.imagen.height}
+                          alt={producto.imagenAlt}
+                          widths={[640, 828, 1080, 1200]}
+                          sizes={producto.sizes}
+                          quality={80}
+                          loading="eager"
+                          fetchpriority={i === 0 ? 'high' : 'low'}
+                          class="equipo"
+                        />
+                      </Diferida>
+                    </div>
                   </div>
                   {producto.accesorios.length > 0 && (
                     <ul class="transductores" role="list">
@@ -229,8 +231,11 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
   .diapositiva {
     display: contents;
   }
-  .foto {
+  /* La sombra va en una envoltura, fuera del recuadro que recorta (.recorte): adentro se cortaba en su orilla y, en
+     Chromium, un filtro dentro de él se comía lo que hay detrás y se veía un rectángulo. */
+  .sombra {
     grid-area: 1 / 1;
+    filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
   }
   .transductores {
     grid-area: 1 / 2;
@@ -298,15 +303,12 @@ const preseleccion = hero.tipo === 'campana' ? (hero.producto ?? undefined) : un
     height: auto;
     aspect-ratio: 4 / 3;
     object-fit: contain;
-    filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.55));
   }
-  /* Equipos altos: solo su parte de arriba (encuadreHero), que se desvanece hacia abajo en vez de cortarse en seco. */
+  /* Equipos altos: completos, al alto del recuadro (encuadreHero); lo que queda fuera es solo margen transparente. */
   .recorte {
     position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(#000 65%, transparent);
-    mask-image: linear-gradient(#000 65%, transparent);
   }
   .recorte .equipo {
     position: absolute;
