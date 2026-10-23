@@ -309,6 +309,46 @@ const textos = JSON.stringify({
     background: #fff;
     box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-marca) 30%, transparent);
   }
+
+  /* Al entrar, el fondo azul noche se abre del ancho del contenido hasta las orillas de la pantalla (como la foto de
+     polymediccompany.com): dos franjas del color de la página tapan los lados y se encogen hacia afuera con el scroll.
+     transform y no clip-path, que repinta la sección; ni scale suelto, que Chrome no manda a la GPU cuando va ligado
+     al scroll (sí con transform, 2026-10-23). Debajo de 78rem el contenido casi toca la orilla y no habría qué abrir. */
+  @media (prefers-reduced-motion: no-preference) and (width > 78rem) {
+    @supports (animation-timeline: view()) {
+      #retorno {
+        position: relative;
+        view-timeline: --retorno;
+      }
+      /* ponytail: franjas del color de la página; si las secciones vecinas cambian de fondo, cambia aquí. */
+      #retorno::before,
+      #retorno::after {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        /* La orilla de .contenedor (75rem de ancho máximo) menos 1.5rem de fondo oscuro alrededor del contenido. */
+        width: calc((100% - 75rem) / 2 - 1.5rem);
+        background: var(--color-roto);
+        pointer-events: none;
+        animation: abrir-fondo linear both; /* el shorthand va antes: reinicia animation-timeline */
+        animation-timeline: --retorno;
+        animation-range: entry 10% entry 80%;
+      }
+      #retorno::before {
+        left: 0;
+        transform-origin: left;
+      }
+      #retorno::after {
+        right: 0;
+        transform-origin: right;
+      }
+    }
+  }
+  @keyframes abrir-fondo {
+    to {
+      transform: scaleX(0);
+    }
+  }
 </style>
 
 <script>

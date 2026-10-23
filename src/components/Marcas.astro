@@ -4,7 +4,7 @@ import Enfasis from './Enfasis.astro';
 import { marcas } from '../data/sitio';
 import { tamanoLogo } from '../lib/contenido';
 
-const lista = Astro.locals.sitio.marcas.map((m) => ({ ...m, tamano: m.logo && tamanoLogo(m.logo.width, m.logo.height) }));
+const lista = Astro.locals.sitio.marcas.slice(0, 5).map((m) => ({ ...m, tamano: m.logo && tamanoLogo(m.logo.width, m.logo.height) }));
 ---
 
 <section id="marcas" class="seccion bg-white text-center" aria-labelledby="titulo-marcas">
@@ -49,15 +49,22 @@ const lista = Astro.locals.sitio.marcas.map((m) => ({ ...m, tamano: m.logo && ta
     align-items: center;
     gap: 2.5rem 3rem;
   }
+  /* Escritorio: las 5 en una sola línea; si no caben, cada logo se encoge sin deformarse. */
   @media (width >= 64rem) {
     .logos {
+      flex-wrap: nowrap;
       justify-content: space-between;
+    }
+    .logos li {
+      min-width: 0;
     }
   }
   /* Medida de tamanoLogo (escritorio); en celular, un poco menor. */
   .logo {
     width: auto;
+    max-width: 100%;
     height: calc(var(--alto) * 0.8);
+    object-fit: contain;
   }
   @media (width >= 64rem) {
     .logo {

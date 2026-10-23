@@ -5,12 +5,12 @@ import wordmark from '../assets/marca/imagmed-wordmark.png';
 import { encabezado, navegacion, productos, sitio } from '../data/sitio';
 import { whatsappUrl } from '../data/contacto';
 
-const { categorias, contacto } = Astro.locals.sitio;
+const { categorias, contacto, productos: equipos } = Astro.locals.sitio;
 const wa = whatsappUrl(contacto);
 ---
 
 <header class="oscuro fixed inset-x-0 top-0 z-50 border-b border-(--linea) bg-negro lg:bg-negro/85 lg:backdrop-blur-md">
-  <div class="contenedor flex h-16 items-center gap-3 lg:gap-8">
+  <div class="contenedor flex h-16 items-center gap-3 lg:gap-6 xl:gap-8">
     <a href="/#inicio" class="logo mr-auto shrink-0 lg:mr-0">
       <Image
         src={wordmark}
@@ -59,11 +59,21 @@ const wa = whatsappUrl(contacto);
     </nav>
 
     <div class="flex items-center gap-3 sm:gap-4">
+      <button
+        type="button"
+        popovertarget="buscador"
+        aria-label={encabezado.buscar}
+        title={encabezado.buscar}
+        class="texto-suave -mx-3 grid size-11 place-items-center transition-colors hover:text-white"
+      >
+        <Icono nombre="lupa" class="size-5" />
+      </button>
       {
         wa && (
           <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno btn-chico">
             <Icono nombre="whatsapp" class="size-4.5" />
-            {encabezado.whatsapp}
+            {/* Bajo 360 px no cabe junto a la lupa: queda el icono (y el flotante). */}
+            <span class="max-[22.5rem]:sr-only">{encabezado.whatsapp}</span>
           </a>
         )
       }
@@ -87,7 +97,33 @@ const wa = whatsappUrl(contacto);
     </button>
   </div>
 
-  <nav id="menu" popover aria-label="Principal móvil" class="oscuro menu-movil">
+  <div id="buscador" popover class="oscuro hoja">
+    <form class="contenedor py-6" role="search">
+      <label class="relative block">
+        <span class="sr-only">{encabezado.buscar}</span>
+        <Icono nombre="lupa" class="texto-suave pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2" />
+        <input type="search" autofocus autocomplete="off" placeholder={encabezado.buscarEjemplo} class="campo-busqueda" />
+      </label>
+      <ul class="mt-3" role="list">
+        {
+          equipos.map((e) => (
+            <li hidden data-texto={`${e.nombreCompleto} ${e.tipo} ${e.categoria.nombre}`}>
+              <a href={`/equipos/${e.slug}`} class="resultado">
+                <span>{e.nombreCompleto}</span>
+                <span class="texto-suave text-sm">{e.tipo || e.categoria.nombre}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="sin-resultados texto-suave mt-4" hidden>
+        {encabezado.sinResultados}
+        <a href="#contacto" class="font-semibold text-marca-claro hover:text-white">{encabezado.sinResultadosCta}</a>
+      </p>
+    </form>
+  </div>
+
+  <nav id="menu" popover aria-label="Principal móvil" class="oscuro hoja menu-movil">
     <ul class="contenedor pt-2">
       <li>
         <details class="productos-movil">
@@ -360,7 +396,8 @@ const wa = whatsappUrl(contacto);
     rotate: -45deg;
   }
 
-  .menu-movil {
+  /* Hojas que bajan del encabezado: menú móvil y buscador. */
+  .hoja {
     inset: 4rem 0 auto;
     width: 100%;
     max-width: none;
@@ -372,8 +409,35 @@ const wa = whatsappUrl(contacto);
     border: 0;
     border-bottom: 1px solid var(--linea);
   }
-  .menu-movil::backdrop {
+  .hoja::backdrop {
     background: rgb(3 6 13 / 0.6);
+  }
+
+  .campo-busqueda {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 1px solid color-mix(in srgb, var(--color-roto) 22%, transparent);
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--color-roto) 4%, transparent);
+    color: #fff;
+    font-size: 1.0625rem;
+  }
+  .campo-busqueda::placeholder {
+    color: color-mix(in srgb, var(--color-roto) 45%, transparent);
+  }
+  .resultado {
+    display: flex;
+    min-height: 3rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 1rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--linea);
+  }
+  .resultado:is(:hover, :focus-visible) {
+    background: rgb(255 255 255 / 0.06);
   }
   .enlace-movil {
     display: flex;
@@ -408,8 +472,8 @@ const wa = whatsappUrl(contacto);
     .enlace-nav :global(svg) {
       transition: rotate 0.2s ease;
     }
-    .menu-movil,
-    .menu-movil::backdrop {
+    .hoja,
+    .hoja::backdrop {
       transition:
         opacity 0.2s ease,
         translate 0.2s ease,
@@ -417,20 +481,20 @@ const wa = whatsappUrl(contacto);
         display 0.2s allow-discrete;
       opacity: 0;
     }
-    .menu-movil {
+    .hoja {
       translate: 0 -0.5rem;
     }
-    .menu-movil:popover-open,
-    .menu-movil:popover-open::backdrop {
+    .hoja:popover-open,
+    .hoja:popover-open::backdrop {
       opacity: 1;
       translate: none;
     }
     @starting-style {
-      .menu-movil:popover-open,
-      .menu-movil:popover-open::backdrop {
+      .hoja:popover-open,
+      .hoja:popover-open::backdrop {
         opacity: 0;
       }
-      .menu-movil:popover-open {
+      .hoja:popover-open {
         translate: 0 -0.5rem;
       }
     }
@@ -447,6 +511,31 @@ const wa = whatsappUrl(contacto);
   menu?.addEventListener('focusout', (e) => {
     const destino = e.relatedTarget as Node | null;
     if (destino && destino !== boton && !menu.contains(destino)) menu.hidePopover();
+  });
+
+  // Buscador: filtra la lista de equipos mientras se escribe (sin acentos ni mayúsculas); Enter abre el primero.
+  // ponytail: filtro en el navegador sobre todo el catálogo (~40); con cientos de equipos, buscar en el servidor.
+  const buscador = document.getElementById('buscador');
+  const campo = buscador?.querySelector('input');
+  const items = Array.from(buscador?.querySelectorAll<HTMLLIElement>('li[data-texto]') ?? []);
+  const sinResultados = buscador?.querySelector<HTMLElement>('.sin-resultados');
+  const normalizar = (t: string) => t.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+  const textos = items.map((li) => normalizar(li.dataset.texto ?? ''));
+  campo?.addEventListener('input', () => {
+    const palabras = normalizar(campo.value).split(/\s+/).filter(Boolean);
+    let hay = 0;
+    items.forEach((li, i) => {
+      li.hidden = !palabras.length || !palabras.every((p) => textos[i].includes(p));
+      if (!li.hidden) hay++;
+    });
+    if (sinResultados) sinResultados.hidden = !palabras.length || hay > 0;
+  });
+  buscador?.querySelector('form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    items.find((li) => !li.hidden)?.querySelector('a')?.click();
+  });
+  buscador?.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) buscador.hidePopover();
   });
 
   // Al elegir una categoría, suelta el foco para que el submenú se cierre.

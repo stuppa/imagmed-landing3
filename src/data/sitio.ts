@@ -48,12 +48,24 @@ export const encabezado = {
   ctaCorto: 'Cotizar',
   whatsapp: 'WhatsApp',
   menu: 'Menú',
+  buscar: 'Buscar equipos',
+  buscarEjemplo: 'Marca, modelo o tipo de equipo',
+  sinResultados: 'No lo encontramos en el catálogo.',
+  sinResultadosCta: 'Pregúntanos por él',
 };
 
 // Botones del hero por defecto (las campañas traen los suyos).
 export const hero = {
   ctaPrincipal: 'Cotiza ahora',
   ctaSecundario: 'Solicita una demo',
+};
+
+// Categorías de la landing, antes del catálogo. El campo de búsqueda abre el buscador del encabezado.
+export const seccionCategorias = {
+  etiqueta: 'Explora por categoría',
+  titulo: '¿Qué equipo necesita *tu práctica*?',
+  buscarAyuda: 'Busca por equipo, modelo o marca',
+  buscar: 'Busca en el catálogo',
 };
 
 // Catálogo de la landing: muestra los productos marcados como destacados.
