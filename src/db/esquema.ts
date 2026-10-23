@@ -6,7 +6,7 @@
 import { sql } from 'drizzle-orm';
 import { boolean, check, index, integer, jsonb, pgEnum, pgPolicy, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { anonRole, authenticatedRole, authUsers } from 'drizzle-orm/supabase';
-import type { Caja, Grupo } from '../lib/contenido';
+import type { Caja, Colores, Grupo } from '../lib/contenido';
 
 /** Imagen del bucket «imagenes». */
 export interface Imagen {
@@ -15,6 +15,10 @@ export interface Imagen {
   alto: number;
   /** Dónde está el contenido sin el fondo transparente (lo calcula la subida); el hero lo usa para encuadrar. */
   contenido?: Caja;
+  /** La foto de un producto trae fondo en vez de ser un recorte transparente: el admin avisa (en el hero oscuro se ve un recuadro). */
+  fondo?: boolean;
+  /** Diseño de una campaña: sus colores, calculados al subirlo; el hero se pinta con ellos. */
+  colores?: Colores;
 }
 export interface Accesorio {
   tipo: string;
@@ -121,6 +125,8 @@ export const campanas = pgTable(
     imagen: jsonb().$type<Imagen>().notNull(),
     imagen_alt: text().notNull(),
     producto_id: uuid().references(() => productos.id, { onDelete: 'set null' }),
+    // Apagado: el hero muestra solo el diseño, sin los productos que rotan (p. ej. si el diseño ya trae los suyos).
+    mostrar_productos: boolean().notNull().default(true),
   },
   (t) => [
     index('campanas_producto_idx').on(t.producto_id),

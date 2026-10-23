@@ -11,7 +11,7 @@ import type {
   Imagen,
 } from '../db/esquema';
 import { hero as textosHero } from '../data/sitio';
-import { campanaActiva, productosHero, segundosHastaProximoCambio, vigente, type Grupo } from './contenido';
+import { campanaActiva, productosHero, segundosHastaProximoCambio, vigente, type Colores, type Grupo } from './contenido';
 import { clientePublico, urlImagen, type Supabase } from './supabase';
 
 // --- Filas de la base de datos: los tipos salen del esquema de Drizzle (src/db/esquema.ts) ---
@@ -61,7 +61,6 @@ export interface Producto {
   incluye: string[];
   tecnologias: { titulo: string; descripcion: string }[];
   especificacionesDetalladas: Grupo[];
-  accesoriosTitulo: string;
   accesorios: { tipo: string; modelo: string; descripcion: string; imagen: ImagenVista | null }[];
   estado: Estado;
   agotado: boolean;
@@ -70,16 +69,18 @@ export interface Producto {
   descuento: string | null;
 }
 
-interface TextosHero {
+export interface Hero {
   etiqueta: string;
   titulo: string;
   texto: string;
   ctaPrincipal: string;
   ctaSecundario: string;
+  /** Los que rotan, también durante una campaña (salvo que ella los apague: entonces ninguno). */
+  productos: Producto[];
+  rotulo: string;
+  /** Campaña vigente: su diseño cubre el hero y sus colores lo pintan; `producto` va preelegido en «Cotiza». */
+  campana: { fondo: ImagenVista; colores: Colores | null; producto: string | null } | null;
 }
-export type Hero =
-  | (TextosHero & { tipo: 'campana'; imagen: ImagenVista; imagenAlt: string; producto: string | null })
-  | (TextosHero & { tipo: 'producto'; productos: Producto[]; rotulo: string });
 
 export interface Contacto {
   whatsapp: string;
@@ -137,7 +138,6 @@ export function aProducto(
     incluye: p.incluye,
     tecnologias: p.tecnologias,
     especificacionesDetalladas: p.especificaciones_detalladas,
-    accesoriosTitulo: p.accesorios_titulo,
     accesorios: p.accesorios.map((a) => ({ ...a, imagen: a.imagen ? vistaImagen(a.imagen) : null })),
     estado: p.estado,
     agotado: p.estado === 'agotado',
@@ -178,28 +178,32 @@ export async function cargarSitio(cliente: Supabase = clientePublico(), ahora = 
     campanas.map((c) => ({ ...c, inicio: new Date(c.inicio), fin: new Date(c.fin) })),
     ahora,
   );
-  const hero: Hero = campana
-    ? {
-        tipo: 'campana',
-        etiqueta: campana.etiqueta,
-        titulo: campana.titulo,
-        texto: campana.texto,
-        ctaPrincipal: campana.cta_principal,
-        ctaSecundario: campana.cta_secundario,
-        imagen: vistaImagen(campana.imagen),
-        imagenAlt: campana.imagen_alt,
-        producto: lista.find((p) => p.id === campana.producto_id)?.nombreCompleto ?? null,
-      }
-    : {
-        tipo: 'producto',
-        etiqueta: ajustes.hero_etiqueta,
-        titulo: ajustes.hero_titulo,
-        texto: ajustes.hero_texto,
-        ctaPrincipal: textosHero.ctaPrincipal,
-        ctaSecundario: textosHero.ctaSecundario,
-        productos: productosHero(ajustes.hero_productos, lista),
-        rotulo: ajustes.hero_rotulo_accesorio,
-      };
+  const hero: Hero = {
+    ...(campana
+      ? {
+          etiqueta: campana.etiqueta,
+          titulo: campana.titulo,
+          texto: campana.texto,
+          ctaPrincipal: campana.cta_principal,
+          ctaSecundario: campana.cta_secundario,
+        }
+      : {
+          etiqueta: ajustes.hero_etiqueta,
+          titulo: ajustes.hero_titulo,
+          texto: ajustes.hero_texto,
+          ctaPrincipal: textosHero.ctaPrincipal,
+          ctaSecundario: textosHero.ctaSecundario,
+        }),
+    productos: campana && !campana.mostrar_productos ? [] : productosHero(ajustes.hero_productos, lista),
+    rotulo: ajustes.hero_rotulo_accesorio,
+    campana: campana
+      ? {
+          fondo: vistaImagen(campana.imagen),
+          colores: campana.imagen.colores ?? null,
+          producto: lista.find((p) => p.id === campana.producto_id)?.nombreCompleto ?? null,
+        }
+      : null,
+  };
 
   return {
     hero,

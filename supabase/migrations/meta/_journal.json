@@ -43,6 +43,13 @@
       "when": 1792207840175,
       "tag": "20261017033040_hero_productos",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792713616295,
+      "tag": "20261023000016_campanas_productos",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
-import { seccionCatalogo as s } from '../data/sitio';
+import { productos, seccionCatalogo as s } from '../data/sitio';
 
 const { destacados } = Astro.locals.sitio;
 ---
@@ -20,7 +20,7 @@ const { destacados } = Astro.locals.sitio;
       <ul class="carrusel" role="list">
         {
           destacados.map((e) => (
-            <li class="tarjeta">
+            <li class="tarjeta group">
               <div class="cara">
                 <div class="foto">
                   <span class="escuadra marco" aria-hidden="true" />
@@ -42,7 +42,8 @@ const { destacados } = Astro.locals.sitio;
                 <div class="flex flex-1 flex-col p-6">
                   <span class="text-xs font-semibold uppercase tracking-wider text-marca mb-1">{e.tipo || e.categoria.nombre}</span>
                   <h3 class="text-2xl font-semibold tracking-tight">
-                    <a href={`/equipos/${e.slug}`} class="-my-1.5 block py-1.5 transition-colors hover:text-marca">
+                    {/* Su ::after cubre la .cara: toda la tarjeta lleva a la ficha; «Cotizar» queda encima (z-10). */}
+                    <a href={`/equipos/${e.slug}`} class="-my-1.5 block py-1.5 transition-colors after:absolute after:inset-0 hover:text-marca">
                       {e.nombreCompleto}
                     </a>
                   </h3>
@@ -56,11 +57,11 @@ const { destacados } = Astro.locals.sitio;
                     </ul>
                   )}
                   <div class="mt-auto pt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-                    <a href={`/equipos/${e.slug}`} class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-slate-700 transition-colors hover:text-marca">
+                    <a href={`/equipos/${e.slug}`} class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-slate-700 transition-colors group-hover:text-marca">
                       <span>{s.verDetalle}</span>
                       <Icono nombre="flecha" class="size-3.5" />
                     </a>
-                    <a href="#contacto" data-equipo={e.nombreCompleto} class="btn btn-primario btn-chico">
+                    <a href="#contacto" data-equipo={e.nombreCompleto} class="btn btn-primario btn-chico z-10">
                       {e.agotado ? s.ctaAgotado : s.cta}
                     </a>
                   </div>
@@ -71,6 +72,13 @@ const { destacados } = Astro.locals.sitio;
         }
       </ul>
       <div class="progreso" aria-hidden="true"><span></span></div>
+    </div>
+
+    <div class="mt-12 flex justify-center lg:mt-16">
+      <a href="/productos" class="btn btn-claro">
+        {productos.verTodos}
+        <Icono nombre="flecha" class="size-4" />
+      </a>
     </div>
   </div>
 </section>
@@ -145,10 +153,15 @@ const { destacados } = Astro.locals.sitio;
   .insignia-agotado {
     background: var(--color-tinta);
   }
+  /* min-height: 0: WebKit le suma el padding al mínimo automático de un ítem flex con aspect-ratio y la foto
+     se salía 40 px de la tarjeta. pointer-events: none: con el cursor encima la foto flota al frente en 3D y se
+     comería el clic que va al enlace del título (que cubre la tarjeta). */
   .foto {
     position: relative;
     aspect-ratio: 1;
+    min-height: 0;
     padding: 1.25rem;
+    pointer-events: none;
     background: linear-gradient(180deg, #fff, var(--color-roto));
   }
   /* Encuadre en escuadra que aparece al pasar el cursor */

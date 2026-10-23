@@ -60,6 +60,9 @@ El esquema vive en `src/db/esquema.ts`, escrito con Drizzle: tablas, checks, FKs
 - **Descuento:** se ve si tiene texto y la fecha actual está dentro del rango. Las fechas son opcionales.
 - **Hora:** las fechas se capturan en hora del centro de México (UTC−6, sin horario de verano desde 2022).
 - **Imágenes:** van al bucket público `imagenes`, con un máximo de 4 MB por archivo (el límite de body de Vercel es 4.5 MB). Solo se aceptan PNG, JPEG, WebP y AVIF, y se validan con `sharp`.
+  - Cada campo de subida dice las medidas recomendadas. El navegador frena antes de enviar un archivo de más de 4 MB o varios que sumen más.
+  - **Logos:** se guardan sin márgenes, en PNG. En la landing todos ocupan la misma área (un 4:1 mide 160×40 px), con tope de alto y de ancho.
+  - **Foto de producto:** si no es un recorte transparente (trae fondo), se marca `imagen.fondo` y el admin avisa: en el hero oscuro se vería un recuadro.
 - **Se queda en el código:** los textos de UI, las coordenadas del mapa y el `endpoint` del formulario.
 
 ## 3. Seguridad

@@ -1,6 +1,7 @@
 ---
 import Admin from '../../layouts/Admin.astro';
 import { borrarImagenes, casilla, ErrorAdmin, procesarFormulario, revisar, subirImagen, texto } from '../../lib/admin';
+import { tamanoLogo } from '../../lib/contenido';
 import { urlImagen } from '../../lib/supabase';
 import type { FilaMarca } from '../../lib/sitio';
 
@@ -17,7 +18,7 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
   }
   const nombre = texto(f, 'nombre');
   if (!nombre) throw new ErrorAdmin('Escribe el nombre de la marca.');
-  const nuevo = await subirImagen(supabase, f.get('logo'), 'marcas', subidas);
+  const nuevo = await subirImagen(supabase, f.get('logo'), 'marcas', subidas, { logo: true });
   const logo = nuevo ?? (casilla(f, 'quitar_logo') ? null : (anterior?.logo ?? null));
   const fila = { nombre, orden: Number(texto(f, 'orden')) || 0, logo };
   revisar(id ? await supabase.from('marcas').update(fila).eq('id', id) : await supabase.from('marcas').insert(fila));
@@ -26,6 +27,9 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
 if (resultado instanceof Response) return resultado;
 
 const siguiente = Math.max(-1, ...marcas.map((m) => m.orden)) + 1;
+const TIPOS_LOGO = 'image/png,image/jpeg,image/webp,image/avif';
+const AYUDA_LOGO =
+  'PNG con fondo transparente (o JPG con fondo blanco), de 600 px de ancho o más. Los márgenes se recortan solos y en el sitio todos los logos quedan del mismo tamaño. Máximo 4 MB.';
 ---
 
 <Admin titulo="Marcas" error={resultado}>
@@ -46,11 +50,22 @@ const siguiente = Math.max(-1, ...marcas.map((m) => m.orden)) + 1;
           Orden
           <input type="number" name="orden" value={m.orden} class="max-w-28" />
         </label>
-        <div class="ancho flex flex-wrap items-center gap-4">
-          {m.logo && <img src={urlImagen(m.logo.ruta)} alt="" class="h-12 w-auto" />}
-          <label>
+        <div class="ancho flex flex-wrap items-center gap-x-6 gap-y-4">
+          {m.logo && (
+            <figure class="grid gap-1">
+              <img
+                src={urlImagen(m.logo.ruta)}
+                alt={`Logo de ${m.nombre}`}
+                style={`height: ${tamanoLogo(m.logo.ancho, m.logo.alto).alto}px`}
+                class="box-content w-auto rounded-md border border-slate-200 bg-white p-3"
+              />
+              <figcaption class="ayuda mt-0!">Así se ve en el sitio</figcaption>
+            </figure>
+          )}
+          <label class="min-w-60 flex-1">
             {m.logo ? 'Reemplazar logo' : 'Logo (opcional)'}
-            <input type="file" name="logo" accept="image/png,image/webp,image/avif" />
+            <input type="file" name="logo" accept={TIPOS_LOGO} />
+            <p class="ayuda">{AYUDA_LOGO}</p>
           </label>
           {m.logo && (
             <label class="opcion">
@@ -81,8 +96,8 @@ const siguiente = Math.max(-1, ...marcas.map((m) => m.orden)) + 1;
     </label>
     <label class="ancho">
       Logo (opcional)
-      <input type="file" name="logo" accept="image/png,image/webp,image/avif" />
-      <p class="ayuda">PNG con fondo transparente, de al menos 96 px de alto. Máximo 4 MB.</p>
+      <input type="file" name="logo" accept={TIPOS_LOGO} />
+      <p class="ayuda">{AYUDA_LOGO}</p>
     </label>
     <div class="acciones ancho mt-0!">
       <button name="accion" value="crear" class="btn btn-primario">Agregar marca</button>

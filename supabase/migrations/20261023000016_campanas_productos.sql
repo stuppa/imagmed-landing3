@@ -1,0 +1,1 @@
+ALTER TABLE "campanas" ADD COLUMN "mostrar_productos" boolean DEFAULT true NOT NULL;

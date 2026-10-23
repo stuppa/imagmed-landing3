@@ -51,22 +51,17 @@ const longitud = -96.9561195;
         </div>
       </div>
 
-      <!-- Mapa de Google Maps. Pesa más de 1 MB: en escritorio entra solo (diferido); en celular y tablet, solo si lo piden. -->
-      <div class="relative h-[420px] w-full overflow-hidden rounded-b-lg border border-(--linea) bg-negro shadow-2xl sm:h-[480px]" data-mapa>
+      <!-- Mapa de Google Maps. Pesa más de 1 MB: loading="lazy" lo pide solo cuando el scroll se acerca. -->
+      <div class="relative h-[420px] w-full overflow-hidden rounded-b-lg border border-(--linea) bg-negro shadow-2xl sm:h-[480px]">
         <iframe
-          data-src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.378!2d${longitud}!3d${latitud}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85c4e5768ebf0871%3A0x512ecb6a4368219e!2sIMAGMED%20NACIONAL!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx`}
+          src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.378!2d${longitud}!3d${latitud}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85c4e5768ebf0871%3A0x512ecb6a4368219e!2sIMAGMED%20NACIONAL!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx`}
           class="absolute inset-0 size-full"
           style="border:0; filter: invert(90%) hue-rotate(180deg) contrast(120%);"
           allowfullscreen=""
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
           title="Ubicación Google Maps de IMAGMED NACIONAL"
-          hidden
         ></iframe>
-        <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" class="portada-mapa" data-portada-mapa>
-          <span class="pin" aria-hidden="true"><Icono nombre="ubicacionPin" class="size-7" /></span>
-          <span class="btn btn-contorno">Ver mapa interactivo</span>
-        </a>
       </div>
     </div>
 
@@ -147,30 +142,6 @@ const longitud = -96.9561195;
       transparent
     );
   }
-  /* Portada del mapa (celular y tablet): cuadrícula de calles, el pin y el botón que carga Google Maps. */
-  .portada-mapa {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-content: center;
-    justify-items: center;
-    gap: 1.5rem;
-    background:
-      radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--color-marca) 28%, transparent), transparent 16rem),
-      repeating-linear-gradient(0deg, color-mix(in srgb, var(--color-roto) 7%, transparent) 0 1px, transparent 1px 3rem),
-      repeating-linear-gradient(90deg, color-mix(in srgb, var(--color-roto) 7%, transparent) 0 1px, transparent 1px 3rem);
-  }
-  .pin {
-    display: grid;
-    place-items: center;
-    width: 4rem;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--color-marca) 22%, transparent);
-    box-shadow: 0 0 0 0.5rem color-mix(in srgb, var(--color-marca) 10%, transparent);
-    color: var(--color-marca-claro);
-  }
-
   /* Entrada en profundidad: el mapa llega inclinado, como apoyado sobre una mesa, y se endereza con el scroll.
      Relleno solo hacia atrás: al terminar queda transform: none y el iframe recibe clics y arrastre normal. */
   @media (prefers-reduced-motion: no-preference) {
@@ -203,24 +174,3 @@ const longitud = -96.9561195;
   }
 </style>
 
-<script>
-  // Escritorio: el mapa entra solo (el navegador lo difiere hasta que se acerca). Celular y tablet: hasta que lo piden.
-  // Sin JavaScript, la portada abre Google Maps.
-  for (const caja of document.querySelectorAll<HTMLElement>('[data-mapa]')) {
-    const iframe = caja.querySelector('iframe');
-    const portada = caja.querySelector('[data-portada-mapa]');
-    if (!iframe || !portada) continue;
-    const cargar = () => {
-      iframe.src = iframe.dataset.src ?? '';
-      iframe.hidden = false;
-      portada.remove();
-    };
-    if (matchMedia('(min-width: 64rem)').matches) cargar();
-    else
-      portada.addEventListener('click', (e) => {
-        e.preventDefault();
-        cargar();
-        iframe.focus();
-      });
-  }
-</script>

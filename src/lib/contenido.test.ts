@@ -14,6 +14,7 @@ import {
   productosHero,
   segundosHastaProximoCambio,
   slugificar,
+  tamanoLogo,
   vigente,
 } from './contenido.ts';
 
@@ -55,6 +56,12 @@ test('encuadreHero: un equipo alto va completo, al alto del recuadro 4:3; uno an
   assert.deepEqual(encuadreHero({ x: 300, y: 100, ancho: 500, alto: 1000 }), { x: -150, y: 75, ancho: 1400, alto: 1050 });
   assert.equal(encuadreHero({ x: 0, y: 0, ancho: 1385, alto: 1149 }), null); // portátil tipo laptop
   assert.equal(encuadreHero(undefined), null);
+});
+
+test('tamanoLogo: todos los logos con el mismo peso visual, sin pasar el alto ni el ancho máximos', () => {
+  assert.deepEqual(tamanoLogo(1200, 300), { ancho: 160, alto: 40 }); // 4:1, como el de Mindray
+  assert.deepEqual(tamanoLogo(500, 500), { ancho: 64, alto: 64 }); // cuadrado: tope de alto
+  assert.deepEqual(tamanoLogo(1600, 200), { ancho: 220, alto: 28 }); // 8:1: tope de ancho
 });
 
 test('segundosHastaProximoCambio: la fecha futura más cercana, entre 1 s y el tope', () => {

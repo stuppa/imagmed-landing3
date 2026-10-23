@@ -9,7 +9,7 @@ const { categorias, contacto } = Astro.locals.sitio;
 const wa = whatsappUrl(contacto);
 ---
 
-<header class="oscuro fixed inset-x-0 top-0 z-50 border-b border-(--linea) bg-negro/85 backdrop-blur-md">
+<header class="oscuro fixed inset-x-0 top-0 z-50 border-b border-(--linea) bg-negro lg:bg-negro/85 lg:backdrop-blur-md">
   <div class="contenedor flex h-16 items-center gap-3 lg:gap-8">
     <a href="/#inicio" class="logo mr-auto shrink-0 lg:mr-0">
       <Image
@@ -40,6 +40,9 @@ const wa = whatsappUrl(contacto);
                   </li>
                 ))
               }
+              <li class="todo">
+                <a href="/productos">{productos.verTodos}</a>
+              </li>
             </ul>
           </div>
         </li>
@@ -105,6 +108,11 @@ const wa = whatsappUrl(contacto);
                 </li>
               ))
             }
+            <li>
+              <a href="/productos" class="flex min-h-11 items-center pl-4 font-semibold text-marca-claro hover:text-white">
+                {productos.verTodos}
+              </a>
+            </li>
           </ul>
         </details>
       </li>
@@ -306,6 +314,14 @@ const wa = whatsappUrl(contacto);
   }
   .submenu a:hover {
     background: rgb(255 255 255 / 0.14);
+  }
+  .submenu .todo {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgb(255 255 255 / 0.2);
+  }
+  .submenu .todo a {
+    font-weight: 600;
   }
 
   .productos-movil summary {
