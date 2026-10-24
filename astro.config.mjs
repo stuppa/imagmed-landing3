@@ -15,8 +15,11 @@ const remotePatterns = [
 ];
 
 export default defineConfig({
-  // TODO: confirmar con el cliente el dominio definitivo (se usa en canonical, Open Graph, sitemap y JSON-LD).
-  site: 'https://www.example.com',
+  // Se usa en canonical, Open Graph (lo que comparten Chrome y Safari), sitemap y JSON-LD. Vercel da el dominio de
+  // producción al compilar: el .vercel.app y, cuando se conecte, el de Imagmed (hay que volver a desplegar).
+  site: process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:4321',
   // El contenido vive en Supabase: todo se renderiza en el servidor y lo público se guarda en el CDN de Vercel
   // (src/lib/sitio.ts), que el admin invalida al guardar.
   output: 'server',
