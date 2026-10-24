@@ -40,6 +40,8 @@ export default defineConfig({
     schema: {
       SUPABASE_URL: envField.string({ context: 'server', access: 'public', url: true }),
       SUPABASE_KEY: envField.string({ context: 'server', access: 'secret' }),
+      // Opcional: sin ella el sitio compila y solo el formulario falla (src/pages/api/cotizacion.ts).
+      RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
     },
   },
   image: { remotePatterns },

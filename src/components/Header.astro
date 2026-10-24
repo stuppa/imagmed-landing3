@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import Icono from './Icono.astro';
 import wordmark from '../assets/marca/imagmed-wordmark.png';
 import { encabezado, navegacion, productos, sitio } from '../data/sitio';
-import { whatsappUrl } from '../data/contacto';
+import { cotizar, whatsappUrl } from '../data/contacto';
 
 const { categorias, contacto, productos: equipos } = Astro.locals.sitio;
 const wa = whatsappUrl(contacto);
@@ -78,8 +78,7 @@ const wa = whatsappUrl(contacto);
         )
       }
       <a
-        href="#contacto"
-        data-solicitud="Cotización"
+        {...cotizar(contacto)}
         class:list={['btn btn-primario btn-chico', wa && 'hidden sm:inline-flex']}
       >
         <span class="sm:hidden">{encabezado.ctaCorto}</span>
@@ -164,7 +163,7 @@ const wa = whatsappUrl(contacto);
       }
     </ul>
     <div class="contenedor grid gap-3 pt-6 pb-8 sm:grid-cols-2">
-      <a href="#contacto" data-solicitud="Cotización" class="btn btn-primario">{encabezado.cta}</a>
+      <a {...cotizar(contacto)} class="btn btn-primario">{encabezado.cta}</a>
       {
         wa && (
           <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno">

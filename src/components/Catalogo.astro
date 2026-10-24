@@ -3,8 +3,9 @@ import { Image } from 'astro:assets';
 import Encabezado from './Encabezado.astro';
 import Icono from './Icono.astro';
 import { productos, seccionCatalogo as s } from '../data/sitio';
+import { cotizar } from '../data/contacto';
 
-const { destacados } = Astro.locals.sitio;
+const { destacados, contacto } = Astro.locals.sitio;
 ---
 
 <section id="equipos" class="seccion relative" aria-labelledby="titulo-equipos">
@@ -61,7 +62,7 @@ const { destacados } = Astro.locals.sitio;
                       <span>{s.verDetalle}</span>
                       <Icono nombre="flecha" class="size-3.5" />
                     </a>
-                    <a href="#contacto" data-equipo={e.nombreCompleto} class="btn btn-primario btn-chico z-10">
+                    <a {...cotizar(contacto, e.nombreCompleto)} class="btn btn-primario btn-chico z-10">
                       {e.agotado ? s.ctaAgotado : s.cta}
                     </a>
                   </div>
