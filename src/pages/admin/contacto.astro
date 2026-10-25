@@ -26,8 +26,9 @@ const resultado = await procesarFormulario(Astro, async (f) => {
     return '/admin/contacto?guardado#faq';
   }
 
-  // Con 10 dígitos se agrega la lada de México.
-  const digitos = texto(f, 'whatsapp').replace(/\D/g, '');
+  // Con 10 dígitos se agrega la lada de México. El «1» de los celulares (+52 1, como lo muestra WhatsApp) ya no se marca
+  // y se quita: los enlaces wa.me abren el mismo chat con 52 y 10 dígitos.
+  const digitos = texto(f, 'whatsapp').replace(/\D/g, '').replace(/^521(\d{10})$/, '52$1');
   const whatsapp = digitos.length === 10 ? `52${digitos}` : digitos;
   if (whatsapp && !/^52\d{10}$/.test(whatsapp)) {
     throw new ErrorAdmin('Escribe los 10 dígitos del WhatsApp (p. ej. 271 123 4567).');
@@ -73,7 +74,7 @@ const filasFaq = [
       <label>
         WhatsApp
         <input name="whatsapp" value={v.whatsapp} inputmode="numeric" placeholder="271 123 4567" />
-        <p class="ayuda">10 dígitos; el 52 de México se agrega solo.</p>
+        <p class="ayuda">10 dígitos; el 52 de México se agrega solo. También acepta +52 1 como sale en WhatsApp.</p>
       </label>
       <label>
         Teléfono
