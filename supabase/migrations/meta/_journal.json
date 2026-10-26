@@ -50,6 +50,13 @@
       "when": 1792713616295,
       "tag": "20261023000016_campanas_productos",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792810219274,
+      "tag": "20261024025019_tecnologias_encabezado",
+      "breakpoints": true
     }
   ]
 }

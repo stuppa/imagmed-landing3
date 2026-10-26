@@ -193,13 +193,11 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
         <div class="contenedor">
           <div data-reveal>
             <Encabezado
-              etiqueta="Innovación Médica"
-              titulo={`Tecnologías clave en el *${equipo.nombreCompleto}*.`}
+              etiqueta={equipo.tecnologiasEncabezado.etiqueta}
+              titulo={equipo.tecnologiasEncabezado.titulo}
               id="titulo-tecnologias"
             >
-              <p class="texto-suave mt-3 max-w-xl">
-                Imágenes de alta resolución, flujo inteligente y herramientas cuantitativas para un diagnóstico sin margen de duda.
-              </p>
+              <p class="texto-suave mt-3 max-w-xl">{equipo.tecnologiasEncabezado.texto}</p>
             </Encabezado>
           </div>
 

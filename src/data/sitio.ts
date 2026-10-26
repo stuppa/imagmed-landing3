@@ -79,6 +79,14 @@ export const seccionCatalogo = {
   verDetalle: 'Ver detalle',
 };
 
+// Encabezado de «Tecnologías» en la ficha cuando el producto deja vacíos esos campos en el admin.
+export const seccionTecnologias = {
+  etiqueta: 'Innovación Médica',
+  titulo: (equipo: string) => `Tecnologías clave en el *${equipo}*.`,
+  texto:
+    'Imágenes de alta resolución, flujo inteligente y herramientas cuantitativas para un diagnóstico sin margen de duda.',
+};
+
 // Lo que se precarga en «Incluye» al crear un producto nuevo.
 export const incluyeDefecto = [
   'Asesoría clínica especializada para configurar el equipo a la medida de tu práctica',
