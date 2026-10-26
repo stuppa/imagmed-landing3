@@ -1,6 +1,7 @@
 ---
 import Encabezado from './Encabezado.astro';
 import { pasos, seccionProceso as s } from '../data/pasos';
+import { cotizar } from '../data/contacto';
 ---
 
 <section id="proceso" class="pb-20 lg:pb-30" aria-labelledby="titulo-proceso">
@@ -27,7 +28,7 @@ import { pasos, seccionProceso as s } from '../data/pasos';
     </ol>
 
     <div class="mt-12 lg:mt-16" data-reveal>
-      <a href="#contacto" data-solicitud="Cotización" class="btn btn-primario w-full sm:w-auto">{s.cta}</a>
+      <a {...cotizar(Astro.locals.sitio.contacto)} class="btn btn-primario w-full sm:w-auto">{s.cta}</a>
     </div>
   </div>
 </section>

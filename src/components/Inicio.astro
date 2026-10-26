@@ -15,8 +15,14 @@ import Faq from './Faq.astro';
 import Mapa from './Mapa.astro';
 import Contacto from './Contacto.astro';
 import Footer from './Footer.astro';
+import Reel from './Reel.astro';
+import Icono from './Icono.astro';
 import { formulario } from '../data/contacto';
 import { seccionServicio, servicios } from '../data/diferenciadores';
+import { citaTestimonio, reels } from '../data/reels';
+import { redes } from '../data/sitio';
+
+const instagram = redes.find((r) => r.nombre === 'Instagram')?.url;
 ---
 
 <Layout>
@@ -33,12 +39,38 @@ import { seccionServicio, servicios } from '../data/diferenciadores';
       solicitud="Servicio"
       equipo={formulario.servicio}
       invertido
-    />
+    >
+      <div class="flex gap-4">
+        {
+          [reels.agfa, reels.rayosX].map((r) => (
+            <figure class="w-56 xl:w-72">
+              <Reel {...r} />
+              <figcaption class="texto-suave mt-3 text-sm">{r.titulo}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+      <a href={instagram} target="_blank" rel="noopener" class="enlace-flecha mt-4">
+        Más videos en Instagram
+        <Icono nombre="externo" />
+      </a>
+    </PorQue>
     <Calculadora />
-    <PorQue />
+    <PorQue>
+      <figure class="w-60 xl:w-80">
+        <Reel {...reels.testimonio} />
+        <blockquote class="mt-4 text-lg">“{citaTestimonio.cita}”</blockquote>
+        <figcaption class="texto-suave mt-2 text-sm">{citaTestimonio.fuente}</figcaption>
+      </figure>
+    </PorQue>
     <Casos />
     <Proceso />
-    <Faq />
+    <Faq>
+      <figure class="w-60 xl:w-80">
+        <Reel {...reels.demo} />
+        <figcaption class="texto-suave mt-3 text-sm">{reels.demo.titulo}</figcaption>
+      </figure>
+    </Faq>
     <Marcas />
     <Mapa />
     <Contacto />

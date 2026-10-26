@@ -3,8 +3,11 @@ import type { Contacto } from '../lib/sitio';
 // Los datos de contacto (WhatsApp, teléfono, aviso de privacidad, dirección, horario) se editan en el admin.
 // Aquí quedan los textos de la sección y del formulario.
 
-// TODO: confirmar con el cliente. URL que recibe el formulario por POST ([ENDPOINT] en el brief); luego, Resend.
-export const endpointFormulario = '';
+// El formulario llega por correo a ventas (Resend, con imagmed.com verificado). leads@ no es un buzón: el correo
+// responde directo al cliente.
+export const endpointFormulario = '/api/cotizacion';
+export const correoVentas = 'ventas@imagmed.com';
+export const remitenteFormulario = 'Sitio web IMAGMED <leads@imagmed.com>';
 
 // TODO: confirmar con el cliente. Correo que atiende las solicitudes de datos personales (aviso de privacidad).
 // Vacío: el aviso y el formulario piden las solicitudes por escrito en el domicilio.
@@ -13,6 +16,18 @@ export const correoPrivacidad = '';
 // Con dato vacío no se renderizan los botones de WhatsApp o teléfono.
 export const whatsappUrl = (c: Contacto, mensaje = c.whatsappMensaje) =>
   c.whatsapp ? `https://wa.me/${c.whatsapp}?text=${encodeURIComponent(mensaje)}` : '';
+
+export const mensajeEquipo = (equipo: string) =>
+  `Hola IMAGMED NACIONAL, requiero información y cotización formal para el equipo ${equipo}.`;
+
+// Atributos de los botones «Cotizar»: abren el WhatsApp de Imagmed con el equipo en el mensaje (o el mensaje del admin si
+// no hay equipo). Sin número de WhatsApp en el admin regresan al formulario, como antes.
+export const cotizar = (c: Contacto, equipo?: string, mensaje = equipo ? mensajeEquipo(equipo) : c.whatsappMensaje) => {
+  const wa = whatsappUrl(c, mensaje);
+  return wa
+    ? { href: wa, target: '_blank', rel: 'noopener' }
+    : { href: '#contacto', 'data-solicitud': 'Cotización', 'data-equipo': equipo };
+};
 
 export const telefonoUrl = (c: Contacto) =>
   c.telefono ? `tel:+52${c.telefono.replace(/\D/g, '').slice(-10)}` : '';

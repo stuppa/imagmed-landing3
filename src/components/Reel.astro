@@ -1,0 +1,88 @@
+---
+// Reel de Instagram descargado en public/reels (ver src/data/reels.ts): mientras se ve corre una vista previa de 6 s
+// sin sonido; al tocarlo se reproduce completo, con sonido y controles, en el mismo lugar. El ancho lo pone quien lo
+// usa; oculto (en celular) no baja nada: portada lazy y videos con preload="none".
+import Icono from './Icono.astro';
+
+interface Props {
+  id: string;
+  titulo: string;
+  duracion: string;
+  class?: string;
+}
+
+const { id, titulo, duracion, class: clase } = Astro.props;
+---
+
+<div class:list={['reel reticula aspect-[9/16] bg-noche', clase]} data-completo={`/reels/${id}.mp4`}>
+  <img
+    src={`/reels/${id}.webp`}
+    alt=""
+    width="360"
+    height="640"
+    loading="lazy"
+    decoding="async"
+    class="absolute inset-0 size-full object-cover"
+  />
+  {/* Sin poster: hasta que corre es transparente y se ve la portada, que es su primer cuadro. */}
+  <video
+    src={`/reels/${id}-vista.mp4`}
+    muted
+    loop
+    playsinline
+    preload="none"
+    tabindex="-1"
+    class="absolute inset-0 size-full object-cover"></video>
+  <button
+    type="button"
+    class="absolute inset-0 flex items-end justify-between bg-linear-to-t from-negro/70 via-transparent via-35% p-4 text-sm font-semibold text-white"
+    aria-label={`Reproducir con sonido: ${titulo} (${duracion})`}
+  >
+    <span class="flex items-center gap-2">
+      <Icono nombre="play" class="size-4" />
+      {duracion}
+    </span>
+    <Icono nombre="silencio" class="size-5" />
+  </button>
+</div>
+
+<style>
+  /* Escuadra más larga que la de los botones: a este tamaño el reel se lee como un monitor. */
+  .reel::before {
+    --l: 1rem;
+  }
+</style>
+
+<script>
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reels = document.querySelectorAll<HTMLElement>('.reel');
+  const videos = [...reels].map((r) => r.querySelector('video')!);
+
+  // Solo corre lo que está en pantalla; al salir se pausa. La vista previa vuelve sola, el reel completo no.
+  // Ocultos (en celular) el observador nunca los ve y no descargan nada.
+  const io = new IntersectionObserver((entradas) => {
+    for (const e of entradas) {
+      const video = e.target as HTMLVideoElement;
+      if (!e.isIntersecting) video.pause();
+      else if (video.muted && !quieto) video.play().catch(() => {});
+    }
+  });
+
+  for (const reel of reels) {
+    const video = reel.querySelector('video')!;
+    const boton = reel.querySelector('button')!;
+    io.observe(video);
+    boton.addEventListener('click', () => {
+      boton.hidden = true;
+      video.src = reel.dataset.completo!;
+      Object.assign(video, { muted: false, loop: false, controls: true });
+      video.play().catch(() => {});
+      video.focus();
+    });
+    // Un solo reel con sonido a la vez.
+    video.addEventListener('play', () => {
+      if (video.muted) return;
+      for (const otro of videos) if (otro !== video && !otro.muted) otro.pause();
+    });
+  }
+</script>

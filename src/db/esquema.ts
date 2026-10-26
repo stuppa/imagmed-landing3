@@ -85,6 +85,10 @@ export const productos = pgTable(
     especialidades: text().array().notNull().default(sql`'{}'`),
     incluye: text().array().notNull().default(sql`'{}'`),
     tecnologias: jsonb().$type<{ titulo: string; descripcion: string }[]>().notNull().default([]),
+    // Encabezado de esa sección en la ficha; vacío = el texto de seccionTecnologias (src/data/sitio.ts).
+    tecnologias_etiqueta: text().notNull().default(''),
+    tecnologias_titulo: text().notNull().default(''),
+    tecnologias_texto: text().notNull().default(''),
     especificaciones_detalladas: jsonb().$type<Grupo[]>().notNull().default([]),
     accesorios_titulo: text().notNull().default('Transductores compatibles'),
     accesorios: jsonb().$type<Accesorio[]>().notNull().default([]),

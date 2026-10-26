@@ -12,7 +12,7 @@ import {
 } from '../../../lib/admin';
 import { aFechaLocal, deFechaLocal, grupos, gruposATexto, lineas, pares, paresATexto, slugificar } from '../../../lib/contenido';
 import { urlImagen } from '../../../lib/supabase';
-import { incluyeDefecto } from '../../../data/sitio';
+import { incluyeDefecto, seccionTecnologias } from '../../../data/sitio';
 import type { Accesorio, Estado, FilaCategoria, FilaMarca, FilaProducto, Imagen } from '../../../lib/sitio';
 
 const supabase = Astro.locals.supabase;
@@ -89,6 +89,9 @@ const resultado = await procesarFormulario(Astro, async (f, subidas) => {
     especialidades: lineas(texto(f, 'especialidades')),
     incluye: lineas(texto(f, 'incluye')),
     tecnologias: pares(texto(f, 'tecnologias')),
+    tecnologias_etiqueta: texto(f, 'tecnologias_etiqueta'),
+    tecnologias_titulo: texto(f, 'tecnologias_titulo'),
+    tecnologias_texto: texto(f, 'tecnologias_texto'),
     especificaciones_detalladas: grupos(texto(f, 'especificaciones_detalladas')),
     accesorios,
     estado: ESTADOS.some((e) => e.valor === estado) ? estado : 'oculto',
@@ -137,6 +140,9 @@ const v = enviado
       especialidades: texto(enviado, 'especialidades'),
       incluye: texto(enviado, 'incluye'),
       tecnologias: texto(enviado, 'tecnologias'),
+      tecnologias_etiqueta: texto(enviado, 'tecnologias_etiqueta'),
+      tecnologias_titulo: texto(enviado, 'tecnologias_titulo'),
+      tecnologias_texto: texto(enviado, 'tecnologias_texto'),
       especificaciones_detalladas: texto(enviado, 'especificaciones_detalladas'),
       estado: texto(enviado, 'estado'),
       destacado: casilla(enviado, 'destacado'),
@@ -162,6 +168,9 @@ const v = enviado
       especialidades: (existente?.especialidades ?? []).join('\n'),
       incluye: (existente?.incluye ?? incluyeDefecto).join('\n'),
       tecnologias: paresATexto(existente?.tecnologias ?? []),
+      tecnologias_etiqueta: existente?.tecnologias_etiqueta ?? '',
+      tecnologias_titulo: existente?.tecnologias_titulo ?? '',
+      tecnologias_texto: existente?.tecnologias_texto ?? '',
       especificaciones_detalladas: gruposATexto(existente?.especificaciones_detalladas ?? []),
       estado: existente?.estado ?? 'oculto',
       destacado: existente?.destacado ?? false,
@@ -173,6 +182,8 @@ const v = enviado
 // Filas vacías extra para agregar accesorios (guarda y vuelve a abrir si necesitas más).
 const filasAccesorios = [...v.accesorios, ...Array.from({ length: 2 }, () => ({ tipo: '', modelo: '', descripcion: '' }))];
 const avisoImagenes = enviado ? 'Si habías elegido imágenes nuevas, vuelve a seleccionarlas.' : '';
+// Para el ejemplo del título de «Tecnologías», como se vería con su nombre.
+const nombreCompleto = [marcas.find((m) => m.id === v.marca_id)?.nombre, v.nombre || 'equipo'].filter(Boolean).join(' ');
 ---
 
 <Admin titulo={nuevo ? 'Nuevo producto' : (existente?.nombre ?? 'Producto')} error={[resultado, resultado && avisoImagenes].filter(Boolean).join(' ')}>
@@ -350,6 +361,22 @@ const avisoImagenes = enviado ? 'Si habías elegido imágenes nuevas, vuelve a s
     <section class="panel">
       <h2>Tecnologías y ficha técnica</h2>
       <div class="grid gap-4">
+        <div class="rejilla">
+          <label>
+            Etiqueta de la sección de tecnologías
+            <input name="tecnologias_etiqueta" value={v.tecnologias_etiqueta} placeholder={seccionTecnologias.etiqueta} />
+          </label>
+          <label>
+            Título de la sección
+            <input name="tecnologias_titulo" value={v.tecnologias_titulo} placeholder={seccionTecnologias.titulo(nombreCompleto)} />
+            <p class="ayuda">Lo que va entre <code>*asteriscos*</code> sale en azul.</p>
+          </label>
+          <label class="ancho">
+            Texto de la sección
+            <textarea name="tecnologias_texto" rows="2" placeholder={seccionTecnologias.texto}>{v.tecnologias_texto}</textarea>
+            <p class="ayuda">Vacíos se usan los textos grises de ejemplo.</p>
+          </label>
+        </div>
         <label>
           Tecnologías destacadas
           <textarea name="tecnologias" placeholder="Plataforma ZST+: Adquisición de imágenes por zonas…">{v.tecnologias}</textarea>

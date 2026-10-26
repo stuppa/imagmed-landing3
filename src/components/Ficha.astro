@@ -10,7 +10,7 @@ import Encabezado from './Encabezado.astro';
 import Enfasis from './Enfasis.astro';
 import TarjetaProducto from './TarjetaProducto.astro';
 import { seccionCatalogo, sitio } from '../data/sitio';
-import { whatsappUrl } from '../data/contacto';
+import { cotizar, mensajeEquipo, whatsappUrl } from '../data/contacto';
 import type { Producto } from '../lib/sitio';
 
 interface Props {
@@ -21,8 +21,8 @@ const { producto: equipo } = Astro.props;
 const { productos, contacto } = Astro.locals.sitio;
 const otrosEquipos = productos.filter((e) => e.categoria.slug === equipo.categoria.slug && e.slug !== equipo.slug);
 
-const waMensaje = `Hola IMAGMED NACIONAL, requiero información y cotización formal para el equipo ${equipo.nombreCompleto}.`;
-const waUrl = whatsappUrl(contacto, waMensaje);
+const waUrl = whatsappUrl(contacto, mensajeEquipo(equipo.nombreCompleto));
+const cotizarEquipo = cotizar(contacto, equipo.nombreCompleto);
 const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
 ---
 
@@ -99,7 +99,7 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
 
           <!-- Acciones principales de cotización -->
           <div class="mt-10 flex flex-wrap items-center gap-4">
-            <a href="#cotizar" class="btn btn-primario min-h-[3.25rem] px-8 text-base shadow-lg shadow-marca/25">
+            <a {...cotizarEquipo} class="btn btn-primario min-h-[3.25rem] px-8 text-base shadow-lg shadow-marca/25">
               <Icono nombre="flecha" class="size-5" />
               <span>{cta}</span>
             </a>
@@ -193,13 +193,11 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
         <div class="contenedor">
           <div data-reveal>
             <Encabezado
-              etiqueta="Innovación Médica"
-              titulo={`Tecnologías clave en el *${equipo.nombreCompleto}*.`}
+              etiqueta={equipo.tecnologiasEncabezado.etiqueta}
+              titulo={equipo.tecnologiasEncabezado.titulo}
               id="titulo-tecnologias"
             >
-              <p class="texto-suave mt-3 max-w-xl">
-                Imágenes de alta resolución, flujo inteligente y herramientas cuantitativas para un diagnóstico sin margen de duda.
-              </p>
+              <p class="texto-suave mt-3 max-w-xl">{equipo.tecnologiasEncabezado.texto}</p>
             </Encabezado>
           </div>
 
@@ -266,7 +264,7 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
             <p class="texto-suave mt-4">
               No solo vendemos equipos; te acompañamos en todo el ciclo de vida de tu equipo con respaldo oficial en México.
             </p>
-            <a href="#cotizar" class="btn btn-primario mt-6 inline-flex">
+            <a {...cotizarEquipo} class="btn btn-primario mt-6 inline-flex">
               Cotizar propuesta formal
             </a>
           </div>
@@ -330,7 +328,7 @@ const cta = equipo.agotado ? seccionCatalogo.ctaAgotado : seccionCatalogo.cta;
         <p class="text-xs text-slate-400">{equipo.tipo || equipo.categoria.nombre}</p>
         <p class="text-sm font-bold text-white leading-tight">{equipo.nombreCompleto}</p>
       </div>
-      <a href="#cotizar" class="btn btn-primario min-h-11 px-5 text-xs">
+      <a {...cotizarEquipo} class="btn btn-primario min-h-11 px-5 text-xs">
         {equipo.agotado ? seccionCatalogo.ctaAgotado : 'Cotizar ahora'}
       </a>
     </div>

@@ -3,11 +3,12 @@ import { Image } from 'astro:assets';
 import Enfasis from './Enfasis.astro';
 import Volumen from './Volumen.astro';
 import { encuadreHero } from '../lib/contenido';
+import { cotizar } from '../data/contacto';
 
 // Los productos elegidos en el admin rotan siempre; cada uno con marca de agua y sus accesorios con imagen.
 // Con una campaña vigente, su diseño cubre el hero y el hero se pinta con los colores que se sacaron de él al subirlo:
 // acento en brillos, marca de agua, barras y botón; texto oscuro si el diseño es claro. Textos y botones siguen en HTML.
-const { hero } = Astro.locals.sitio;
+const { hero, contacto } = Astro.locals.sitio;
 const { campana } = hero;
 const colores = campana?.colores;
 const claro = colores?.claro ?? false;
@@ -31,7 +32,7 @@ const productos = hero.productos.map((p) => {
     sizes: sizes(zoom),
   };
 });
-// La campaña puede traer su producto ya elegido en el formulario.
+// La campaña puede traer su producto: va en el mensaje de WhatsApp de «Cotiza» y preelegido en la demo.
 const preseleccion = campana?.producto ?? undefined;
 ---
 
@@ -145,7 +146,7 @@ const preseleccion = campana?.producto ?? undefined;
     }
 
     <div class="hero-acciones">
-      <a href="#contacto" class="btn btn-primario" data-solicitud="Cotización" data-equipo={preseleccion}>{hero.ctaPrincipal}</a>
+      <a {...cotizar(contacto, preseleccion)} class="btn btn-primario">{hero.ctaPrincipal}</a>
       <a href="#contacto" class:list={['btn', claro ? 'btn-claro' : 'btn-contorno']} data-solicitud="Demo" data-equipo={preseleccion}>
         {hero.ctaSecundario}
       </a>

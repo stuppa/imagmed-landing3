@@ -7,15 +7,17 @@ import Enfasis from '../../components/Enfasis.astro';
 import Icono from '../../components/Icono.astro';
 import TarjetaProducto from '../../components/TarjetaProducto.astro';
 import { productos, sitio } from '../../data/sitio';
-import { whatsappUrl } from '../../data/contacto';
+import { cotizar, whatsappUrl } from '../../data/contacto';
 import { prepararPagina } from '../../lib/sitio';
 
 const { categorias, contacto } = await prepararPagina(Astro);
 const categoria = categorias.find((c) => c.slug === Astro.params.slug);
 if (!categoria) return Astro.rewrite('/404');
 
-const wa = whatsappUrl(contacto, `Hola IMAGMED NACIONAL, me interesa una cotización de ${categoria.nombre}.`);
+const mensaje = `Hola IMAGMED NACIONAL, me interesa una cotización de ${categoria.nombre}.`;
+const wa = whatsappUrl(contacto, mensaje);
 const conProductos = categoria.productos.length > 0;
+const accion = conProductos ? { href: '#modelos' } : cotizar(contacto, undefined, mensaje);
 ---
 
 <Layout titulo={`${categoria.nombre} | ${sitio.nombre}`} descripcion={categoria.descripcion}>
@@ -37,7 +39,7 @@ const conProductos = categoria.productos.length > 0;
         <p class="texto-suave mt-6 max-w-xl text-lg">{categoria.descripcion}</p>
 
         <div class="mt-10 flex flex-wrap gap-4">
-          <a href={conProductos ? '#modelos' : '#contacto'} class="btn btn-primario">
+          <a {...accion} class="btn btn-primario">
             {conProductos ? 'Ver modelos' : 'Solicitar cotización'}
           </a>
           {

@@ -10,10 +10,12 @@ const wa = whatsappUrl(contacto);
 ---
 
 <section id="faq" class="pb-20 lg:pb-30" aria-labelledby="titulo-faq">
-  <div class="contenedor border-t border-tinta/10 pt-20 lg:pt-30">
-    <div class="mx-auto max-w-3xl">
+  <div
+    class="contenedor border-t border-tinta/10 pt-20 lg:grid lg:grid-cols-[auto_1fr] lg:items-center lg:gap-12 lg:pt-30 xl:gap-16"
+  >
+    <div class="mx-auto max-w-3xl lg:mx-0 lg:max-w-none">
       <div data-reveal>
-        <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-faq" class="text-center" />
+        <Encabezado etiqueta={s.etiqueta} titulo={s.titulo} id="titulo-faq" class="text-center lg:text-left" />
       </div>
 
       <div class="mt-12 border-t border-tinta/10" data-reveal>
@@ -30,7 +32,10 @@ const wa = whatsappUrl(contacto);
         }
       </div>
 
-      <p class="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center" data-reveal>
+      <p
+        class="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center lg:justify-start lg:text-left"
+        data-reveal
+      >
         <span class="texto-suave">{s.cierre}</span>
         {
           wa ? (
@@ -46,6 +51,11 @@ const wa = whatsappUrl(contacto);
           )
         }
       </p>
+    </div>
+
+    {/* El reel, a buen tamaño junto a las preguntas (Inicio.astro). En celular no cabe sin alargar mucho la página. */}
+    <div class="hidden lg:order-first lg:block" data-reveal>
+      <slot />
     </div>
   </div>
 </section>

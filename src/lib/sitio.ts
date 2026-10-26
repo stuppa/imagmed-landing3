@@ -10,7 +10,7 @@ import type {
   FilaProducto,
   Imagen,
 } from '../db/esquema';
-import { hero as textosHero } from '../data/sitio';
+import { hero as textosHero, seccionTecnologias } from '../data/sitio';
 import { campanaActiva, productosHero, segundosHastaProximoCambio, vigente, type Colores, type Grupo } from './contenido';
 import { clientePublico, urlImagen, type Supabase } from './supabase';
 
@@ -60,6 +60,8 @@ export interface Producto {
   especialidades: string[];
   incluye: string[];
   tecnologias: { titulo: string; descripcion: string }[];
+  /** Encabezado de la sección de tecnologías, ya con los textos por defecto si el admin lo dejó vacío. */
+  tecnologiasEncabezado: { etiqueta: string; titulo: string; texto: string };
   especificacionesDetalladas: Grupo[];
   accesorios: { tipo: string; modelo: string; descripcion: string; imagen: ImagenVista | null }[];
   estado: Estado;
@@ -121,11 +123,12 @@ export function aProducto(
 ): Producto {
   const descuentoVigente =
     p.descuento_texto && vigente({ inicio: fecha(p.descuento_inicio), fin: fecha(p.descuento_fin) }, ahora);
+  const nombreCompleto = marca ? `${marca} ${p.nombre}` : p.nombre;
   return {
     id: p.id,
     slug: p.slug,
     nombre: p.nombre,
-    nombreCompleto: marca ? `${marca} ${p.nombre}` : p.nombre,
+    nombreCompleto,
     tipo: p.tipo,
     marca,
     categoria,
@@ -137,6 +140,11 @@ export function aProducto(
     especialidades: p.especialidades,
     incluye: p.incluye,
     tecnologias: p.tecnologias,
+    tecnologiasEncabezado: {
+      etiqueta: p.tecnologias_etiqueta || seccionTecnologias.etiqueta,
+      titulo: p.tecnologias_titulo || seccionTecnologias.titulo(nombreCompleto),
+      texto: p.tecnologias_texto || seccionTecnologias.texto,
+    },
     especificacionesDetalladas: p.especificaciones_detalladas,
     accesorios: p.accesorios.map((a) => ({ ...a, imagen: a.imagen ? vistaImagen(a.imagen) : null })),
     estado: p.estado,
