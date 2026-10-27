@@ -70,10 +70,15 @@ const wa = whatsappUrl(contacto);
       </button>
       {
         wa && (
-          <a href={wa} target="_blank" rel="noopener" class="btn btn-contorno btn-chico">
-            <Icono nombre="whatsapp" class="size-4.5" />
-            {/* Bajo 360 px no cabe junto a la lupa: queda el icono (y el flotante). */}
-            <span class="max-[22.5rem]:sr-only">{encabezado.whatsapp}</span>
+          <a
+            href={wa}
+            target="_blank"
+            rel="noopener"
+            aria-label={encabezado.whatsapp}
+            title={encabezado.whatsapp}
+            class="btn btn-contorno size-11 min-h-0 p-0"
+          >
+            <Icono nombre="whatsapp" class="size-5" />
           </a>
         )
       }
