@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { RESEND_API_KEY } from 'astro:env/server';
 import { correoVentas, remitenteFormulario } from '../../data/contacto';
+import { htmlCotizacion } from '../../emails/Cotizacion';
 import { ORIGEN, armarCorreo } from '../../lib/cotizacion';
 import { clientePublico, urlImagen } from '../../lib/supabase';
 import type { Imagen } from '../../db/esquema';
@@ -26,7 +27,7 @@ export const POST: APIRoute = async ({ request }) => {
       reply_to: correo.responderA,
       subject: correo.asunto,
       text: correo.texto,
-      html: correo.html,
+      html: await htmlCotizacion(correo.datos),
     }),
   });
   if (!r.ok) {

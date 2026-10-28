@@ -47,13 +47,13 @@ test('rechaza datos faltantes o sin forma', () => {
   }
 });
 
-test('el diseño escapa lo que escribe el cliente y arma los botones', () => {
-  const c = armarCorreo(form({ nombre: 'Ana <script>alert(1)</script>', telefono: '(271) 190-6286' }));
+test('prepara los enlaces para responder, abrir WhatsApp o llamar', () => {
+  const c = armarCorreo(form({ telefono: '(271) 190-6286', cuando: 'Lo antes posible' }));
   assert.ok(typeof c === 'object');
-  assert.doesNotMatch(c.html, /<script>/);
-  assert.match(c.html, /Ana &lt;script&gt;/);
-  assert.match(c.html, /href="https:\/\/wa\.me\/522711906286"/);
-  assert.match(c.html, /href="tel:\+522711906286"/);
+  assert.equal(c.datos.whatsapp, 'https://wa.me/522711906286');
+  assert.equal(c.datos.tel, 'tel:+522711906286');
+  assert.match(c.datos.mailto, /^mailto:ana@clinica\.com\?subject=/);
+  assert.equal(c.datos.urgente, true);
 });
 
 test('el asunto queda en una línea', () => {
