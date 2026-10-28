@@ -1,0 +1,6 @@
+{
+  // Los correos usan JSX de React (React Email); el resto del sitio deja el JSX a Astro ("preserve").
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "react" },
+  "include": ["."]
+}
