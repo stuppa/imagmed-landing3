@@ -43,6 +43,9 @@ const {
         </Encabezado>
       </div>
 
+      {/* Debajo de lg los reels van aquí, en un carrusel (Inicio.astro). */}
+      <slot name="carrusel" />
+
       {/* Desde lg, junto a los reels: icono al lado del título y texto a todo el ancho, para no quedar mucho más alta que ellos. */}
       <ul class="mt-12 grid gap-px sm:grid-cols-2 lg:mt-10" role="list" data-reveal="lista">
         {
@@ -60,7 +63,7 @@ const {
       </ul>
     </div>
 
-    {/* Los reels, a buen tamaño junto al texto (Inicio.astro). En celular no caben sin alargar mucho la página. */}
+    {/* Los reels, a buen tamaño junto al texto (Inicio.astro). Debajo de lg van en el carrusel. */}
     <div class:list={['hidden lg:block', invertido && 'lg:order-1']} data-reveal>
       <slot />
     </div>
