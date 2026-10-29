@@ -1,7 +1,7 @@
 ---
 // Reel de Instagram descargado en public/reels (ver src/data/reels.ts): mientras se ve corre una vista previa de 6 s
 // sin sonido; al tocarlo se reproduce completo, con sonido y controles, en el mismo lugar. El ancho lo pone quien lo
-// usa; oculto (en celular) no baja nada: portada lazy y videos con preload="none".
+// usa; oculto no baja nada: portada lazy y videos con preload="none".
 import Icono from './Icono.astro';
 
 interface Props {
@@ -59,14 +59,22 @@ const { id, titulo, duracion, class: clase } = Astro.props;
   const videos = [...reels].map((r) => r.querySelector('video')!);
 
   // Solo corre lo que está en pantalla; al salir se pausa. La vista previa vuelve sola, el reel completo no.
-  // Ocultos (en celular) el observador nunca los ve y no descargan nada.
-  const io = new IntersectionObserver((entradas) => {
-    for (const e of entradas) {
-      const video = e.target as HTMLVideoElement;
-      if (!e.isIntersecting) video.pause();
-      else if (video.muted && !quieto) video.play().catch(() => {});
-    }
-  });
+  // Los ocultos (cada reel está dos veces: junto al texto en escritorio y en el carrusel en celular) nunca se ven y no
+  // descargan nada. Corre con el 80 % a la vista: en el carrusel la tarjeta que asoma (hasta ~60 % en celular) no
+  // arranca. Se mira la proporción y no isIntersecting, que también avisa apenas asoma. El corte tiene que ser el mismo
+  // umbral: el aviso de salida llega con la proporción de ese cuadro (p. ej. 0.77) y con otro corte lo volvía a arrancar,
+  // y el reel seguía corriendo fuera de pantalla el resto de la visita.
+  const umbral = 0.8;
+  const io = new IntersectionObserver(
+    (entradas) => {
+      for (const e of entradas) {
+        const video = e.target as HTMLVideoElement;
+        if (e.intersectionRatio < umbral) video.pause();
+        else if (video.muted && !quieto) video.play().catch(() => {});
+      }
+    },
+    { threshold: umbral },
+  );
 
   for (const reel of reels) {
     const video = reel.querySelector('video')!;
